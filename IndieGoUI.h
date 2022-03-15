@@ -119,25 +119,25 @@ struct UI_elements_map {
         	std::cout << "[ERROR] setData: no element with name " << name << std::endl;
         	return;
 		}
-		if constexpr (std::is_same_v<T, bool>){
+		if constexpr (std::is_same<T, bool>::value){
 			if (elements[name].type != UI_BOOL){
 				std::cout << "[ERROR] setData: element with name " << name << " is not bool!" <<std::endl;
 			} else {
 				elements[name]._data.b = data;
 			}
-		} else if constexpr (std::is_same_v<T, float>){
+		} else if constexpr (std::is_same<T, float>::value){
 			if (elements[name].type != UI_FLOAT){
 				std::cout << "[ERROR] setData: element with name " << name << " is not float!" <<std::endl;
 			} else {
 				elements[name]._data.f = data;
 			}
-		} else if constexpr (std::is_same_v<T, int>){
+		} else if constexpr (std::is_same<T, int>::value){
 			if (elements[name].type != UI_INT){
 				std::cout << "[ERROR] setData: element with name " << name << " is not int!" <<std::endl;
 			} else {
 				elements[name]._data.i = data;
 			}
-		} else if constexpr (std::is_same_v<T, unsigned int>){
+		} else if constexpr (std::is_same<T, unsigned int>::value){
 			if (elements[name].type != UI_INT){
 				std::cout << "[ERROR] setData: element with name " << name << " is not unsigned int!" <<std::endl;
 			} else {
@@ -150,13 +150,13 @@ struct UI_elements_map {
 
     template<typename T>
 	T & getData(const std::string & name) {
-		if constexpr (std::is_same_v<T, bool>){
+		if constexpr (std::is_same<T, bool>::value){
 			return elements[name]._data.b;
-		} else if constexpr (std::is_same_v<T, float>){
+		} else if constexpr (std::is_same<T, float>::value){
 			return elements[name]._data.f;
-		} else if constexpr (std::is_same_v<T, int>){
+		} else if constexpr (std::is_same<T, int>::value){
 			return elements[name]._data.i;
-		} else if constexpr (std::is_same_v<T, unsigned int>){
+		} else if constexpr (std::is_same<T, unsigned int>::value){
 			return elements[name]._data.ui;
 		}
 		std::cout << "[ERROR] getData: can't return no data for element " << name << std::endl;
@@ -166,9 +166,9 @@ struct UI_elements_map {
 
     template<typename T>
 	T * getDataPtr(const std::string & name){
-		if constexpr (std::is_same_v<T, std::string>){
+		if constexpr (std::is_same<T, std::string>::value){
 			return elements[name]._data.strPtr;
-		} else if constexpr (std::is_same_v<T, ui_string_group>){
+		} else if constexpr (std::is_same<T, ui_string_group>::value){
 			return elements[name]._data.usgPtr;
 		}
 		std::cout << "[ERROR] getDataPtr: cant return NULL ptr for element " << name << std::endl;       
