@@ -21,7 +21,7 @@ jobs:
     - name: Build
       run: cmake --build ${{github.workspace}}/test/build
 
-    - name: check artifacts
+    - name: Run
       working-directory: ${{github.workspace}}/test/build
-      run: tree .
+      run: Debug/UI_map_func_test.exe
       
