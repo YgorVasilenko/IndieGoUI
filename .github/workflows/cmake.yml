@@ -22,6 +22,6 @@ jobs:
       run: cmake --build ${{github.workspace}}/test/build
 
     - name: check artifacts
-      working-directory: ${{github.workspace}}/build
+      working-directory: ${{github.workspace}}/test/build
       run: tree .
       
