@@ -13,6 +13,75 @@ enum select_method {
 	LIST_SELECT, RADIO_SELECT, BUTTON_SELECT
 };
 
+struct color { unsigned char r, g, b, a; };
+
+struct colorf { float r, g, b, a; };
+
+enum COLOR_ELEMENTS {
+	COLOR_TEXT,
+    COLOR_WINDOW,
+    COLOR_HEADER,
+    COLOR_BORDER,
+    COLOR_BUTTON,
+    COLOR_BUTTON_HOVER,
+    COLOR_BUTTON_ACTIVE,
+    COLOR_TOGGLE,
+    COLOR_TOGGLE_HOVER,
+    COLOR_TOGGLE_CURSOR,
+    COLOR_SELECT,
+    COLOR_SELECT_ACTIVE,
+    COLOR_SLIDER,
+    COLOR_SLIDER_CURSOR,
+    COLOR_SLIDER_CURSOR_HOVER,
+    COLOR_SLIDER_CURSOR_ACTIVE,
+    COLOR_PROPERTY,
+    COLOR_EDIT,
+    COLOR_EDIT_CURSOR,
+    COLOR_COMBO,
+    COLOR_CHART,
+    COLOR_CHART_COLOR,
+    COLOR_CHART_COLOR_HIGHLIGHT,
+    COLOR_SCROLLBAR,
+    COLOR_SCROLLBAR_CURSOR,
+    COLOR_SCROLLBAR_CURSOR_HOVER,
+    COLOR_SCROLLBAR_CURSOR_ACTIVE,
+    COLOR_TAB_HEADER
+};
+
+struct color_table { 
+	color elements[28] = {
+		// default - Nuklear style
+		{ 175, 175, 175, 255 },
+    	{ 45,  45,  45,  255 },
+    	{ 40,  40,  40,  255 },
+    	{ 65,  65,  65,  255 },
+    	{ 50,  50,  50,  255 },
+    	{ 40,  40,  40,  255 },
+    	{ 35,  35,  35,  255 },
+    	{ 100, 100, 100, 255 },
+    	{ 120, 120, 120, 255 },
+    	{  45,  45,  45, 255 },
+    	{  45,  45,  45, 255 },
+    	{  35,  35,  35, 255 },
+    	{  38,  38,  38, 255 },
+    	{ 100, 100, 100, 255 },
+    	{ 120, 120, 120, 255 },
+    	{ 150, 150, 150, 255 },
+    	{  38,  38,  38, 255 },
+    	{  38,  38,  38, 255 },
+    	{ 175, 175, 175, 255 },
+    	{  45,  45,  45, 255 },
+    	{ 120, 120, 120, 255 },
+    	{  45,  45,  45, 255 },
+    	{ 255,   0,   0, 255 },
+    	{  40,  40,  40, 255 },
+    	{ 100, 100, 100, 255 },
+    	{ 120, 120, 120, 255 },
+    	{ 150, 150, 150, 255 },
+    	{  40,  40,  40, 255 }
+	}; 
+};
+
 struct ui_string_group {
     std::vector<std::string> elements;
 
@@ -85,9 +154,11 @@ enum UI_ELEMENT_TYPE {
 	UI_UINT,
 	UI_BOOL,
 	UI_STRING_INPUT,
+	UI_STRING_LABEL,
 	UI_BUTTON,
 	UI_BUTTON_SWITCH,
-	UI_ITEMS_LIST
+	UI_ITEMS_LIST,
+	UI_COLOR_PICKER
 };
 
 struct UI_element {
@@ -96,6 +167,7 @@ struct UI_element {
         float f;
         int i;
         unsigned int ui;
+		colorf c;
         ui_string_group * usgPtr;
         std::string * strPtr;
     } _data;
@@ -107,9 +179,15 @@ struct UI_element {
 
     UI_ELEMENT_TYPE type;	
 	std::string label = "";
+	bool color_picker_unwrapped = false;
+	
 	float min_height = 25.f;
 
 	bool hidden = false;
+
+	// style settings for various elements
+	color_table style;
+	bool custom_style = false;
 
 	// default implementation could be overrided
 	virtual void callUIfunction();
@@ -215,71 +293,11 @@ struct UI_elements_map {
 			element._data.strPtr = new std::string;
 		} else if (element.type == UI_ITEMS_LIST) {
 			element._data.usgPtr = new ui_string_group;
+		} else if (element.type == UI_COLOR_PICKER){
+			element.min_height = 200.f;
 		}
 		elements[elt_name] = element;
 	};
-
-    // template<typename T>
-	// void setData(const std::string & name, T & data){
-	// 	if (elements.find(name) == elements.end()) {
-    //     	std::cout << "[ERROR] setData: no element with name " << name << std::endl;
-    //     	return;
-	// 	}
-	// 	if constexpr (std::is_same<T, bool>::value){
-	// 		if (elements[name].type != UI_BOOL){
-	// 			std::cout << "[ERROR] setData: element with name " << name << " is not bool!" <<std::endl;
-	// 		} else {
-	// 			elements[name]._data.b = data;
-	// 		}
-	// 	} else if constexpr (std::is_same<T, float>::value){
-	// 		if (elements[name].type != UI_FLOAT){
-	// 			std::cout << "[ERROR] setData: element with name " << name << " is not float!" <<std::endl;
-	// 		} else {
-	// 			elements[name]._data.f = data;
-	// 		}
-	// 	} else if constexpr (std::is_same<T, int>::value){
-	// 		if (elements[name].type != UI_INT){
-	// 			std::cout << "[ERROR] setData: element with name " << name << " is not int!" <<std::endl;
-	// 		} else {
-	// 			elements[name]._data.i = data;
-	// 		}
-	// 	} else if constexpr (std::is_same<T, unsigned int>::value){
-	// 		if (elements[name].type != UI_INT){
-	// 			std::cout << "[ERROR] setData: element with name " << name << " is not unsigned int!" <<std::endl;
-	// 		} else {
-	// 			elements[name]._data.ui = data;
-	// 		}
-	// 	} else {
-	// 		std::cout << "[ERROR] setData: cant set data for element " << name << std::endl;
-	// 	}
-	// };
-
-    // template<typename T>
-	// T & getData(const std::string & name) {
-	// 	if constexpr (std::is_same<T, bool>::value){
-	// 		return elements[name]._data.b;
-	// 	} else if constexpr (std::is_same<T, float>::value){
-	// 		return elements[name]._data.f;
-	// 	} else if constexpr (std::is_same<T, int>::value){
-	// 		return elements[name]._data.i;
-	// 	} else if constexpr (std::is_same<T, unsigned int>::value){
-	// 		return elements[name]._data.ui;
-	// 	}
-	// 	std::cout << "[ERROR] getData: can't return no data for element " << name << std::endl;
-	// 	T no_data;
-	// 	return no_data;
-	// };
-
-    // template<typename T>
-	// T * getDataPtr(const std::string & name){
-	// 	if constexpr (std::is_same<T, std::string>::value){
-	// 		return elements[name]._data.strPtr;
-	// 	} else if constexpr (std::is_same<T, ui_string_group>::value){
-	// 		return elements[name]._data.usgPtr;
-	// 	}
-	// 	std::cout << "[ERROR] getDataPtr: cant return NULL ptr for element " << name << std::endl;       
-	// 	return NULL;
-	// };
 
     void loadUI(std::string & ui_file_path){
 		std::ifstream ui_descr(ui_file_path, std::ios::binary);
@@ -295,8 +313,6 @@ struct UI_elements_map {
 
 struct region { short x, y, w, h; };
 struct region_size { short w, h; };
-struct color { unsigned char r, g, b, a; };
-struct color_table { color elements[28] = {}; };
 
 
 struct WIDGET : public WIDGET_BASE {
@@ -317,6 +333,8 @@ struct WIDGET : public WIDGET_BASE {
 	bool movable = true;
 	bool scalable = true;
 
+	color_table style;
+	bool custom_style = false;
 private:
 	void callWidgetUI(UI_elements_map & UIMap) {
 		for (auto row : layout_grid){
