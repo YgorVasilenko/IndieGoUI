@@ -345,13 +345,13 @@ void prepareUIRenderer(GLFWwindow* window) {
 
 using namespace IndieGo::UI;
 
-void IndieGoUI::scroll(double xoff, double yoff) {
+void Manager::scroll(double xoff, double yoff) {
     (void)xoff;
     glfw->scroll.x += (float)xoff;
     glfw->scroll.y += (float)yoff;
 }
 
-void IndieGoUI::mouse_move(double x, double y){
+void Manager::mouse_move(double x, double y){
     cursor_pos.x = x;
     cursor_pos.y = y;
 }
@@ -364,7 +364,7 @@ void IndieGoUI::mouse_move(double x, double y){
 #endif
 
 
-void IndieGoUI::mouse_button(int button, int action, int mods){
+void Manager::mouse_button(int button, int action, int mods){
     if (disableMouse) return;
     double x, y;
     if (button != GLFW_MOUSE_BUTTON_LEFT) return;
@@ -378,13 +378,13 @@ void IndieGoUI::mouse_button(int button, int action, int mods){
     } else glfw->is_double_click_down = nk_false;
 }
 
-void IndieGoUI::char_input(unsigned int codepoint){
+void Manager::char_input(unsigned int codepoint){
     if (glfw->text_len < NK_GLFW_TEXT_MAX) {
         glfw->text[glfw->text_len++] = codepoint;
     }
 }
 
-void IndieGoUI::key_input(unsigned int codepoint, bool pressed){
+void Manager::key_input(unsigned int codepoint, bool pressed){
     if (codepoint == GLFW_KEY_BACKSPACE && pressed) {
         if (!glfw->backspace) {
             glfw->backspace = true;
@@ -547,7 +547,6 @@ void UI_element::callUIfunction() {
                         if (!std::regex_match(uiGroupRef.elements[i], e))
                             continue;
                     }
-                    // nk_layout_row_static(ctx, 18, 285, 1);
                     nk_layout_row_dynamic(ctx, 20, 1);
                     nk_selectable_label(ctx, uiGroupRef.elements[i].c_str(), NK_TEXT_CENTERED, &selected);
                     if (selected) {
@@ -654,9 +653,19 @@ void WIDGET::allocateEmptySpace(unsigned int fill_count){
     nk_spacing(ctx, fill_count);
 }
 
+void WIDGET::allocateGroupStart(elements_group & g, float min_height){
+    g.unfolded = nk_tree_push(ctx, NK_TREE_TAB, g.name.c_str(), NK_MINIMIZED);
+    if (g.unfolded)
+        nk_layout_row_dynamic(ctx, min_height, g.row_items_count);
+}
+
+void WIDGET::allocateGroupEnd(){
+    nk_tree_pop(ctx);
+}
+
 #define NK_GLFW_GL3_MOUSE_GRABBING
 
-void IndieGoUI::drawFrameStart(){
+void Manager::drawFrameStart(){
     int i;
     double x, y;
     struct nk_context *ctx = &glfw->ctx;
@@ -738,10 +747,10 @@ void IndieGoUI::drawFrameStart(){
     glfw->scroll = nk_vec2(0,0);
 }
 
-void IndieGoUI::drawFrameEnd(){
+void Manager::drawFrameEnd(){
     nk_glfw3_render(glfw, NK_ANTI_ALIASING_ON, MAX_VERTEX_BUFFER, MAX_ELEMENT_BUFFER);
 }
 
-void IndieGoUI::init(void * initData){
+void Manager::init(void * initData){
     prepareUIRenderer((GLFWwindow*)initData);
 }

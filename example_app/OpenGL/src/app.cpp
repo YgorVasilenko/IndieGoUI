@@ -12,7 +12,7 @@ GLFWwindow * screen;
 
 using namespace IndieGo::UI;
 
-IndieGoUI GUI;
+Manager GUI;
 WIDGET test_widget;
 
 // Window input callbacks
@@ -106,30 +106,36 @@ int main(){
     test_widget.custom_style = true;
     test_widget.style.elements[COLOR_WINDOW].a = 175;
 
-    GUI.addWidget("OpenGL_Nuklear_UI", test_widget);
+    WIDGET & widget = GUI.addWidget("OpenGL_Nuklear_UI", test_widget);
     UI_elements_map & UIMap = GUI.UIMaps["OpenGL_Nuklear_UI"];
 
     // Example adding elements (properties) to UIMap
-    UIMap.addElement("add row", UI_BUTTON, &GUI.widgets["OpenGL_Nuklear_UI"]["OpenGL_Nuklear_UI widget"]);
+    UIMap.addElement("add row", UI_BUTTON, &widget);
     UIMap["add row"].label = "add row";
 
-    UIMap.addElement("add column", UI_BUTTON, &GUI.widgets["OpenGL_Nuklear_UI"]["OpenGL_Nuklear_UI widget"]);
+    UIMap.addElement("add column", UI_BUTTON, &widget);
     UIMap["add column"].label = "add column";
 
-    UIMap.addElement("show list", UI_BOOL, &GUI.widgets["OpenGL_Nuklear_UI"]["OpenGL_Nuklear_UI widget"], 1);
+    // try to add first to buttins to group
+    widget.addElementToGroup("add row", "test group");
+    widget.addElementToGroup("add column", "test group");
+
+    UIMap.addElement("show list", UI_BOOL, &widget, 1);
     UIMap["show list"].label = "show list";
 
-    UIMap.addElement("items list size", UI_UINT, &GUI.widgets["OpenGL_Nuklear_UI"]["OpenGL_Nuklear_UI widget"], 1);
+    UIMap.addElement("items list size", UI_UINT, &widget, 1);
     UIMap["items list size"].label = "items list size";
     UIMap["items list size"]._data.i = 100;
 
-    UIMap.addElement("string items list", UI_ITEMS_LIST, &GUI.widgets["OpenGL_Nuklear_UI"]["OpenGL_Nuklear_UI widget"], 2);
-    UIMap["string items list"].label = "template items list";
-
+    UIMap.addElement("string items list", UI_ITEMS_LIST, &widget, 2);
+    UIMap["string items list"].label = "widget items list";
     ui_string_group & example_list = *UIMap["string items list"]._data.usgPtr;
-    example_list.copyFrom(list_items);
 
-    UIMap.addElement("current list item", UI_STRING_INPUT, &GUI.widgets["OpenGL_Nuklear_UI"]["OpenGL_Nuklear_UI widget"], 3);
+    UIMap.addElement("selected UI item", UI_STRING_LABEL, &widget, 3);
+    UIMap["selected UI item"].label = "selected UI item:";
+    UIMap["selected UI item"].hidden = true;
+
+    UIMap.addElement("current list item", UI_STRING_INPUT, &widget, 3);
     UIMap["current list item"].label = "current list item:";
     UIMap["current list item"].hidden = true;
 
@@ -137,9 +143,13 @@ int main(){
     std::string color_prop_name;
     for (unsigned char i = COLOR_TEXT; i < COLOR_TAB_HEADER + 1; i++ ) {
         color_prop_name = getColorPropName((COLOR_ELEMENTS)i);
-        UIMap.addElement("style " + color_prop_name, UI_STRING_LABEL, &GUI.widgets["OpenGL_Nuklear_UI"]["OpenGL_Nuklear_UI widget"], 4 + i);
+        UIMap.addElement("style " + color_prop_name, UI_STRING_LABEL, &widget, 4 + i);
         UIMap["style " + color_prop_name].label = "style " + color_prop_name;
-        UIMap.addElement(color_prop_name, UI_COLOR_PICKER, &GUI.widgets["OpenGL_Nuklear_UI"]["OpenGL_Nuklear_UI widget"], 4 + i);
+        UIMap.addElement(color_prop_name, UI_COLOR_PICKER, &widget, 4 + i);
+    }
+
+    for (auto item : UIMap.elements){
+        example_list.elements.push_back(item.first);
     }
 
     float color;
@@ -148,7 +158,8 @@ int main(){
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT | GL_STENCIL_BUFFER_BIT);
     
         UIMap["string items list"].hidden = !UIMap["show list"]._data.b;
-
+        UIMap["selected UI item"].hidden = UIMap["string items list"].hidden;
+        
         if (UIMap["show list"]._data.b) {
             // Modify text edit filed, basing on user's input
             if (example_list.selected_element > -1 ) {
@@ -171,29 +182,35 @@ int main(){
 
         // Using UI data from user's input to update layout:
         if (UIMap["add column"]._data.b){
-            UIMap.addElement("example button " + std::to_string(buttons_count), UI_BUTTON, &GUI.widgets["OpenGL_Nuklear_UI"]["OpenGL_Nuklear_UI widget"], 0, 0, false, false);
+            UIMap.addElement("example button " + std::to_string(buttons_count), UI_BUTTON, &widget, 0, 0, false, false);
             UIMap["example button " + std::to_string(buttons_count)].label = "example button " + std::to_string(buttons_count);
             buttons_count++;
         }
 
         if (UIMap["add row"]._data.b){
-            UIMap.addElement("example button " + std::to_string(buttons_count), UI_BUTTON, &GUI.widgets["OpenGL_Nuklear_UI"]["OpenGL_Nuklear_UI widget"], 0, 0, true, false);
+            UIMap.addElement("example button " + std::to_string(buttons_count), UI_BUTTON, &widget, 0, 0, true, false);
             UIMap["example button " + std::to_string(buttons_count)].label = "example button " + std::to_string(buttons_count);
             buttons_count++;
         }
 
         // Modify height of specific layout row, basing on data from element
-        GUI.widgets["OpenGL_Nuklear_UI"]["OpenGL_Nuklear_UI widget"].layout_grid[2].min_height = UIMap["items list size"]._data.i;
+        widget.layout_grid[2].min_height = UIMap["items list size"]._data.i;
 
         // Update color accordingly
         for (unsigned char i = COLOR_TEXT; i < COLOR_TAB_HEADER + 1; i ++ ){
             color_prop_name = getColorPropName((COLOR_ELEMENTS)i);
+            UIMap[color_prop_name].hidden = !UIMap["show list"]._data.b || (example_list.selected_element == -1);
+            UIMap["style " + color_prop_name].hidden = UIMap[color_prop_name].hidden;
             if (UIMap[color_prop_name].color_picker_unwrapped) {
                 colorf & curr_color = UIMap[color_prop_name]._data.c;
-                GUI.widgets["OpenGL_Nuklear_UI"]["OpenGL_Nuklear_UI widget"].style.elements[i].r = (unsigned char)(255 * curr_color.r);
-                GUI.widgets["OpenGL_Nuklear_UI"]["OpenGL_Nuklear_UI widget"].style.elements[i].g = (unsigned char)(255 * curr_color.g);
-                GUI.widgets["OpenGL_Nuklear_UI"]["OpenGL_Nuklear_UI widget"].style.elements[i].b = (unsigned char)(255 * curr_color.b);
-                GUI.widgets["OpenGL_Nuklear_UI"]["OpenGL_Nuklear_UI widget"].style.elements[i].a = (unsigned char)(255 * curr_color.a);
+                UIMap["add column"].style.elements[i].r = (unsigned char)(255 * curr_color.r);
+                UIMap["add column"].style.elements[i].g = (unsigned char)(255 * curr_color.g);
+                UIMap["add column"].style.elements[i].b = (unsigned char)(255 * curr_color.b);
+                UIMap["add column"].style.elements[i].a = (unsigned char)(255 * curr_color.a);
+                // widget.style.elements[i].r = (unsigned char)(255 * curr_color.r);
+                // widget.style.elements[i].g = (unsigned char)(255 * curr_color.g);
+                // widget.style.elements[i].b = (unsigned char)(255 * curr_color.b);
+                // widget.style.elements[i].a = (unsigned char)(255 * curr_color.a);
             }
         }
 
