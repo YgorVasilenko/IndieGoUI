@@ -103,7 +103,7 @@ int main(){
     test_widget.screen_region.w = WIDTH / 2;
     test_widget.screen_region.h = HEIGHT / 3;
     test_widget.name = "OpenGL_Nuklear_UI widget";
-    test_widget.custom_style = false;
+    test_widget.custom_style = true;
     test_widget.style.elements[COLOR_WINDOW].a = 175;
 
     WIDGET & widget = GUI.addWidget("OpenGL_Nuklear_UI", test_widget);
@@ -116,6 +116,10 @@ int main(){
     UIMap.addElement("add column", UI_BUTTON, &widget);
     UIMap["add column"].label = "add column";
 
+    // try to add first to buttins to group
+    widget.addElementToGroup("add row", "test group");
+    widget.addElementToGroup("add column", "test group");
+
     UIMap.addElement("show list", UI_BOOL, &widget, 1);
     UIMap["show list"].label = "show list";
 
@@ -126,7 +130,6 @@ int main(){
     UIMap.addElement("string items list", UI_ITEMS_LIST, &widget, 2);
     UIMap["string items list"].label = "widget items list";
     ui_string_group & example_list = *UIMap["string items list"]._data.usgPtr;
-    example_list.copyFrom(list_items);
 
     UIMap.addElement("selected UI item", UI_STRING_LABEL, &widget, 3);
     UIMap["selected UI item"].label = "selected UI item:";
@@ -136,30 +139,27 @@ int main(){
     UIMap["current list item"].label = "current list item:";
     UIMap["current list item"].hidden = true;
 
-    UIMap.addElement("test color picker", UI_COLOR_PICKER, &widget, 4);
-    UIMap["test color picker"].label = "test color picker";
+    // Add color pickers for each possibly midifiable value
+    std::string color_prop_name;
+    for (unsigned char i = COLOR_TEXT; i < COLOR_TAB_HEADER + 1; i++ ) {
+        color_prop_name = getColorPropName((COLOR_ELEMENTS)i);
+        UIMap.addElement("style " + color_prop_name, UI_STRING_LABEL, &widget, 4 + i);
+        UIMap["style " + color_prop_name].label = "style " + color_prop_name;
+        UIMap.addElement(color_prop_name, UI_COLOR_PICKER, &widget, 4 + i);
+    }
 
-    // // Add color pickers for each possibly midifiable value
-    // std::string color_prop_name;
-    // for (unsigned char i = COLOR_TEXT; i < COLOR_TAB_HEADER + 1; i++ ) {
-    //     color_prop_name = getColorPropName((COLOR_ELEMENTS)i);
-    //     UIMap.addElement("style " + color_prop_name, UI_STRING_LABEL, &widget, 4 + i);
-    //     UIMap["style " + color_prop_name].label = "style " + color_prop_name;
-    //     UIMap.addElement(color_prop_name, UI_COLOR_PICKER, &widget, 4 + i);
-    // }
+    for (auto item : UIMap.elements){
+        example_list.elements.push_back(item.first);
+    }
 
-    // for (auto item : UIMap.elements){
-    //     example_list.elements.push_back(item.first);
-    // }
-
-    // float color;
+    float color;
     while (!glfwWindowShouldClose(screen)) {
         glClearColor(0.1f, 0.3f, 0.2f, 1.f);
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT | GL_STENCIL_BUFFER_BIT);
     
         UIMap["string items list"].hidden = !UIMap["show list"]._data.b;
-        // UIMap["selected UI item"].hidden = UIMap["string items list"].hidden;
-
+        UIMap["selected UI item"].hidden = UIMap["string items list"].hidden;
+        
         if (UIMap["show list"]._data.b) {
             // Modify text edit filed, basing on user's input
             if (example_list.selected_element > -1 ) {
@@ -168,55 +168,51 @@ int main(){
                     *UIMap["current list item"]._data.strPtr = curr_selected_item;
                     if (UIMap["current list item"].hidden) {
                         UIMap["current list item"].hidden = false;
-                        UIMap["selected UI item"].hidden = false;
                     }
                 } else {
                     curr_selected_item = *UIMap["current list item"]._data.strPtr;
                 }
             }
-        } else {
-            UIMap["current list item"].hidden = true;
-            UIMap["selected UI item"].hidden = true;
-            example_list.unselect();
         }
 
         GUI.drawFrameStart();
         GUI.displayWidgets("OpenGL_Nuklear_UI");
         GUI.drawFrameEnd();
+        
 
         // Using UI data from user's input to update layout:
-        // if (UIMap["add column"]._data.b){
-        //     UIMap.addElement("example button " + std::to_string(buttons_count), UI_BUTTON, &widget, 0, 0, false, false);
-        //     UIMap["example button " + std::to_string(buttons_count)].label = "example button " + std::to_string(buttons_count);
-        //     buttons_count++;
-        // }
+        if (UIMap["add column"]._data.b){
+            UIMap.addElement("example button " + std::to_string(buttons_count), UI_BUTTON, &widget, 0, 0, false, false);
+            UIMap["example button " + std::to_string(buttons_count)].label = "example button " + std::to_string(buttons_count);
+            buttons_count++;
+        }
 
-        // if (UIMap["add row"]._data.b){
-        //     UIMap.addElement("example button " + std::to_string(buttons_count), UI_BUTTON, &widget, 0, 0, true, false);
-        //     UIMap["example button " + std::to_string(buttons_count)].label = "example button " + std::to_string(buttons_count);
-        //     buttons_count++;
-        // }
+        if (UIMap["add row"]._data.b){
+            UIMap.addElement("example button " + std::to_string(buttons_count), UI_BUTTON, &widget, 0, 0, true, false);
+            UIMap["example button " + std::to_string(buttons_count)].label = "example button " + std::to_string(buttons_count);
+            buttons_count++;
+        }
 
-        // Modify height of specific layout row, depending on data from ui element
+        // Modify height of specific layout row, basing on data from element
         widget.layout_grid[2].min_height = UIMap["items list size"]._data.i;
 
-        // // Update color accordingly
-        // for (unsigned char i = COLOR_TEXT; i < COLOR_TAB_HEADER + 1; i ++ ){
-        //     color_prop_name = getColorPropName((COLOR_ELEMENTS)i);
-        //     UIMap[color_prop_name].hidden = !UIMap["show list"]._data.b || (example_list.selected_element == -1);
-        //     UIMap["style " + color_prop_name].hidden = UIMap[color_prop_name].hidden;
-        //     if (UIMap[color_prop_name].color_picker_unwrapped) {
-        //         colorf & curr_color = UIMap[color_prop_name]._data.c;
-        //         UIMap["add column"].style.elements[i].r = (unsigned char)(255 * curr_color.r);
-        //         UIMap["add column"].style.elements[i].g = (unsigned char)(255 * curr_color.g);
-        //         UIMap["add column"].style.elements[i].b = (unsigned char)(255 * curr_color.b);
-        //         UIMap["add column"].style.elements[i].a = (unsigned char)(255 * curr_color.a);
-        //         // widget.style.elements[i].r = (unsigned char)(255 * curr_color.r);
-        //         // widget.style.elements[i].g = (unsigned char)(255 * curr_color.g);
-        //         // widget.style.elements[i].b = (unsigned char)(255 * curr_color.b);
-        //         // widget.style.elements[i].a = (unsigned char)(255 * curr_color.a);
-        //     }
-        // }
+        // Update color accordingly
+        for (unsigned char i = COLOR_TEXT; i < COLOR_TAB_HEADER + 1; i ++ ){
+            color_prop_name = getColorPropName((COLOR_ELEMENTS)i);
+            UIMap[color_prop_name].hidden = !UIMap["show list"]._data.b || (example_list.selected_element == -1);
+            UIMap["style " + color_prop_name].hidden = UIMap[color_prop_name].hidden;
+            if (UIMap[color_prop_name].color_picker_unwrapped) {
+                colorf & curr_color = UIMap[color_prop_name]._data.c;
+                UIMap["add column"].style.elements[i].r = (unsigned char)(255 * curr_color.r);
+                UIMap["add column"].style.elements[i].g = (unsigned char)(255 * curr_color.g);
+                UIMap["add column"].style.elements[i].b = (unsigned char)(255 * curr_color.b);
+                UIMap["add column"].style.elements[i].a = (unsigned char)(255 * curr_color.a);
+                // widget.style.elements[i].r = (unsigned char)(255 * curr_color.r);
+                // widget.style.elements[i].g = (unsigned char)(255 * curr_color.g);
+                // widget.style.elements[i].b = (unsigned char)(255 * curr_color.b);
+                // widget.style.elements[i].a = (unsigned char)(255 * curr_color.a);
+            }
+        }
 
         glfwSwapBuffers(screen);
 	    glfwPollEvents();
