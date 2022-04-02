@@ -49,7 +49,7 @@ namespace IndieGo {
 			COLOR_TAB_HEADER
 		};
 
-		struct color_table { 
+		struct color_table {
 			color elements[28] = {
 				// default - Nuklear style
 				{ 175, 175, 175, 255 },
@@ -80,7 +80,7 @@ namespace IndieGo {
 				{ 120, 120, 120, 255 },
 				{ 150, 150, 150, 255 },
 				{  40,  40,  40, 255 }
-			}; 
+			};
 		};
 
 		struct ui_string_group {
@@ -89,7 +89,7 @@ namespace IndieGo {
 			// additional vector, used to add additional labels to elements
 			std::vector<std::string> element_labels;
 			int selected_element = -1;
-			
+
 			// Monitor item switch
 			bool selection_switch = false;
 
@@ -98,7 +98,7 @@ namespace IndieGo {
 
 			std::string regrex_filter = "";
 			int focused_by_key_element = -1;
-			
+
 			// symbols, that used, if selectMethod is BUTTON_SELECT
 			bool use_selected_string = false;
 			std::string selectedString = "_";
@@ -162,6 +162,10 @@ namespace IndieGo {
 			UI_COLOR_PICKER
 		};
 
+		enum TEXT_ALIGN {
+			LEFT, CENTER, RIGHT
+		};
+
 		struct UI_element {
 			union ui_data {
 				bool b;
@@ -173,15 +177,16 @@ namespace IndieGo {
 				std::string * strPtr;
 			} _data;
 
-			// Nuklear does not have options for buttons usage, 
+			// Nuklear does not have options for buttons usage,
 			// so this is a workaround
 			bool hovered_by_keys = false;
 			bool selected_by_keys = false;
 
-			UI_ELEMENT_TYPE type;	
+			TEXT_ALIGN text_align = CENTER;
+			UI_ELEMENT_TYPE type;
 			std::string label = "";
 			bool color_picker_unwrapped = false;
-			
+
 			float min_height = 25.f;
 
 			bool hidden = false;
@@ -225,7 +230,7 @@ namespace IndieGo {
 			    				return false;
 				    		else if (!groupEnded)
 					    		return true;
-                    		else 
+                    		else
 					    		return false;
                 		}
 					}
@@ -240,15 +245,15 @@ namespace IndieGo {
 			std::vector<std::string> widget_elements;
 			std::string name = "";
 
-			float row_size = 25.f, 
+			float row_size = 25.f,
 				col_size = -1.f; // -1 == auto-scale
 
 			// 	layout_grid :
 			// i/j | 0 |    1     | 2
 			// ----+---+----------+---
-			//  0  |   | elt name |  
+			//  0  |   | elt name |
 			// ----+---+----------+---
-			//  1  |   |          | 
+			//  1  |   |          |
 			// ----+---+----------+---
 			//  2  |   |          |
 			std::vector<grid_row> layout_grid;
@@ -257,7 +262,7 @@ namespace IndieGo {
 			// True, if element successfully added to folding group
 			bool addElementToGroup(const std::string & elt_name, const std::string & group_name){
 				std::vector<elements_group>::iterator target_group = find_if(
-					elements_groups.begin(), 
+					elements_groups.begin(),
 					elements_groups.end(),
 					[&group_name](elements_group & g){
 						return group_name == g.name;
@@ -311,10 +316,10 @@ namespace IndieGo {
 					}
 					return false;
 				}
-				
+
 			};
 
-			// returns position on layout, that element was eventually added to 
+			// returns position on layout, that element was eventually added to
 			std::pair<int, int> addElement(const std::string & elt_name, int row = -1, int col = -1, bool insert_row = false, bool overwrite_col = true, float min_height = 25.f){
 				// Guard against widgets elements doubling
 				if (std::find(widget_elements.begin(), widget_elements.end(), elt_name) != widget_elements.end()){
@@ -371,12 +376,12 @@ namespace IndieGo {
 			}
 
 			void addElement(
-				const std::string & elt_name, 
-				UI_ELEMENT_TYPE type, 
-				WIDGET_BASE * widRef = NULL, 
-				int layout_row = -1, 
-				int layout_col = -1, 
-				bool insert_row = false, 
+				const std::string & elt_name,
+				UI_ELEMENT_TYPE type,
+				WIDGET_BASE * widRef = NULL,
+				int layout_row = -1,
+				int layout_col = -1,
+				bool insert_row = false,
 				bool overwrite_col = true
 			){
 				if (elements.find(elt_name) != elements.end()) {
@@ -460,7 +465,7 @@ namespace IndieGo {
 					// check, if first element in row starts group - in such case don't allocate row
 					curr_group = find_if(elements_groups.begin(), elements_groups.end(), [&first_elt ](elements_group & g){ return g.start == first_elt; });
 					if (curr_group == elements_groups.end()){
-						allocateRow(row.cells.size(), row.min_height);	
+						allocateRow(row.cells.size(), row.min_height);
 					}
 					for (auto elt : row.cells){
 						// check, if element starts drawing group
@@ -477,7 +482,7 @@ namespace IndieGo {
 								if (UIMap.elements[elt].type == UI_COLOR_PICKER)
 									UIMap.elements[elt].color_picker_unwrapped = false;
 							}
-						} 
+						}
 						// also check, if element ends group
 						curr_group = find_if(elements_groups.begin(), elements_groups.end(), [&elt](elements_group & g){ return g.end == elt; });
 						if (curr_group != elements_groups.end()){
@@ -554,7 +559,7 @@ namespace IndieGo {
 			void displayWidgets(std::string curr_ui_map){
 				if (UIMaps.find(curr_ui_map) == UIMaps.end())
 					return;
-				
+
 				if (widgets.find(curr_ui_map) == widgets.end())
 					return;
 

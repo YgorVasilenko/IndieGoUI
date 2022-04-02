@@ -13,7 +13,7 @@ GLFWwindow * screen;
 using namespace IndieGo::UI;
 
 Manager GUI;
-WIDGET test_widget;
+WIDGET test_widget, logging_widget;
 
 // Window input callbacks
 void cursor_position_callback(GLFWwindow* window, double xpos, double ypos) {
@@ -74,19 +74,22 @@ std::string getColorPropName(COLOR_ELEMENTS prop) {
     return "NO_COLOR_PROPERTY";
 }
 
+double curr_time;
+unsigned int frames = 0;
+
 int main(){
-    glfwInit();
-	glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 3);
-	glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 3);
-	glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
+  	glfwInit();
+		glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 3);
+		glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 3);
+		glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
 
     screen = glfwCreateWindow(WIDTH, HEIGHT, "OpenGL_Nuklear UI", NULL, NULL);
-	glfwMakeContextCurrent(screen);
-	if (!gladLoadGLLoader((GLADloadproc)glfwGetProcAddress)) {
-			std::cout << "Failed to initialize GLAD" << std::endl;
-			return -1;
-	}
-    
+		glfwMakeContextCurrent(screen);
+		if (!gladLoadGLLoader((GLADloadproc)glfwGetProcAddress)) {
+				std::cout << "Failed to initialize GLAD" << std::endl;
+				return -1;
+		}
+
     glfwSetCursorPosCallback(screen, cursor_position_callback);
     glfwSetMouseButtonCallback(screen, mouse_button_callback);
     glfwSetScrollCallback(screen, scroll_callback);
@@ -106,7 +109,25 @@ int main(){
     test_widget.custom_style = false;
     test_widget.style.elements[COLOR_WINDOW].a = 175;
 
+
+		// logging widget initialization. Place at top-left corner,
+		// body is fully-transparent, so only text is visible
+		logging_widget.screen_region.x = 0;
+		logging_widget.screen_region.y = 0;
+		logging_widget.screen_region.w = WIDTH / 4;
+		logging_widget.screen_region.h = HEIGHT / 4;
+		logging_widget.name = "log";
+		//logging_widget.custom_style = true;
+		//logging_widget.style.elements[COLOR_WINDOW].a = 0;
+		//logging_widget.border = false;
+		//logging_widget.title = false;
+		//logging_widget.minimizable = false;
+		//logging_widget.scalable = false;
+		//logging_widget.movable = false;
+
     WIDGET & widget = GUI.addWidget("OpenGL_Nuklear_UI", test_widget);
+		WIDGET & log = GUI.addWidget("OpenGL_Nuklear_UI", logging_widget);
+
     UI_elements_map & UIMap = GUI.UIMaps["OpenGL_Nuklear_UI"];
 
     // Example adding elements (properties) to UIMap
@@ -139,7 +160,13 @@ int main(){
     UIMap.addElement("test color picker", UI_COLOR_PICKER, &widget, 4);
     UIMap["test color picker"].label = "test color picker";
 
-    // // Add color pickers for each possibly midifiable value
+
+		// Adding logging text field to log widget
+		UIMap.addElement("fps counter", UI_STRING_LABEL, &log);
+    UIMap["fps counter"].label = "fps";
+		UIMap["fps counter"].text_align = LEFT;
+
+    // // Add color pickers for each possibly modifyable value
     // std::string color_prop_name;
     // for (unsigned char i = COLOR_TEXT; i < COLOR_TAB_HEADER + 1; i++ ) {
     //     color_prop_name = getColorPropName((COLOR_ELEMENTS)i);
@@ -152,13 +179,15 @@ int main(){
     //     example_list.elements.push_back(item.first);
     // }
 
+		// set time to zero
+		glfwSetTime(0.0);
+
     // float color;
     while (!glfwWindowShouldClose(screen)) {
         glClearColor(0.1f, 0.3f, 0.2f, 1.f);
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT | GL_STENCIL_BUFFER_BIT);
-    
+
         UIMap["string items list"].hidden = !UIMap["show list"]._data.b;
-        // UIMap["selected UI item"].hidden = UIMap["string items list"].hidden;
 
         if (UIMap["show list"]._data.b) {
             // Modify text edit filed, basing on user's input
@@ -180,9 +209,18 @@ int main(){
             example_list.unselect();
         }
 
+				curr_time = glfwGetTime();
+				if (curr_time > 1.0){
+						// update log woth fps
+						UIMap["fps counter"].label = "FPS: " + std::to_string(frames);
+						frames = 0;
+						glfwSetTime(0.0);
+				}
+
         GUI.drawFrameStart();
         GUI.displayWidgets("OpenGL_Nuklear_UI");
         GUI.drawFrameEnd();
+				frames++;
 
         // Using UI data from user's input to update layout:
         // if (UIMap["add column"]._data.b){
@@ -219,7 +257,7 @@ int main(){
         // }
 
         glfwSwapBuffers(screen);
-	    glfwPollEvents();
+	    	glfwPollEvents();
     }
     return 0;
 }

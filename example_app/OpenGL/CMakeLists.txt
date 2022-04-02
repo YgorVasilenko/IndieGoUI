@@ -14,15 +14,16 @@ if (DEFINED BACKEND)
 else()
     # Nuklear backend is default
     set(RENDERER_SRC ../../backends/Nuklear/renderer.cpp)
+    set(RENDERER_INCLUDES ../.. ../../os)
 endif()
 
 message("RENDERER_SRC: ${RENDERER_SRC}")
 message("RENDERER_INCLUDES: ${RENDERER_INCLUDES}")
 
-add_executable( 
-    UI_map_OpenGL_Nuklear 
-    src/app.cpp 
-    src/glad.c 
+add_executable(
+    UI_map_OpenGL_Nuklear
+    src/app.cpp
+    src/glad.c
     ${RENDERER_SRC}
 )
 

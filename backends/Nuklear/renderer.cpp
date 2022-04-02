@@ -7,8 +7,8 @@
 
 #include "backends/Nuklear/nuklear.h"
 
-#include <backends/Nuklear/glad/glad.h> 
-#include <backends/Nuklear/GLFW/glfw3.h>
+#include <os/glad/glad.h>
+#include <os/GLFW/glfw3.h>
 
 #include <IndieGoUI.h>
 #include <string>
@@ -319,7 +319,7 @@ NK_API void nk_glfw3_render(struct nk_glfw* glfw, enum nk_anti_aliasing AA, int 
 }
 
 void prepareUIRenderer(GLFWwindow* window) {
-	
+
 	glfw = new nk_glfw();
 
 	glfwSetWindowUserPointer(window, glfw);
@@ -413,7 +413,7 @@ void textToString(std::string & str) {
 
 //--------------------------------------------------------
 //
-//            Core concept. 
+//            Core concept.
 // callUIfunction abstracts away different UI elements.
 //
 //-------------------------------------------------------
@@ -422,7 +422,7 @@ void UI_element::callUIfunction() {
     if (custom_style)
         nk_style_from_table(ctx, (struct nk_color*)style.elements);
 
-    std::string full_name; 
+    std::string full_name;
     nk_bool nk_val;
     static const float ratio[] = { 100, 120 };
     float dbgVal;
@@ -517,7 +517,19 @@ void UI_element::callUIfunction() {
     }
 
     if (type == UI_STRING_LABEL){
-        nk_label(ctx, label.c_str(), NK_TEXT_CENTERED);
+        nk_flags align;
+        switch(text_align){
+          case LEFT:
+            align = NK_TEXT_LEFT;
+            break;
+          case CENTER:
+            align = NK_TEXT_CENTERED;
+            break;
+          case RIGHT:
+            align = NK_TEXT_RIGHT;
+            break;
+        }
+        nk_label(ctx, label.c_str(), align);
     }
 
     if (type == UI_ITEMS_LIST) {
@@ -601,7 +613,7 @@ void UI_element::callUIfunction() {
 
 //--------------------------------------------------------
 //
-//            Widget display function. May use 
+//            Widget display function. May use
 //            different Immadiate-Mode Ui libs
 //
 //-------------------------------------------------------
@@ -618,7 +630,7 @@ void WIDGET::callImmediateBackend(UI_elements_map & UIMap){
 
     if (movable)
         flags = flags | NK_WINDOW_MOVABLE;
-    
+
     if (scalable)
         flags = flags | NK_WINDOW_SCALABLE;
 
@@ -629,10 +641,10 @@ void WIDGET::callImmediateBackend(UI_elements_map & UIMap){
 
     if (
         nk_begin(
-            ctx, 
-            name.c_str(), 
+            ctx,
+            name.c_str(),
             nk_rect(
-                (float)screen_region.x, 
+                (float)screen_region.x,
                 (float)screen_region.y,
                 (float)screen_region.w,
                 (float)screen_region.h
