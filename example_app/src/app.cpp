@@ -117,7 +117,6 @@ int main(){
 	logging_widget.screen_region.w = WIDTH / 4;
 	logging_widget.screen_region.h = HEIGHT / 4;
 	logging_widget.name = "log";
-	// logging_widget.custom_style = true;
 	logging_widget.style.elements[COLOR_WINDOW].a = 0;
 	logging_widget.border = false;
 	logging_widget.title = false;
@@ -160,24 +159,10 @@ int main(){
     UIMap.addElement("test color picker", UI_COLOR_PICKER, &widget, 4);
     UIMap["test color picker"].label = "test color picker";
 
-
 	// Adding logging text field to log widget
 	UIMap.addElement("fps counter", UI_STRING_LABEL, &log);
     UIMap["fps counter"].label = "fps";
 	UIMap["fps counter"].text_align = LEFT;
-
-    // // Add color pickers for each possibly modifyable value
-    // std::string color_prop_name;
-    // for (unsigned char i = COLOR_TEXT; i < COLOR_TAB_HEADER + 1; i++ ) {
-    //     color_prop_name = getColorPropName((COLOR_ELEMENTS)i);
-    //     UIMap.addElement("style " + color_prop_name, UI_STRING_LABEL, &widget, 4 + i);
-    //     UIMap["style " + color_prop_name].label = "style " + color_prop_name;
-    //     UIMap.addElement(color_prop_name, UI_COLOR_PICKER, &widget, 4 + i);
-    // }
-
-    // for (auto item : UIMap.elements){
-    //     example_list.elements.push_back(item.first);
-    // }
 
 	// set initial time to zero
 	glfwSetTime(0.0);
@@ -219,44 +204,11 @@ int main(){
             // update log woth fps
             UIMap["fps counter"].label = "FPS: " + std::to_string(frames);
             frames = 0;
-            // glfwSetTime(0.0);
         }
 		frames++;
-   
-
-        // Using UI data from user's input to update layout:
-        // if (UIMap["add column"]._data.b){
-        //     UIMap.addElement("example button " + std::to_string(buttons_count), UI_BUTTON, &widget, 0, 0, false, false);
-        //     UIMap["example button " + std::to_string(buttons_count)].label = "example button " + std::to_string(buttons_count);
-        //     buttons_count++;
-        // }
-
-        // if (UIMap["add row"]._data.b){
-        //     UIMap.addElement("example button " + std::to_string(buttons_count), UI_BUTTON, &widget, 0, 0, true, false);
-        //     UIMap["example button " + std::to_string(buttons_count)].label = "example button " + std::to_string(buttons_count);
-        //     buttons_count++;
-        // }
 
         // Modify height of specific layout row, depending on data from ui element
         widget.layout_grid[2].min_height = UIMap["items list size"]._data.i;
-
-        // // Update color accordingly
-        // for (unsigned char i = COLOR_TEXT; i < COLOR_TAB_HEADER + 1; i ++ ){
-        //     color_prop_name = getColorPropName((COLOR_ELEMENTS)i);
-        //     UIMap[color_prop_name].hidden = !UIMap["show list"]._data.b || (example_list.selected_element == -1);
-        //     UIMap["style " + color_prop_name].hidden = UIMap[color_prop_name].hidden;
-        //     if (UIMap[color_prop_name].color_picker_unwrapped) {
-        //         colorf & curr_color = UIMap[color_prop_name]._data.c;
-        //         UIMap["add column"].style.elements[i].r = (unsigned char)(255 * curr_color.r);
-        //         UIMap["add column"].style.elements[i].g = (unsigned char)(255 * curr_color.g);
-        //         UIMap["add column"].style.elements[i].b = (unsigned char)(255 * curr_color.b);
-        //         UIMap["add column"].style.elements[i].a = (unsigned char)(255 * curr_color.a);
-        //         // widget.style.elements[i].r = (unsigned char)(255 * curr_color.r);
-        //         // widget.style.elements[i].g = (unsigned char)(255 * curr_color.g);
-        //         // widget.style.elements[i].b = (unsigned char)(255 * curr_color.b);
-        //         // widget.style.elements[i].a = (unsigned char)(255 * curr_color.a);
-        //     }
-        // }
 
         glfwSwapBuffers(screen);
 	    glfwPollEvents();
