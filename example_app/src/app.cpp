@@ -106,18 +106,18 @@ int main(){
     test_widget.screen_region.w = WIDTH / 2;
     test_widget.screen_region.h = HEIGHT / 3;
     test_widget.name = "OpenGL_Nuklear_UI widget";
-    test_widget.custom_style = false;
+    test_widget.custom_style = true;
     test_widget.style.elements[COLOR_WINDOW].a = 175;
-
 
 	// logging widget initialization. Place at top-left corner,
 	// body is fully-transparent, so only text is visible
 	logging_widget.screen_region.x = 0;
 	logging_widget.screen_region.y = 0;
-	logging_widget.screen_region.w = WIDTH / 4;
+	logging_widget.screen_region.w = WIDTH;
 	logging_widget.screen_region.h = HEIGHT / 4;
 	logging_widget.name = "log";
-	logging_widget.style.elements[COLOR_WINDOW].a = 0;
+    logging_widget.custom_style = true;
+	logging_widget.style.elements[COLOR_WINDOW].a = 100;
 	logging_widget.border = false;
 	logging_widget.title = false;
 	logging_widget.minimizable = false;
@@ -169,7 +169,7 @@ int main(){
 
     // float color;
     while (!glfwWindowShouldClose(screen)) {
-        glClearColor(0.778f, 0.906f, 0.867f, 1.f);
+        glClearColor(0.2f, 0.3f, 0.3f, 1.0f);
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT | GL_STENCIL_BUFFER_BIT);
 
         UIMap["string items list"].hidden = !UIMap["show list"]._data.b;
