@@ -432,7 +432,6 @@ namespace IndieGo {
 		struct region { short x, y, w, h; };
 		struct region_size { short w, h; };
 
-
 		struct WIDGET : public WIDGET_BASE {
 			// widget's size and location on screen
 			region screen_region;

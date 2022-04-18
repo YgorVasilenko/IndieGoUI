@@ -74,7 +74,7 @@ std::string getColorPropName(COLOR_ELEMENTS prop) {
     return "NO_COLOR_PROPERTY";
 }
 
-double curr_time;
+double curr_time = 0.0, prev_time = 0.0;
 unsigned int frames = 0;
 
 int main(){
@@ -110,23 +110,23 @@ int main(){
     test_widget.style.elements[COLOR_WINDOW].a = 175;
 
 
-		// logging widget initialization. Place at top-left corner,
-		// body is fully-transparent, so only text is visible
-		logging_widget.screen_region.x = 0;
-		logging_widget.screen_region.y = 0;
-		logging_widget.screen_region.w = WIDTH / 4;
-		logging_widget.screen_region.h = HEIGHT / 4;
-		logging_widget.name = "log";
-		//logging_widget.custom_style = true;
-		//logging_widget.style.elements[COLOR_WINDOW].a = 0;
-		//logging_widget.border = false;
-		//logging_widget.title = false;
-		//logging_widget.minimizable = false;
-		//logging_widget.scalable = false;
-		//logging_widget.movable = false;
+	// logging widget initialization. Place at top-left corner,
+	// body is fully-transparent, so only text is visible
+	logging_widget.screen_region.x = 0;
+	logging_widget.screen_region.y = 0;
+	logging_widget.screen_region.w = WIDTH / 4;
+	logging_widget.screen_region.h = HEIGHT / 4;
+	logging_widget.name = "log";
+	// logging_widget.custom_style = true;
+	logging_widget.style.elements[COLOR_WINDOW].a = 0;
+	logging_widget.border = false;
+	logging_widget.title = false;
+	logging_widget.minimizable = false;
+	logging_widget.scalable = false;
+	logging_widget.movable = false;
 
     WIDGET & widget = GUI.addWidget("OpenGL_Nuklear_UI", test_widget);
-		WIDGET & log = GUI.addWidget("OpenGL_Nuklear_UI", logging_widget);
+	WIDGET & log = GUI.addWidget("OpenGL_Nuklear_UI", logging_widget);
 
     UI_elements_map & UIMap = GUI.UIMaps["OpenGL_Nuklear_UI"];
 
@@ -161,10 +161,10 @@ int main(){
     UIMap["test color picker"].label = "test color picker";
 
 
-		// Adding logging text field to log widget
-		UIMap.addElement("fps counter", UI_STRING_LABEL, &log);
+	// Adding logging text field to log widget
+	UIMap.addElement("fps counter", UI_STRING_LABEL, &log);
     UIMap["fps counter"].label = "fps";
-		UIMap["fps counter"].text_align = LEFT;
+	UIMap["fps counter"].text_align = LEFT;
 
     // // Add color pickers for each possibly modifyable value
     // std::string color_prop_name;
@@ -179,12 +179,12 @@ int main(){
     //     example_list.elements.push_back(item.first);
     // }
 
-		// set time to zero
-		glfwSetTime(0.0);
+	// set initial time to zero
+	glfwSetTime(0.0);
 
     // float color;
     while (!glfwWindowShouldClose(screen)) {
-        glClearColor(0.1f, 0.3f, 0.2f, 1.f);
+        glClearColor(0.778f, 0.906f, 0.867f, 1.f);
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT | GL_STENCIL_BUFFER_BIT);
 
         UIMap["string items list"].hidden = !UIMap["show list"]._data.b;
@@ -209,18 +209,20 @@ int main(){
             example_list.unselect();
         }
 
-				curr_time = glfwGetTime();
-				if (curr_time > 1.0){
-						// update log woth fps
-						UIMap["fps counter"].label = "FPS: " + std::to_string(frames);
-						frames = 0;
-						glfwSetTime(0.0);
-				}
-
         GUI.drawFrameStart();
         GUI.displayWidgets("OpenGL_Nuklear_UI");
         GUI.drawFrameEnd();
-				frames++;
+        
+        curr_time = glfwGetTime();
+        if ((curr_time - prev_time) > 1.0) {
+            prev_time = curr_time;
+            // update log woth fps
+            UIMap["fps counter"].label = "FPS: " + std::to_string(frames);
+            frames = 0;
+            // glfwSetTime(0.0);
+        }
+		frames++;
+   
 
         // Using UI data from user's input to update layout:
         // if (UIMap["add column"]._data.b){
@@ -257,7 +259,7 @@ int main(){
         // }
 
         glfwSwapBuffers(screen);
-	    	glfwPollEvents();
+	    glfwPollEvents();
     }
     return 0;
 }

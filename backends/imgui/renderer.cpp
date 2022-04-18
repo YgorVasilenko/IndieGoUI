@@ -228,7 +228,7 @@ void WIDGET::callImmediateBackend(UI_elements_map & UIMap){
     SetNextWindowPos(ImVec2(screen_region.x, screen_region.y), ImGuiCond_Once);
     SetNextWindowSize(ImVec2(screen_region.w, screen_region.h), ImGuiCond_Once);
 
-    if (Begin(name.c_str()))
+    if (Begin(name.c_str(), NULL, flags))
         callWidgetUI(UIMap);
 
     ImVec2 curr_win_size = GetWindowSize();
