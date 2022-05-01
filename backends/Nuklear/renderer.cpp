@@ -610,7 +610,6 @@ void UI_element::callUIfunction() {
     }
 }
 
-
 //--------------------------------------------------------
 //
 //            Widget display function. May use
@@ -638,7 +637,14 @@ void WIDGET::callImmediateBackend(UI_elements_map & UIMap){
         nk_style_from_table(ctx, (struct nk_color*)style.elements);
     else
         nk_style_default(ctx);
+    
+    if (setFocus) {
+        nk_window_set_focus(ctx, name.c_str());
+        setFocus = false;
+    }
 
+    // TODO : prior to drawing, check if window's size changed
+    // if so, try fitting widget to new size as much as possible
     if (
         nk_begin(
             ctx,
@@ -652,6 +658,8 @@ void WIDGET::callImmediateBackend(UI_elements_map & UIMap){
             flags
         )
     ) {
+        focused = nk_window_has_focus(ctx);
+        hasCursor = nk_window_is_hovered(ctx);
         callWidgetUI(UIMap);
     }
     nk_end(ctx);

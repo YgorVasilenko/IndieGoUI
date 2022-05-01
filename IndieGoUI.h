@@ -8,6 +8,11 @@
 #include <fstream>
 #include <algorithm>
 
+#ifndef DEFAULT_WINDOW_NAME
+// If app will maintain sinlge window, designer may define it's defautl name
+#define DEFAULT_WINDOW_NAME ""
+#endif
+
 namespace IndieGo {
 	namespace UI {
 		enum select_method {
@@ -438,6 +443,16 @@ namespace IndieGo {
 
 			bool hidden = false;
 
+			// set this to "true" to force focus on this widget
+			// in current frame, before displayWidgets call
+			bool setFocus = false;
+
+			// true, if this widget is currently active (was clicked on)
+			bool focused = false;
+			
+			// true, if cursor is hovered over this widget
+			bool hasCursor = false;
+
 			// provide implementation with actual drawing calls
 			virtual void callImmediateBackend(UI_elements_map & UIMap);
 			virtual void allocateRow(unsigned int cols, float min_height);
@@ -517,6 +532,15 @@ namespace IndieGo {
 			void drawFrameStart();
 			void drawFrameEnd();
 
+			// If we want user to prevent focusing some widget, we need to switch back to previously focused
+			std::map<std::string, WIDGET*> prevFocusedWidgets = {};
+
+			std::map<std::string, WIDGET*> hoveredWidgets = {};
+
+			WIDGET & getWidget(const std::string & widget_name, const std::string & win_name = DEFAULT_WINDOW_NAME){
+				return widgets[win_name][widget_name];
+			};
+
 			// use this for window callbacks
 			void scroll(double xoff, double yoff);
 			void mouse_move(double x, double y);
@@ -534,7 +558,7 @@ namespace IndieGo {
 				UIMaps[win_name] = map;
 			};
 
-			WIDGET & addWidget(const std::string & win_name, WIDGET & new_widget){
+			WIDGET & addWidget(WIDGET & new_widget, const std::string & win_name = DEFAULT_WINDOW_NAME){
 				// can't add widgets for window without map
 				if (UIMaps.find(win_name) == UIMaps.end()){
 					initNewMap(win_name);
@@ -543,6 +567,8 @@ namespace IndieGo {
 				if (widgets.find(win_name) == widgets.end()){
 					std::map<std::string, WIDGET> container;
 					widgets[win_name] = container;
+					prevFocusedWidgets[win_name] = NULL;
+					hoveredWidgets[win_name] = NULL;
 				}
 
 				if (widgets[win_name].find(new_widget.name) != widgets[win_name].end()){
@@ -555,17 +581,42 @@ namespace IndieGo {
 				return widgets[win_name][new_widget.name];
 			}
 
-			void displayWidgets(std::string curr_ui_map){
+			void displayWidgets(std::string curr_ui_map = DEFAULT_WINDOW_NAME) {
 				if (UIMaps.find(curr_ui_map) == UIMaps.end())
 					return;
 
 				if (widgets.find(curr_ui_map) == widgets.end())
 					return;
 
-				for (auto widget : widgets[curr_ui_map]){
-					if (!widget.second.hidden){
-						widget.second.callImmediateBackend(UIMaps[curr_ui_map]);
+				bool hadFocus = false;
+				// find previously focused widget
+				WIDGET * currFocusedWidget = NULL;
+				for (auto widget = widgets[curr_ui_map].begin(); widget != widgets[curr_ui_map].end(); widget++) {
+					if (widget->second.focused){
+						currFocusedWidget = & widget->second;
+						break;
 					}
+				}
+
+				hoveredWidgets[curr_ui_map] = NULL;
+				for (auto widget = widgets[curr_ui_map].begin(); widget != widgets[curr_ui_map].end(); widget++) {
+					hadFocus = false;
+					
+					if ( currFocusedWidget == & widget->second ) 
+						hadFocus = true;
+
+					if (!widget->second.hidden){
+						widget->second.callImmediateBackend(UIMaps[curr_ui_map]);
+						if (widget->second.hasCursor)
+							hoveredWidgets[curr_ui_map] = & widget->second;
+					} else {
+						// hidden widget loses focus
+						widget->second.focused = false;
+						widget->second.hasCursor = false;
+					}
+
+					if (hadFocus && !widget->second.focused)
+						prevFocusedWidgets[curr_ui_map] = & widget->second;
 				}
 			};
 		};

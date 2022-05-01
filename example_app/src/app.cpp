@@ -124,8 +124,8 @@ int main(){
 	logging_widget.scalable = false;
 	logging_widget.movable = false;
 
-    WIDGET & widget = GUI.addWidget("OpenGL_Nuklear_UI", test_widget);
-	WIDGET & log = GUI.addWidget("OpenGL_Nuklear_UI", logging_widget);
+    WIDGET & widget = GUI.addWidget(test_widget, "OpenGL_Nuklear_UI");
+	WIDGET & log = GUI.addWidget(logging_widget, "OpenGL_Nuklear_UI");
 
     UI_elements_map & UIMap = GUI.UIMaps["OpenGL_Nuklear_UI"];
 
@@ -164,6 +164,12 @@ int main(){
     UIMap["fps counter"].label = "fps";
 	UIMap["fps counter"].text_align = LEFT;
 
+    // Adding logging text field to log widget
+	UIMap.addElement("Cursor hovered over", UI_STRING_LABEL, &log);
+    UIMap["Cursor hovered over"].label = "Cursor hovered over: ";
+	UIMap["Cursor hovered over"].text_align = LEFT;
+
+
 	// set initial time to zero
 	glfwSetTime(0.0);
 
@@ -192,6 +198,17 @@ int main(){
             UIMap["current list item"].hidden = true;
             UIMap["selected UI item"].hidden = true;
             example_list.unselect();
+        }
+
+        // Always keep log widget in background
+        if (log.focused){
+            widget.setFocus = true;
+        }
+
+        if (GUI.hoveredWidgets["OpenGL_Nuklear_UI"]){
+            UIMap["Cursor hovered over"].label = "Cursor hovered over: " + GUI.hoveredWidgets["OpenGL_Nuklear_UI"]->name;
+        } else {
+            UIMap["Cursor hovered over"].label = "Cursor hovered over: None";
         }
 
         GUI.drawFrameStart();
