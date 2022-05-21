@@ -43,34 +43,34 @@ std::vector<std::string> list_items = {
 };
 
 std::string getColorPropName(COLOR_ELEMENTS prop) {
-    if (prop == COLOR_TEXT) return "COLOR_TEXT";
-    if (prop == COLOR_WINDOW) return "COLOR_WINDOW";
-    if (prop == COLOR_HEADER) return "COLOR_HEADER";
-    if (prop == COLOR_BORDER) return "COLOR_BORDER";
-    if (prop == COLOR_BUTTON) return "COLOR_BUTTON";
-    if (prop == COLOR_BUTTON_HOVER) return "COLOR_BUTTON_HOVER";
-    if (prop == COLOR_BUTTON_ACTIVE) return "COLOR_BUTTON_ACTIVE";
-    if (prop == COLOR_TOGGLE) return "COLOR_TOGGLE";
-    if (prop == COLOR_TOGGLE_HOVER) return "COLOR_TOGGLE_HOVER";
-    if (prop == COLOR_TOGGLE_CURSOR) return "COLOR_TOGGLE_CURSOR";
-    if (prop == COLOR_SELECT) return "COLOR_SELECT";
-    if (prop == COLOR_SELECT_ACTIVE) return "COLOR_SELECT_ACTIVE";
-    if (prop == COLOR_SLIDER) return "COLOR_SLIDER";
-    if (prop == COLOR_SLIDER_CURSOR) return "COLOR_SLIDER_CURSOR";
-    if (prop == COLOR_SLIDER_CURSOR_HOVER) return "COLOR_SLIDER_CURSOR_HOVER";
-    if (prop == COLOR_SLIDER_CURSOR_ACTIVE) return "COLOR_SLIDER_CURSOR_ACTIVE";
-    if (prop == COLOR_PROPERTY) return "COLOR_PROPERTY";
-    if (prop == COLOR_EDIT) return "COLOR_EDIT";
-    if (prop == COLOR_EDIT_CURSOR) return "COLOR_EDIT_CURSOR";
-    if (prop == COLOR_COMBO) return "COLOR_COMBO";
-    if (prop == COLOR_CHART) return "COLOR_CHART";
-    if (prop == COLOR_CHART_COLOR) return "COLOR_CHART_COLOR";
-    if (prop == COLOR_CHART_COLOR_HIGHLIGHT) return "COLOR_CHART_COLOR_HIGHLIGHT";
-    if (prop == COLOR_SCROLLBAR) return "COLOR_SCROLLBAR";
-    if (prop == COLOR_SCROLLBAR_CURSOR) return "COLOR_SCROLLBAR_CURSOR";
-    if (prop == COLOR_SCROLLBAR_CURSOR_HOVER) return "COLOR_SCROLLBAR_CURSOR_HOVER";
-    if (prop == COLOR_SCROLLBAR_CURSOR_ACTIVE) return "COLOR_SCROLLBAR_CURSOR_ACTIVE";
-    if (prop == COLOR_TAB_HEADER) return "COLOR_TAB_HEADER";
+    if (prop == UI_COLOR_TEXT) return "UI_COLOR_TEXT";
+    if (prop == UI_COLOR_WINDOW) return "UI_COLOR_WINDOW";
+    if (prop == UI_COLOR_HEADER) return "UI_COLOR_HEADER";
+    if (prop == UI_COLOR_BORDER) return "UI_COLOR_BORDER";
+    if (prop == UI_COLOR_BUTTON) return "UI_COLOR_BUTTON";
+    if (prop == UI_COLOR_BUTTON_HOVER) return "UI_COLOR_BUTTON_HOVER";
+    if (prop == UI_COLOR_BUTTON_ACTIVE) return "UI_COLOR_BUTTON_ACTIVE";
+    if (prop == UI_COLOR_TOGGLE) return "UI_COLOR_TOGGLE";
+    if (prop == UI_COLOR_TOGGLE_HOVER) return "UI_COLOR_TOGGLE_HOVER";
+    if (prop == UI_COLOR_TOGGLE_CURSOR) return "UI_COLOR_TOGGLE_CURSOR";
+    if (prop == UI_COLOR_SELECT) return "UI_COLOR_SELECT";
+    if (prop == UI_COLOR_SELECT_ACTIVE) return "UI_COLOR_SELECT_ACTIVE";
+    if (prop == UI_COLOR_SLIDER) return "UI_COLOR_SLIDER";
+    if (prop == UI_COLOR_SLIDER_CURSOR) return "UI_COLOR_SLIDER_CURSOR";
+    if (prop == UI_COLOR_SLIDER_CURSOR_HOVER) return "UI_COLOR_SLIDER_CURSOR_HOVER";
+    if (prop == UI_COLOR_SLIDER_CURSOR_ACTIVE) return "UI_COLOR_SLIDER_CURSOR_ACTIVE";
+    if (prop == UI_COLOR_PROPERTY) return "UI_COLOR_PROPERTY";
+    if (prop == UI_COLOR_EDIT) return "UI_COLOR_EDIT";
+    if (prop == UI_COLOR_EDIT_CURSOR) return "UI_COLOR_EDIT_CURSOR";
+    if (prop == UI_COLOR_COMBO) return "UI_COLOR_COMBO";
+    if (prop == UI_COLOR_CHART) return "UI_COLOR_CHART";
+    if (prop == UI_COLOR_CHART_COLOR) return "UI_COLOR_CHART_COLOR";
+    if (prop == UI_COLOR_CHART_COLOR_HIGHLIGHT) return "UI_COLOR_CHART_COLOR_HIGHLIGHT";
+    if (prop == UI_COLOR_SCROLLBAR) return "UI_COLOR_SCROLLBAR";
+    if (prop == UI_COLOR_SCROLLBAR_CURSOR) return "UI_COLOR_SCROLLBAR_CURSOR";
+    if (prop == UI_COLOR_SCROLLBAR_CURSOR_HOVER) return "UI_COLOR_SCROLLBAR_CURSOR_HOVER";
+    if (prop == UI_COLOR_SCROLLBAR_CURSOR_ACTIVE) return "UI_COLOR_SCROLLBAR_CURSOR_ACTIVE";
+    if (prop == UI_COLOR_TAB_HEADER) return "UI_COLOR_TAB_HEADER";
     return "NO_COLOR_PROPERTY";
 }
 
@@ -107,7 +107,7 @@ int main(){
     test_widget.screen_region.h = HEIGHT / 3;
     test_widget.name = "OpenGL_Nuklear_UI widget";
     test_widget.custom_style = true;
-    test_widget.style.elements[COLOR_WINDOW].a = 175;
+    test_widget.style.elements[UI_COLOR_WINDOW].a = 175;
 
 	// logging widget initialization. Place at top-left corner,
 	// body is fully-transparent, so only text is visible
@@ -117,7 +117,7 @@ int main(){
 	logging_widget.screen_region.h = HEIGHT / 4;
 	logging_widget.name = "log";
     logging_widget.custom_style = true;
-	logging_widget.style.elements[COLOR_WINDOW].a = 100;
+	logging_widget.style.elements[UI_COLOR_WINDOW].a = 100;
 	logging_widget.border = false;
 	logging_widget.title = false;
 	logging_widget.minimizable = false;
