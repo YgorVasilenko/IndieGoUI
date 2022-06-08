@@ -412,7 +412,11 @@ namespace IndieGo {
 				} else if (element.type == UI_BUTTON || element.type == UI_BOOL){
 					// default all boolean switches to false
 					element._data.b = false;
+				} else if (element.type == UI_FLOAT){
+					// all default float values are 0.f
+					element._data.f = 0.f;
 				}
+			
 				elements[elt_name] = element;
 				if (elt_pos.first != -1)
 					elements[elt_name].layout_row = elt_pos.first;
