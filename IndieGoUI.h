@@ -415,6 +415,9 @@ namespace IndieGo {
 				} else if (element.type == UI_FLOAT){
 					// all default float values are 0.f
 					element._data.f = 0.f;
+				} else if (element.type == UI_UINT){
+					// all default uint values are 1
+					element._data.ui = 1;
 				}
 			
 				elements[elt_name] = element;

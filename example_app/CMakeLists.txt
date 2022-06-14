@@ -4,6 +4,9 @@ project(UI_map_OpenGL VERSION 1.0)
 
 set(RENDERER_INCLUDES .. ../os)
 
+# set(CMAKE_MODULE_PATH $ENV{CMAKE_MODULE_PATH})
+# include(common)
+
 if (DEFINED BACKEND)
     message("BACKEND: ${BACKEND}")
     set(RENDERER_SRC ../../backends/${BACKEND}/renderer.cpp)
@@ -29,7 +32,8 @@ add_executable(
 
 target_include_directories(
     UI_map_OpenGL
-    PUBLIC ${RENDERER_INCLUDES}
+    PUBLIC 
+    ${RENDERER_INCLUDES}
 )
 
 # link glfw library
