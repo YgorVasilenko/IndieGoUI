@@ -535,10 +535,25 @@ namespace IndieGo {
 			void init(
 				void * initData = NULL // different backends may require different init data, so keep this as void pointer
 			);
+			void addWindow(
+				void * initData = NULL // different backends may require different init data, so keep this as void pointer
+			);
+			void removeWindow(
+				void * initData = NULL // different backends may require different init data, so keep this as void pointer
+			);
 
-			void drawFrameStart();
-			void drawFrameEnd();
+			void drawFrameStart(std::string & winID);
+			void drawFrameEnd(std::string & winID);
 
+			bool guiHasCursor(const std::string & curr_ui_map = ""){
+				if (hoveredWidgets.empty())
+					return false;
+				
+				if (hoveredWidgets.find(curr_ui_map) == hoveredWidgets.end())
+					return false;
+				
+				return hoveredWidgets[curr_ui_map] != NULL;
+			}
 			// If we want user to prevent focusing some widget, we need to switch back to previously focused
 			std::map<std::string, WIDGET*> prevFocusedWidgets = {};
 
@@ -549,11 +564,11 @@ namespace IndieGo {
 			};
 
 			// use this for window callbacks
-			void scroll(double xoff, double yoff);
-			void mouse_move(double x, double y);
-			void mouse_button( int button, int action, int mods );
-			void char_input(unsigned int codepoint);
-			void key_input(unsigned int codepoint, bool pressed = false);
+			void scroll(void * window, double xoff, double yoff);
+			void mouse_move(void * window, double x, double y);
+			void mouse_button(void * window, int button, int action, int mods );
+			void char_input(void * window, unsigned int codepoint);
+			void key_input(void * window, unsigned int codepoint, bool pressed = false);
 
 			void initNewMap(const std::string & win_name){
 				UI_elements_map map;
@@ -565,7 +580,7 @@ namespace IndieGo {
 				UIMaps[win_name] = map;
 			};
 
-			WIDGET & addWidget(WIDGET & new_widget, const std::string & win_name = DEFAULT_WINDOW_NAME){
+			WIDGET & addWidget(WIDGET & new_widget, const std::string & win_name = DEFAULT_WINDOW_NAME) {
 				// can't add widgets for window without map
 				if (UIMaps.find(win_name) == UIMaps.end()){
 					initNewMap(win_name);

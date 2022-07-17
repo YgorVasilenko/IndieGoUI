@@ -39,7 +39,7 @@ struct nk_glfw_device {
 };
 
 struct nk_glfw {
-    GLFWwindow *win;
+    GLFWwindow * win;
     int width, height;
     int display_width, display_height;
     struct nk_glfw_device ogl;
@@ -73,7 +73,9 @@ struct nk_glfw_vertex {
 
 std::map<std::string, struct nk_font *> loaded_fonts;
 
-struct nk_glfw * glfw = NULL;
+// Use winID to store window's context. If window destroyed and re-initializes
+// context should be same for respective winID
+std::map<std::string, struct nk_glfw*> glfw_storage;
 
 // TODO - struct for several atlases loading
 struct nk_font_atlas * atlas = NULL;
@@ -318,21 +320,26 @@ NK_API void nk_glfw3_render(struct nk_glfw* glfw, enum nk_anti_aliasing AA, int 
     glEnable(GL_DEPTH_TEST);
 }
 
-void prepareUIRenderer(GLFWwindow* window) {
+void prepareUIRenderer(GLFWwindow* window, std::string & winID) {
+    if (glfw_storage.find(winID) != glfw_storage.end()) {
+        // get rid of old context data before creating new window
+        nk_free(&glfw_storage[winID]->ctx);
+        delete glfw_storage[winID];
+    }
 
-	glfw = new nk_glfw();
+    glfw_storage[winID] = new nk_glfw();
+    
+    struct nk_glfw * glfw = glfw_storage[winID];
 
 	glfwSetWindowUserPointer(window, glfw);
 	glfw->win = window;
+
 	nk_init_default(&glfw->ctx, 0);
 
 	glfw->ctx.clip.copy = nk_glfw3_clipboard_copy;
 	glfw->ctx.clip.paste = nk_glfw3_clipboard_paste;
 	glfw->ctx.clip.userdata = nk_handle_ptr(0);
 	glfw->last_button_click = 0;
-
-    // get context's address
-    ctx = &glfw->ctx;
 
     nk_glfw3_device_create(glfw);
 
@@ -345,13 +352,25 @@ void prepareUIRenderer(GLFWwindow* window) {
 
 using namespace IndieGo::UI;
 
-void Manager::scroll(double xoff, double yoff) {
+struct NuklearInitData {
+    std::string winID;
+    GLFWwindow* window;
+};
+
+void Manager::scroll(void * window, double xoff, double yoff) {
+    std::string glfw_win = *reinterpret_cast<std::string*>(window);
+    // GLFWwindow * glfw_win = reinterpret_cast<GLFWwindow*>(window);
+    struct nk_glfw * glfw = glfw_storage[glfw_win];
+
     (void)xoff;
     glfw->scroll.x += (float)xoff;
     glfw->scroll.y += (float)yoff;
 }
 
-void Manager::mouse_move(double x, double y){
+void Manager::mouse_move(void * window, double x, double y) {
+    // GLFWwindow * glfw_win = reinterpret_cast<GLFWwindow*>(window);
+    // struct nk_glfw * glfw = glfw_storage[glfw_win];
+
     cursor_pos.x = x;
     cursor_pos.y = y;
 }
@@ -364,7 +383,11 @@ void Manager::mouse_move(double x, double y){
 #endif
 
 
-void Manager::mouse_button(int button, int action, int mods){
+void Manager::mouse_button(void * window, int button, int action, int mods){
+    //GLFWwindow * glfw_win = reinterpret_cast<GLFWwindow*>(window);
+    std::string glfw_win = *reinterpret_cast<std::string*>(window);
+    struct nk_glfw * glfw = glfw_storage[glfw_win];
+
     if (disableMouse) return;
     double x, y;
     if (button != GLFW_MOUSE_BUTTON_LEFT) return;
@@ -378,13 +401,21 @@ void Manager::mouse_button(int button, int action, int mods){
     } else glfw->is_double_click_down = nk_false;
 }
 
-void Manager::char_input(unsigned int codepoint){
+void Manager::char_input(void * window, unsigned int codepoint) {
+    // GLFWwindow * glfw_win = reinterpret_cast<GLFWwindow*>(window);
+    std::string glfw_win = *reinterpret_cast<std::string*>(window);
+    struct nk_glfw * glfw = glfw_storage[glfw_win];
+
     if (glfw->text_len < NK_GLFW_TEXT_MAX) {
         glfw->text[glfw->text_len++] = codepoint;
     }
 }
 
-void Manager::key_input(unsigned int codepoint, bool pressed){
+void Manager::key_input(void * window, unsigned int codepoint, bool pressed) {
+    // GLFWwindow * glfw_win = reinterpret_cast<GLFWwindow*>(window);
+    std::string glfw_win = *reinterpret_cast<std::string*>(window);
+    struct nk_glfw * glfw = glfw_storage[glfw_win];
+
     if (codepoint == GLFW_KEY_BACKSPACE && pressed) {
         if (!glfw->backspace) {
             glfw->backspace = true;
@@ -685,11 +716,20 @@ void WIDGET::allocateGroupEnd(){
 
 #define NK_GLFW_GL3_MOUSE_GRABBING
 
-void Manager::drawFrameStart(){
+void Manager::drawFrameStart(std::string & winID) {
+    // GLFWwindow * glfw_win = reinterpret_cast<GLFWwindow*>(window);
+    struct nk_glfw * glfw = glfw_storage[winID];
+
     int i;
     double x, y;
-    struct nk_context *ctx = &glfw->ctx;
+    // get context's address for current window
+    ctx = &glfw->ctx;
+
+    //struct nk_context *ctx = &glfw->ctx;
     struct GLFWwindow *win = glfw->win;
+    
+    // Update current window
+    glfw->win = win;
 
     glfwGetWindowSize(win, &glfw->width, &glfw->height);
     glfwGetFramebufferSize(win, &glfw->display_width, &glfw->display_height);
@@ -767,10 +807,33 @@ void Manager::drawFrameStart(){
     glfw->scroll = nk_vec2(0,0);
 }
 
-void Manager::drawFrameEnd(){
+void Manager::drawFrameEnd(std::string & winID) {
+    struct nk_glfw * glfw = glfw_storage[winID];
+
     nk_glfw3_render(glfw, NK_ANTI_ALIASING_ON, MAX_VERTEX_BUFFER, MAX_ELEMENT_BUFFER);
 }
 
 void Manager::init(void * initData){
-    prepareUIRenderer((GLFWwindow*)initData);
+    NuklearInitData * initPtr = reinterpret_cast<NuklearInitData*>(initData);
+    prepareUIRenderer(initPtr->window, initPtr->winID);
 }
+
+void Manager::addWindow(void * initData){
+    NuklearInitData * initPtr = reinterpret_cast<NuklearInitData*>(initData);
+    prepareUIRenderer(initPtr->window, initPtr->winID);
+}
+
+void Manager::removeWindow(void * winData) {
+    // NuklearInitData * winPtr = reinterpret_cast<NuklearInitData*>(winData);
+    // if (glfw_storage.find(winPtr->winID) != glfw_storage.end()) {
+    //     std::cout << "[NUKLEAR::INFO] releasing context for " << winPtr->winID << std::endl;
+    //     // get rid of old context data before creating new window
+    //     nk_free(&glfw_storage[winPtr->winID]->ctx);
+    //     delete glfw_storage[winPtr->winID];
+    //     glfw_storage.erase(
+    //         glfw_storage.find(winPtr->winID)
+    //     );
+    // }
+}
+
+

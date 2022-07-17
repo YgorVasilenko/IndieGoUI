@@ -10,7 +10,7 @@ using namespace ImGui;
 
 GLFWwindow* window = NULL;
 
-void Manager::init(void * initData){
+void Manager::init(void * initData) {
     window = (GLFWwindow*)initData;
     IMGUI_CHECKVERSION();
     CreateContext();
