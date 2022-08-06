@@ -195,6 +195,7 @@ namespace IndieGo {
 			float min_height = 25.f;
 
 			bool hidden = false;
+			bool takeSpaceIfHidden = true;
 
 			// style settings for various elements
 			color_table style;
@@ -486,6 +487,7 @@ namespace IndieGo {
 					// check, if first element in row starts group - in such case don't allocate row
 					curr_group = find_if(elements_groups.begin(), elements_groups.end(), [&first_elt ](elements_group & g){ return g.start == first_elt; });
 					if (curr_group == elements_groups.end()){
+						// TODO : allocate row only for visible elements
 						allocateRow(row.cells.size(), row.min_height);
 					}
 					for (auto elt : row.cells){
@@ -499,7 +501,9 @@ namespace IndieGo {
 							if (UIMap.elements.find(elt) != UIMap.elements.end() && !UIMap.elements[elt].hidden){
 								UIMap.elements[elt].callUIfunction();
 							} else {
-								allocateEmptySpace();
+								// TODO : seems like very strange behavior. Need to investigate
+								if (UIMap.elements[elt].takeSpaceIfHidden)
+									allocateEmptySpace();
 								if (UIMap.elements[elt].type == UI_COLOR_PICKER)
 									UIMap.elements[elt].color_picker_unwrapped = false;
 							}
