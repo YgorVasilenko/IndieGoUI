@@ -41,3 +41,10 @@ target_link_libraries(
     UI_map_OpenGL
     PUBLIC "../lib/glfw3"
 )
+
+if(DEFINED CI_BUILD)
+    message(STATUS "Building for ci...")
+    target_compile_definitions(
+        UI_map_OpenGL PRIVATE CI_BUILD=1
+    )
+endif()
