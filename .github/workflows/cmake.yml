@@ -20,7 +20,7 @@ jobs:
     - uses: actions/checkout@v2
 
     - name: generate project
-      run: cmake test -B ${{github.workspace}}/example_app/build -DCI_BUILD=1
+      run: cmake example_app -B ${{github.workspace}}/example_app/build -DCI_BUILD=1
 
     - name: Build
       run: cmake --build ${{github.workspace}}/example_app/build
