@@ -14,26 +14,26 @@ using namespace IndieGo::UI;
 
 Manager GUI;
 WIDGET test_widget, logging_widget;
-
+std::string winID = "OpenGL_Nuklear UI";
 // Window input callbacks
 void cursor_position_callback(GLFWwindow* window, double xpos, double ypos) {
-	GUI.mouse_move(xpos, ypos);
+	GUI.mouse_move( &winID, xpos, ypos);
 }
 
 void mouse_button_callback(GLFWwindow* window, int button, int action, int mods) {
-    GUI.mouse_button(button, action, mods);
+    GUI.mouse_button( &winID,button, action, mods);
 }
 
 void scroll_callback(GLFWwindow* window, double xoffset, double yoffset){
-    GUI.scroll(xoffset, yoffset);
+    GUI.scroll( &winID, xoffset, yoffset);
 }
 
 void char_callback(GLFWwindow* window, unsigned int codepoint) {
-    GUI.char_input(codepoint);
+    GUI.char_input( &winID, codepoint);
 }
 
 void key_callback(GLFWwindow* window, int key, int scancode, int action, int mods) {
-    GUI.key_input(key, glfwGetKey(window, key) == GLFW_PRESS);
+    GUI.key_input( &winID, key, glfwGetKey(window, key) == GLFW_PRESS);
 }
 
 unsigned int buttons_count = 1;
@@ -77,18 +77,24 @@ std::string getColorPropName(COLOR_ELEMENTS prop) {
 double curr_time = 0.0, prev_time = 0.0;
 unsigned int frames = 0;
 
-int main(){
+struct Win_init_data {
+    std::string winID = winID;
+    void* screen = NULL;
+} _init_data;
+
+int main() {
+
   	glfwInit();
-		glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 3);
-		glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 3);
-		glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
+	glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 3);
+	glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 3);
+	glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
 
     screen = glfwCreateWindow(WIDTH, HEIGHT, "OpenGL_Nuklear UI", NULL, NULL);
-		glfwMakeContextCurrent(screen);
-		if (!gladLoadGLLoader((GLADloadproc)glfwGetProcAddress)) {
-				std::cout << "Failed to initialize GLAD" << std::endl;
-				return -1;
-		}
+	glfwMakeContextCurrent(screen);
+	if (!gladLoadGLLoader((GLADloadproc)glfwGetProcAddress)) {
+		std::cout << "Failed to initialize GLAD" << std::endl;
+		return -1;
+	}
 
     glfwSetCursorPosCallback(screen, cursor_position_callback);
     glfwSetMouseButtonCallback(screen, mouse_button_callback);
@@ -98,7 +104,9 @@ int main(){
 
     glViewport(0, 0, WIDTH, HEIGHT);
 
-    GUI.init(screen);
+    _init_data.screen = screen;
+    _init_data.winID = winID;
+    GUI.init( &_init_data);
 
     // initialize test widget
     test_widget.screen_region.x = WIDTH / 4;
@@ -211,9 +219,9 @@ int main(){
             UIMap["Cursor hovered over"].label = "Cursor hovered over: None";
         }
 
-        GUI.drawFrameStart();
-        GUI.displayWidgets("OpenGL_Nuklear_UI");
-        GUI.drawFrameEnd();
+        GUI.drawFrameStart(std::string("OpenGL_Nuklear UI"));
+        GUI.displayWidgets(std::string("OpenGL_Nuklear_UI"));
+        GUI.drawFrameEnd(std::string("OpenGL_Nuklear UI"));
         
         curr_time = glfwGetTime();
         if ((curr_time - prev_time) > 1.0) {
@@ -229,6 +237,9 @@ int main(){
 
         glfwSwapBuffers(screen);
 	    glfwPollEvents();
+#ifdef CI_BUILD
+        break;
+#endif
     }
     return 0;
 }
