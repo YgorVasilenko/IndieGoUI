@@ -25,7 +25,8 @@ jobs:
     - name: Build
       run: cmake --build ${{github.workspace}}/example_app/build
 
-    - name: Run
-      working-directory: ${{github.workspace}}/example_app/build
-      run: Debug/UI_map_OpenGL.exe
+    # TODO : try getting hosts with OpenGL3 installed, or place libriaries into file
+    # - name: Run
+    #   working-directory: ${{github.workspace}}/example_app/build
+    #   run: Debug/UI_map_OpenGL.exe
       
