@@ -87,9 +87,13 @@ void checkUIValues(std::string winID) {
 
 std::vector<unsigned int> loadedImages;
 
+extern unsigned int skinning_image_id;
+extern unsigned int si_w;
+extern unsigned int si_h;
+
 // helper function lo load image through stbi
 // in other engine parts ImageLoader will do that
-unsigned int load_image(const char *filename) {
+unsigned int load_image(const char *filename, bool load_skinning_image = false) {
     int x,y,n;
     unsigned int tex;
     unsigned char *data = stbi_load(filename, &x, &y, &n, 0);
@@ -108,6 +112,12 @@ unsigned int load_image(const char *filename) {
     glGenerateMipmap(GL_TEXTURE_2D);
     stbi_image_free(data);
     loadedImages.push_back(tex);
+
+    if (load_skinning_image) {
+        skinning_image_id = tex;
+        si_w = x;
+        si_h = y;
+    }
     return tex;
 }
 
@@ -141,6 +151,21 @@ std::string getColorPropName(COLOR_ELEMENTS prop) {
     if (prop == UI_COLOR_SCROLLBAR_CURSOR_ACTIVE) return "SCROLLBAR_CURSOR_ACTIVE";
     if (prop == UI_COLOR_TAB_HEADER) return "TAB_HEADER";
     return "NO_COLOR_PROPERTY";
+}
+
+std::string getSkinPropName(IMAGE_SKIN_ELEMENT prop) {
+    if (prop == background) return "background";
+    if (prop == normal) return "normal";
+    if (prop == hover) return "hover";
+    if (prop == active) return "active";
+    if (prop == cursor_normal) return "cursor_normal";
+    if (prop == cursor_hover) return "cursor_hover";
+    if (prop == cursor_active) return "cursor_active";
+    if (prop == pressed) return "pressed";
+    if (prop == pressed_active) return "pressed_active";
+    if (prop == normal_active) return "normal_active";
+    if (prop == hover_active) return "hover_active";
+    return "NO_SKIN_PROPERTY";
 }
 
 // This is windows-specific part

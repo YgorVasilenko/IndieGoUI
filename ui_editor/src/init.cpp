@@ -8,13 +8,13 @@ extern WIDGET styling_widget;
 extern std::string winID;
 
 extern std::string getColorPropName(COLOR_ELEMENTS prop);
-
+extern std::string getSkinPropName(IMAGE_SKIN_ELEMENT prop);
 void initWidgets() {
     // initialize creator widget
     creator_widget.screen_region.x = (float)(WIDTH / 4) / ((float)WIDTH);
     creator_widget.screen_region.y = ((float)HEIGHT / 4) / ((float)HEIGHT);
     creator_widget.screen_region.w = ((float)WIDTH / 2) / ((float)WIDTH);
-    creator_widget.screen_region.h = 0.66f;
+    creator_widget.screen_region.h = 0.55f;
     creator_widget.name = "UI creator";
 
     WIDGET & c_widget = GUI.addWidget(creator_widget, winID);
@@ -62,9 +62,21 @@ void initWidgets() {
     UIMap.addElement("widgets list", UI_ITEMS_LIST, &c_widget, current_line);
     UIMap["widgets list"].label = "widgets on screen";
 
-    UIMap.addElement("elements list", UI_ITEMS_LIST, &c_widget, current_line++);
+    UIMap.addElement("elements list", UI_ITEMS_LIST, &c_widget, current_line);
     UIMap["elements list"].label = "elements in selected widget";
+
+    UIMap.addElement("widget rows", UI_ITEMS_LIST, &c_widget, current_line++);
+    UIMap["widget rows"].label = "widget rows";
     c_widget.layout_grid[current_line - 1].min_height = 150;
+
+    UIMap.addElement("new element name label", UI_STRING_LABEL, &c_widget, current_line);
+    UIMap["new element name label"].label = "new element name:";
+
+    UIMap.addElement("new element name", UI_STRING_INPUT, &c_widget, current_line);
+    UIMap["new element name"].label = "new element name";
+
+    UIMap.addElement("row height", UI_UINT, &c_widget, current_line++);
+    UIMap["row height"].label = "row height";
 
     UIMap.addElement("add image", UI_BUTTON, &c_widget, current_line);
     UIMap["add image"].label = "add image";
@@ -85,17 +97,48 @@ void initWidgets() {
     UIMap["to same row"].label = "to same row";
     UIMap["to same row"]._data.b = true;
 
-    UIMap.addElement("new element name label", UI_STRING_LABEL, &c_widget, current_line);
-    UIMap["new element name label"].label = "new element name:";
-
-    UIMap.addElement("new element name", UI_STRING_INPUT, &c_widget, current_line++);
-    UIMap["new element name"].label = "new element name";
-
     // text editor field
     UIMap.addElement("selected text label", UI_STRING_LABEL, &c_widget, current_line);
     UIMap["selected text label"].label = "edit selected text:";
 
     UIMap.addElement("selected text", UI_STRING_INPUT, &c_widget, current_line++);
+
+    // skinning fields:
+    UIMap.addElement("loaded skin image label", UI_STRING_LABEL, &c_widget, current_line);
+    UIMap["loaded skin image label"].label = "loaded skin image:";
+
+    UIMap.addElement("loaded skin image", UI_STRING_LABEL, &c_widget, current_line);
+    UIMap["loaded skin image"].label = "No image";
+
+    UIMap.addElement("load skin image", UI_BUTTON, &c_widget, current_line);
+    UIMap["load skin image"].label = "load skin image";
+
+    UIMap.addElement("add skin", UI_BUTTON, &c_widget, current_line++);
+    UIMap["add skin"].label = "add skin";
+
+    UIMap.addElement("img x", UI_FLOAT, &c_widget, current_line);
+    UIMap["img x"].label = "img x";
+    UIMap["img x"]._data.f = 0.f;
+    UIMap.addElement("img y", UI_FLOAT, &c_widget, current_line);
+    UIMap["img y"].label = "img y";
+    UIMap["img y"]._data.f = 0.f;
+    UIMap.addElement("img size x", UI_FLOAT, &c_widget, current_line);
+    UIMap["img size x"].label = "img size x";
+    UIMap["img size x"]._data.f = 100.f;
+    UIMap.addElement("img size y", UI_FLOAT, &c_widget, current_line++);
+    UIMap["img size y"].label = "img size y";
+    UIMap["img size y"]._data.f = 100.f;
+
+    UIMap.addElement("skinning property", UI_ITEMS_LIST, &c_widget, current_line++);
+    UIMap["skinning property"].label = "skinning property";
+    c_widget.layout_grid[current_line - 1].min_height = 150;
+    ui_string_group & skinning_props_list = *UIMap["skinning property"]._data.usgPtr;
+    
+    for (int i = background; i != hover_active; i++) {
+        skinning_props_list.elements.push_back(
+            getSkinPropName((IMAGE_SKIN_ELEMENT)i)
+        );
+    }
 
     // Styling widget
     // initialize styling widget

@@ -73,7 +73,8 @@ struct nk_glfw_vertex {
 
 std::map<std::string, struct nk_font *> loaded_fonts;
 
-std::map<unsigned int, struct nk_image> images;
+// texture_iid = vector<sub_images>
+std::map<unsigned int, std::vector<struct nk_image>> images;
 
 // Use winID to store window's context. If window destroyed and re-initializes
 // context should be same for respective winID
@@ -450,6 +451,7 @@ void UI_element::callUIfunction() {
     static const float ratio[] = { 100, 120 };
     float dbgVal;
     if (type == UI_BOOL) {
+        // TODO : add skinning
         struct nk_key_selector ks;
         if (hovered_by_keys) {
             ks.focused = true;
@@ -461,24 +463,28 @@ void UI_element::callUIfunction() {
     }
 
     if (type == UI_FLOAT) {
+        // TODO : add skinning
         full_name = "#" + label + ":";
         nk_property_float(ctx, full_name.c_str(), -300000.0f, &_data.f, 300000.0f, 1, 0.5f);
         return;
     }
 
     if (type == UI_INT) {
+        // TODO : add skinning
         full_name = "#" + label + ":";
         nk_property_int(ctx, full_name.c_str(), -1024, &_data.i, 1024, 1, 0.5f);
         return;
     }
 
     if (type == UI_UINT) {
+        // TODO : add skinning
         full_name = "#" + label + ":";
         nk_property_int(ctx, full_name.c_str(), 0, &_data.i, 2040, 1, 0.5f);
         return;
     }
 
     if (type == UI_STRING_INPUT) {
+        // TODO : add skinning
         std::string& stringRef = *_data.strPtr;
         stringToText(stringRef);
         nk_edit_string(ctx, NK_EDIT_SIMPLE, text, &text_len, 64, nk_filter_default);
@@ -487,6 +493,7 @@ void UI_element::callUIfunction() {
     }
 
     if (type == UI_BUTTON) {
+        // TODO : add skinning
         struct nk_key_selector ks;
         if (hovered_by_keys) {
             ks.focused = true;
@@ -502,6 +509,7 @@ void UI_element::callUIfunction() {
     }
 
     if (type == UI_BUTTON_SWITCH) {
+        // TODO : add skinning
         if (_data.b) {
                 struct nk_style_button button;
                 button = ctx->style.button;
@@ -523,6 +531,7 @@ void UI_element::callUIfunction() {
     }
 
     if (type == UI_COLOR_PICKER) {
+        // TODO : add skinning
         struct nk_colorf & curr_widget_color = *reinterpret_cast<nk_colorf*>(&_data.c);
         if (nk_combo_begin_color(ctx, nk_rgb_cf(curr_widget_color), nk_vec2(nk_widget_width(ctx), 400))) {
             color_picker_unwrapped = true;
@@ -540,11 +549,13 @@ void UI_element::callUIfunction() {
     }
     
     if (type == UI_IMAGE) {
+        // TODO : add skinning
         if (_data.i != -1)
-            nk_image(ctx, images[_data.i]);
+            nk_image(ctx, images[_data.i].back());
     }
 
     if (type == UI_STRING_LABEL) {
+        // TODO : add skinning
         nk_flags align;
         switch(text_align){
           case LEFT:
@@ -561,12 +572,43 @@ void UI_element::callUIfunction() {
     }
     
     if (type == UI_PROGRESS) {
+        if (skinned_style.props[normal].first != -1) {
+            ctx->style.progress.normal = nk_style_item_image(
+                images[skinned_style.props[normal].first][skinned_style.props[normal].second]
+            );
+        }
+        if (skinned_style.props[hover].first != -1) {
+            ctx->style.progress.hover = nk_style_item_image(
+                images[skinned_style.props[hover].first][skinned_style.props[hover].second]
+            );
+        }
+        if (skinned_style.props[active].first != -1) {
+            ctx->style.progress.active = nk_style_item_image(
+                images[skinned_style.props[active].first][skinned_style.props[active].second]
+            );
+        }
+        if (skinned_style.props[cursor_normal].first != -1) {
+            ctx->style.progress.cursor_normal = nk_style_item_image(
+                images[skinned_style.props[cursor_normal].first][skinned_style.props[cursor_normal].second]
+            );
+        }
+        if (skinned_style.props[cursor_hover].first != -1) {
+            ctx->style.progress.cursor_hover = nk_style_item_image(
+                images[skinned_style.props[cursor_hover].first][skinned_style.props[cursor_hover].second]
+            );
+        }
+        if (skinned_style.props[cursor_active].first != -1) {
+            ctx->style.progress.cursor_active = nk_style_item_image(
+                images[skinned_style.props[cursor_active].first][skinned_style.props[cursor_active].second]
+            );
+        }
         nk_size curr = _data.ui;
         nk_progress(ctx, &curr, 100, modifyable_progress_bar);
         _data.ui = curr;
     }
 
     if (type == UI_ITEMS_LIST) {
+        // TODO : add skinning
         ui_string_group& uiGroupRef = *_data.usgPtr;
         uiGroupRef.selection_switch = false;
         if (uiGroupRef.selectMethod == RADIO_SELECT) {
@@ -662,12 +704,29 @@ void UI_element::initImage(unsigned int texID, std::string path) {
         return;
     }
     if (images.find(texID) == images.end()) {
-        images[texID] = nk_image_id((int)texID);
+        images[texID].push_back(nk_image_id((int)texID));
     }
     _data.i = texID;
     label = path;
 }
 
+void UI_element::useSkinImage(
+	unsigned int texID,
+	unsigned short w,
+	unsigned short h,
+	region<float> crop,
+	IMAGE_SKIN_ELEMENT elt
+) {
+    images[texID].push_back(
+        nk_subimage_id(texID, w,h, nk_rect(crop.x, crop.y, crop.w, crop.h))
+    );
+    skinned_style.props[elt].first = texID;
+    skinned_style.props[elt].second = images[texID].size() - 1;
+}
+
+bool test_img_loaded = false;
+extern unsigned int load_image(const char *filename);
+struct nk_image test_i;
 //--------------------------------------------------------
 //
 //            Widget display function. May use
@@ -712,6 +771,32 @@ void WIDGET::callImmediateBackend(UI_elements_map & UIMap){
         nk_window_set_bounds(ctx, name.c_str(), nk_rect(x, y, w, h));
     }
 
+    // check various styling possibilities
+    // Background
+    if (skinned_style.props[background].first != -1) {
+        ctx->style.window.fixed_background = nk_style_item_image(
+            images[skinned_style.props[background].first][skinned_style.props[background].second]
+        );
+    }
+
+    // Header
+    if (skinned_style.props[normal].first != -1) {
+        ctx->style.window.header.normal = nk_style_item_image(
+            images[skinned_style.props[normal].first][skinned_style.props[normal].second]
+        );
+    }
+    if (skinned_style.props[hover].first != -1) {
+        ctx->style.window.header.hover = nk_style_item_image(
+            images[skinned_style.props[hover].first][skinned_style.props[hover].second]
+        );
+    }
+    if (skinned_style.props[active].first != -1) {
+        ctx->style.window.header.active = nk_style_item_image(
+            images[skinned_style.props[active].first][skinned_style.props[active].second]
+        );
+    }
+
+
     if (
         nk_begin(
             ctx,
@@ -729,10 +814,10 @@ void WIDGET::callImmediateBackend(UI_elements_map & UIMap){
         focused = nk_window_has_focus(ctx);
         hasCursor = nk_window_is_hovered(ctx);
         callWidgetUI(UIMap);
-        if (backgroundImage) {
-            nk_layout_row_dynamic(ctx, (float)screen_region.h, 1);
-            nk_image(ctx, images[img_idx]);
-        }
+        // if (backgroundImage) {
+        //     nk_layout_row_dynamic(ctx, (float)screen_region.h, 1);
+        //     nk_image(ctx, images[img_idx]);
+        // }
     }
     if (movable) {
         // update screen_region with current bounds, if those are changed by user
@@ -742,6 +827,20 @@ void WIDGET::callImmediateBackend(UI_elements_map & UIMap){
         screen_region.h = ctx->current->bounds.h / screen_size.h;
     }
     nk_end(ctx);
+}
+
+void WIDGET::useSkinImage(
+	unsigned int texID,
+	unsigned short w,
+	unsigned short h,
+	region<float> crop,
+	IMAGE_SKIN_ELEMENT elt
+) {
+    images[texID].push_back(
+        nk_subimage_id(texID, w,h, nk_rect(crop.x, crop.y, crop.w, crop.h))
+    );
+    skinned_style.props[elt].first = texID;
+    skinned_style.props[elt].second = images[texID].size() - 1;
 }
 
 void WIDGET::allocateRow(unsigned int cols, float min_height){

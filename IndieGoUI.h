@@ -88,6 +88,37 @@ namespace IndieGo {
 			};
 		};
 
+		enum IMAGE_SKIN_ELEMENT {
+			background,
+			normal,
+			hover,
+			active,
+			cursor_normal,
+			cursor_hover,
+			cursor_active,
+			pressed,
+			pressed_active,
+			normal_active,
+			hover_active
+		};
+
+		struct image_props {
+			// IMAGE_SKIN_ELEMENT : <idx in vector of global images, loaded by backend> : <index of crop from that image>
+			std::map<IMAGE_SKIN_ELEMENT, std::pair<int, int>> props = {
+				{ background, { -1, -1 } },
+				{ normal, { -1, -1 } },
+				{ hover, { -1, -1 } },
+				{ active, { -1, -1 } },
+				{ cursor_normal, { -1, -1 } },
+				{ cursor_hover, { -1, -1 } },
+				{ cursor_active, { -1, -1 } },
+				{ pressed, { -1, -1 } },
+				{ pressed_active, { -1, -1 } },
+				{ normal_active, { -1, -1 } },
+				{ hover_active , { -1, -1 } }
+			};
+		};
+
 		struct ui_string_group {
 			std::vector<std::string> elements;
 
@@ -174,6 +205,12 @@ namespace IndieGo {
 			LEFT, CENTER, RIGHT
 		};
 
+		template<typename T>
+		struct region { T x, y, w, h; };
+		
+		template<typename T>
+		struct region_size { T w, h; };
+
 		struct UI_element {
 			union ui_data {
 				bool b;
@@ -207,12 +244,26 @@ namespace IndieGo {
 
 			// style settings for various elements
 			color_table style;
+			image_props skinned_style;
+
 			bool custom_style = true;
 			unsigned char layout_row = 0;
 			unsigned char layout_col = 0;
 			// default implementation could be overrided
 			virtual void callUIfunction();
+
+			// this is for image elements
 			virtual void initImage(unsigned int texID, std::string path = "");
+
+			// this is for various properties, that have option of 
+			// using image texture
+			virtual void useSkinImage(
+				unsigned int texID,
+				unsigned short w,
+				unsigned short h,
+				region<float> crop,
+				IMAGE_SKIN_ELEMENT elt
+			);
 		};
 		struct grid_row {
 			std::vector<std::string> cells;
@@ -259,7 +310,7 @@ namespace IndieGo {
 			// widgets provide place on screen to display ui elements
 			std::vector<std::string> widget_elements;
 			std::string name = "";
-			bool backgroundImage = false;
+			// bool backgroundImage = false;
 			
 			// index in global array of images
 			// maintained by backend
@@ -459,12 +510,6 @@ namespace IndieGo {
 			};
 		};
 
-		template<typename T>
-		struct region { T x, y, w, h; };
-		
-		template<typename T>
-		struct region_size { T w, h; };
-
 		struct WIDGET : public WIDGET_BASE {
 
 			// widget's size and location on screen, in percentage with 0% 0% top-left
@@ -490,6 +535,14 @@ namespace IndieGo {
 			virtual void allocateGroupStart(elements_group & group, float min_height);
 			virtual void allocateGroupEnd();
 
+			virtual void useSkinImage(
+				unsigned int texID,
+				unsigned short w,
+				unsigned short h,
+				region<float> crop,
+				IMAGE_SKIN_ELEMENT elt
+			);
+
 			// Translate to Immediate-Mode flags
 			bool border = false;
 			bool minimizable = true;
@@ -498,6 +551,7 @@ namespace IndieGo {
 			bool scalable = true;
 
 			color_table style;
+			image_props skinned_style;
 			bool custom_style = true;
 		private:
 			bool initialized_in_backend = false;

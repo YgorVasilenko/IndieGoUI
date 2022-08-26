@@ -1,3 +1,10 @@
+// TODO :
+// 1. make map { 'property_name' : used_sub_image }, call that in runtime
+// - almost done, only ui functionality connect left
+// 2. Fonts
+// 3. Serialization
+// extra. split rows and columns
+
 #include <IndieGoUI.h>
 #include <glad/glad.h>
 #include <GLFW/glfw3.h>
@@ -65,7 +72,7 @@ extern void checkUIValues(std::string winID);
 extern void updateWidgetFromUI(std::string widID, std::string winID);
 extern void updateUIFromWidget(std::string widID, std::string winID);
 extern void useBackgroundImage(std::string widID, std::string winID, unsigned int texID);
-extern unsigned int load_image(const char *filename);
+extern unsigned int load_image(const char *filename, bool load_skinning_image = false);
 extern std::list<std::string> getPaths();
 
 extern void initWidgets();
@@ -73,6 +80,19 @@ extern void initWidgets();
 enum STYLE_EDIT_MODE {
     widget_edit, element_edit
 } style_edit_mode;
+
+extern void addElement(
+    std::string widID, 
+    std::string winID, 
+    std::string elt_name, 
+    UI_ELEMENT_TYPE type,
+    bool add_on_new_row
+);
+
+std::string skinning_img_path;
+unsigned int skinning_image_id = 0;
+unsigned int si_w = 0;
+unsigned int si_h = 0;
 
 int main() {
 
@@ -103,6 +123,8 @@ int main() {
     UI_elements_map & UIMap = GUI.UIMaps[winID];
     ui_string_group & widgets_list = *UIMap["widgets list"]._data.usgPtr;
     ui_string_group & elements_list = *UIMap["elements list"]._data.usgPtr;
+    ui_string_group & rows_list = *UIMap["widget rows"]._data.usgPtr;
+    ui_string_group & skinning_props_list = *UIMap["skinning property"]._data.usgPtr;
     ui_string_group & style_elements_list = *UIMap["style elements list"]._data.usgPtr;
 
 	// set initial time to zero
@@ -110,13 +132,23 @@ int main() {
 
     int prev_selected_widget = -1;
     int prev_selected_element = -1;
+    int prev_selected_row = -1;
     int width, height;
     while (!glfwWindowShouldClose(screen)) {
         glClearColor(0.2f, 0.3f, 0.3f, 1.0f);
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT | GL_STENCIL_BUFFER_BIT);
 
         elements_list.elements.clear();
+        rows_list.elements.clear();
         prev_selected_element = elements_list.selected_element;
+        prev_selected_row = rows_list.selected_element;
+
+        if (UIMap["load skin image"]._data.b) {
+            std::string skinning_img_path = *getPaths().begin();
+            // TODO : account for PROJECT_DIR variable
+            load_image(skinning_img_path.c_str(), true);
+            UIMap["loaded skin image"].label = skinning_img_path;
+        }
 
         if (UIMap["add new widget"]._data.b) {
             std::string new_widget_name = *UIMap["new widget name"]._data.strPtr;
@@ -148,51 +180,46 @@ int main() {
         }
 
         if (widgets_list.selected_element != -1) {
-            // TODO : move this to addElement()
-            // reuse addElement() to load saved UIMap description
-            // add images save, fonts update
             WIDGET& w = GUI.getWidget( widgets_list.getSelected(), winID );
-            if (UIMap["add image"]._data.b) {
+            if ( UIMap["add image"]._data.b ) {
+                UI_ELEMENT_TYPE t = UI_IMAGE;
                 std::string img_path = *getPaths().begin();
                 unsigned int texID = load_image(img_path.c_str());
-                if (!UIMap["to same row"]._data.b) {
-                    widgets_fill[widgets_list.getSelected()]++;
-                }
-                UIMap.addElement(img_path, UI_IMAGE, &w, widgets_fill[widgets_list.getSelected()]);
-                UIMap[img_path].initImage(texID, img_path);
-                w.layout_grid[widgets_fill[widgets_list.getSelected()] - 1].min_height = w.screen_region.h * (float)w.screen_size.h;
+                addElement(widgets_list.getSelected(), winID, *UIMap["new element name"]._data.strPtr, t, !UIMap["to same row"]._data.b);
+                UIMap[*UIMap["new element name"]._data.strPtr].initImage(texID, img_path);
+            }
+            if (UIMap["add text"]._data.b) {
+                UI_ELEMENT_TYPE t = UI_STRING_LABEL;
+                addElement(widgets_list.getSelected(), winID, *UIMap["new element name"]._data.strPtr, t, !UIMap["to same row"]._data.b);
+            }
+            if (UIMap["add slider"]._data.b) {
+                UI_ELEMENT_TYPE t = UI_PROGRESS;
+                addElement(widgets_list.getSelected(), winID, *UIMap["new element name"]._data.strPtr, t, !UIMap["to same row"]._data.b);
+                UIMap[*UIMap["new element name"]._data.strPtr].modifyable_progress_bar = true; // hard-code for now
             }
             updateUIFromWidget(widgets_list.getSelected(), winID);
             for (auto element : w.widget_elements) {
                 elements_list.elements.push_back(element);
             }
-            elements_list.selected_element = prev_selected_element;
-            if (UIMap["add text"]._data.b) {
-                std::string text_field_name = *UIMap["new element name"]._data.strPtr;
-                if (text_field_name.size() > 0 && std::find(w.widget_elements.begin(), w.widget_elements.end(), text_field_name) == w.widget_elements.end()) {
-                    if (!UIMap["to same row"]._data.b) {
-                        widgets_fill[widgets_list.getSelected()]++;
-                    }
-                    UIMap.addElement(text_field_name, UI_STRING_LABEL, &w, widgets_fill[widgets_list.getSelected()]);
-                }
-            }
-
-            if (UIMap["add slider"]._data.b) {
-                std::string slider_field_name = *UIMap["new element name"]._data.strPtr;
-                if (slider_field_name.size() > 0 && std::find(w.widget_elements.begin(), w.widget_elements.end(), slider_field_name) == w.widget_elements.end()) {
-                    if (!UIMap["to same row"]._data.b) {
-                        widgets_fill[widgets_list.getSelected()]++;
-                    }
-                    UIMap.addElement(slider_field_name, UI_PROGRESS, &w, widgets_fill[widgets_list.getSelected()]);
-                    // TODO : parametrize this later
-                    UIMap[slider_field_name].modifyable_progress_bar = true;
-                }
+            if (prev_selected_element < elements_list.elements.size()) {
+                elements_list.selected_element = prev_selected_element;
             }
             if (elements_list.selected_element != -1) {
                 if (UIMap[elements_list.getSelected()].type == UI_STRING_LABEL) {
                     // modify text in selected text element
                     *UIMap["selected text"]._data.strPtr = UIMap[elements_list.getSelected()].label;
                 }
+            }
+
+            for (int i = 0; i < w.layout_grid.size(); i++) {
+                rows_list.elements.push_back(std::to_string(i));
+            }
+            if (prev_selected_row < rows_list.elements.size()) {
+                rows_list.selected_element = prev_selected_row;
+            }
+
+            if (rows_list.selected_element != -1) {
+                UIMap["row height"]._data.ui = w.layout_grid[rows_list.selected_element].min_height;
             }
 
             if (style_elements_list.selected_element != -1) {
@@ -235,22 +262,25 @@ int main() {
         if (widgets_list.selected_element != -1) {
             if (prev_selected_widget == widgets_list.selected_element) {
                 updateWidgetFromUI(widgets_list.getSelected(), winID);
-
+                WIDGET& w = GUI.getWidget(widgets_list.getSelected(), winID);
                 if (style_elements_list.selected_element != -1) {
                     if (style_edit_mode == widget_edit) {
-                        WIDGET& w = GUI.getWidget( widgets_list.getSelected(), winID );
                         w.style.elements[style_elements_list.selected_element].r = UIMap["Red property color"]._data.ui;
                         w.style.elements[style_elements_list.selected_element].g = UIMap["Green property color"]._data.ui;
                         w.style.elements[style_elements_list.selected_element].b = UIMap["Blue property color"]._data.ui;
                         w.style.elements[style_elements_list.selected_element].a = UIMap["Alpha property color"]._data.ui;
                     }
                 }
-            }
 
-            if (elements_list.selected_element != -1 && prev_selected_element == elements_list.selected_element) {
-                if (UIMap[elements_list.getSelected()].type == UI_STRING_LABEL) {
-                    // modify text in selected text element
-                    UIMap[elements_list.getSelected()].label = *UIMap["selected text"]._data.strPtr;
+                if (elements_list.selected_element != -1 && prev_selected_element == elements_list.selected_element) {
+                    if (UIMap[elements_list.getSelected()].type == UI_STRING_LABEL) {
+                        // modify text in selected text element
+                        UIMap[elements_list.getSelected()].label = *UIMap["selected text"]._data.strPtr;
+                    }
+                }
+
+                if (rows_list.selected_element != -1 && prev_selected_row == rows_list.selected_element) {
+                    w.layout_grid[rows_list.selected_element].min_height = UIMap["row height"]._data.ui;
                 }
             }
         }
