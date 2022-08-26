@@ -1,0 +1,217 @@
+#include <IndieGoUI.h>
+#include <glad/glad.h>
+#include <GLFW/glfw3.h>
+
+#define STB_IMAGE_IMPLEMENTATION
+#include "stb_image.h"
+#include <vector>
+
+
+using namespace IndieGo::UI;
+
+extern Manager GUI;
+
+void updateWidgetFromUI(std::string widID, std::string winID) {
+    WIDGET & w = GUI.getWidget(widID, winID);
+    UI_elements_map & UIMap = GUI.UIMaps[winID];
+
+    // location
+    // TODO : update screen_region with information from renderer
+    w.screen_region.x = UIMap["location x"]._data.f / 100.f;
+    w.screen_region.y = UIMap["location y"]._data.f / 100.f;
+
+    // sizes
+    w.screen_region.w = UIMap["size x"]._data.f / 100.f;
+    w.screen_region.h = UIMap["size y"]._data.f / 100.f;
+
+    // additional properties
+    w.border = UIMap["bordered"]._data.b;
+    w.title = UIMap["titled"]._data.b;
+    w.minimizable = UIMap["minimizable"]._data.b;
+    w.scalable = UIMap["scalable"]._data.b;
+    w.movable = UIMap["movable"]._data.b;
+
+    // TODO : add elements to widget
+}
+
+void updateUIFromWidget(std::string widID, std::string winID) {
+    WIDGET & w = GUI.getWidget(widID, winID);
+    UI_elements_map & UIMap = GUI.UIMaps[winID];
+
+    // TODO : probably fix sizes and location update for movable widgets
+    // location
+    UIMap["location x"]._data.f = w.screen_region.x * 100.f;
+    UIMap["location y"]._data.f = w.screen_region.y * 100.f;
+
+    // sizes
+    UIMap["size x"]._data.f = w.screen_region.w * 100.f;
+    UIMap["size y"]._data.f = w.screen_region.h * 100.f;
+
+    // additional properties
+    UIMap["bordered"]._data.b = w.border;
+    UIMap["titled"]._data.b = w.title;
+    UIMap["minimizable"]._data.b = w.minimizable;
+    UIMap["scalable"]._data.b = w.scalable;
+    UIMap["movable"]._data.b = w.movable;
+
+    // TODO : add "widget elements" list and update it
+}
+
+void checkUIValues(std::string winID) {
+    UI_elements_map& UIMap = GUI.UIMaps[winID];
+
+    if (UIMap["location x"]._data.f > 100.f)
+        UIMap["location x"]._data.f = 100.f;
+
+    if (UIMap["location y"]._data.f > 100.f)
+        UIMap["location y"]._data.f = 100.f;
+
+    if (UIMap["size x"]._data.f > 100.f)
+        UIMap["size x"]._data.f = 100.f;
+
+    if (UIMap["size y"]._data.f > 100.f)
+        UIMap["size y"]._data.f = 100.f;
+
+    if (UIMap["location x"]._data.f < 0.f)
+        UIMap["location x"]._data.f = 0.f;
+
+    if (UIMap["location y"]._data.f < 0.f)
+        UIMap["location y"]._data.f = 0.f;
+
+    if (UIMap["size x"]._data.f < 0.f)
+        UIMap["size x"]._data.f = 0.f;
+
+    if (UIMap["size y"]._data.f < 0.f)
+        UIMap["size y"]._data.f = 0.f;
+}
+
+std::vector<unsigned int> loadedImages;
+
+// helper function lo load image through stbi
+// in other engine parts ImageLoader will do that
+unsigned int load_image(const char *filename) {
+    int x,y,n;
+    unsigned int tex;
+    unsigned char *data = stbi_load(filename, &x, &y, &n, 0);
+    // if (!data) die("[SDL]: failed to load image: %s", filename);
+    if (!data) {
+        std::cout << "[ERROR] failed to load image " << filename << std::endl;
+        return 0;
+    }
+    glGenTextures(1, &tex);
+    glBindTexture(GL_TEXTURE_2D, tex);
+    glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_NEAREST);
+    glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR_MIPMAP_NEAREST);
+    glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+    glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA8, x, y, 0, GL_RGBA, GL_UNSIGNED_BYTE, data);
+    glGenerateMipmap(GL_TEXTURE_2D);
+    stbi_image_free(data);
+    loadedImages.push_back(tex);
+    return tex;
+}
+
+std::string getColorPropName(COLOR_ELEMENTS prop) {
+    if (prop == UI_COLOR_TEXT) return "TEXT";
+    if (prop == UI_COLOR_WINDOW) return "WINDOW";
+    if (prop == UI_COLOR_HEADER) return "HEADER";
+    if (prop == UI_COLOR_BORDER) return "BORDER";
+    if (prop == UI_COLOR_BUTTON) return "BUTTON";
+    if (prop == UI_COLOR_BUTTON_HOVER) return "BUTTON_HOVER";
+    if (prop == UI_COLOR_BUTTON_ACTIVE) return "BUTTON_ACTIVE";
+    if (prop == UI_COLOR_TOGGLE) return "TOGGLE";
+    if (prop == UI_COLOR_TOGGLE_HOVER) return "TOGGLE_HOVER";
+    if (prop == UI_COLOR_TOGGLE_CURSOR) return "TOGGLE_CURSOR";
+    if (prop == UI_COLOR_SELECT) return "SELECT";
+    if (prop == UI_COLOR_SELECT_ACTIVE) return "SELECT_ACTIVE";
+    if (prop == UI_COLOR_SLIDER) return "SLIDER";
+    if (prop == UI_COLOR_SLIDER_CURSOR) return "SLIDER_CURSOR";
+    if (prop == UI_COLOR_SLIDER_CURSOR_HOVER) return "SLIDER_CURSOR_HOVER";
+    if (prop == UI_COLOR_SLIDER_CURSOR_ACTIVE) return "SLIDER_CURSOR_ACTIVE";
+    if (prop == UI_COLOR_PROPERTY) return "PROPERTY";
+    if (prop == UI_COLOR_EDIT) return "EDIT";
+    if (prop == UI_COLOR_EDIT_CURSOR) return "EDIT_CURSOR";
+    if (prop == UI_COLOR_COMBO) return "COMBO";
+    if (prop == UI_COLOR_CHART) return "CHART";
+    if (prop == UI_COLOR_CHART_COLOR) return "CHART_COLOR";
+    if (prop == UI_COLOR_CHART_COLOR_HIGHLIGHT) return "CHART_COLOR_HIGHLIGHT";
+    if (prop == UI_COLOR_SCROLLBAR) return "SCROLLBAR";
+    if (prop == UI_COLOR_SCROLLBAR_CURSOR) return "SCROLLBAR_CURSOR";
+    if (prop == UI_COLOR_SCROLLBAR_CURSOR_HOVER) return "SCROLLBAR_CURSOR_HOVER";
+    if (prop == UI_COLOR_SCROLLBAR_CURSOR_ACTIVE) return "SCROLLBAR_CURSOR_ACTIVE";
+    if (prop == UI_COLOR_TAB_HEADER) return "TAB_HEADER";
+    return "NO_COLOR_PROPERTY";
+}
+
+// This is windows-specific part
+// #ifdef WIN32
+#include <windows.h>
+#include <shobjidl.h> 
+// #endif
+// #include <list>
+
+#include <list>
+#include <string>
+
+std::list<std::string> getPaths() {
+	std::string selected_path;
+	std::list<std::string> selected_paths;
+
+	HRESULT hr = CoInitializeEx(NULL, COINIT_APARTMENTTHREADED | COINIT_DISABLE_OLE1DDE);
+
+	if (SUCCEEDED(hr)) {
+		IFileOpenDialog* pFileOpen;
+
+		// Create the FileOpenDialog object.
+		hr = CoCreateInstance(
+            CLSID_FileOpenDialog, 
+            NULL, 
+            CLSCTX_ALL,
+			IID_IFileOpenDialog, 
+            reinterpret_cast<void**>(&pFileOpen)
+        );
+
+		if (SUCCEEDED(hr)) {
+			hr = pFileOpen->SetOptions(FOS_FORCEFILESYSTEM | FOS_ALLOWMULTISELECT);
+			// Show the Open dialog box.
+			hr = pFileOpen->Show(NULL);
+
+			// Get the file name from the dialog box.
+			if (SUCCEEDED(hr)) {
+				//IShellItem* pItem;
+				IShellItemArray* pItem;
+				hr = pFileOpen->GetResults(&pItem);
+				if (SUCCEEDED(hr)) {
+					PWSTR pszFilePath;
+					DWORD dwNumItems = 0; // number of items in multiple selection
+					//std::wstring strSelected; // will hold file paths of selected items
+					std::string strSelected;
+
+					hr = pItem->GetCount(&dwNumItems);  // get number of selected items
+					for (DWORD i = 0; i < dwNumItems; i++) {
+						IShellItem* psi = NULL;
+						hr = pItem->GetItemAt(i, &psi); // get a selected item from the IShellItemArray
+						if (SUCCEEDED(hr)) {
+							hr = psi->GetDisplayName(SIGDN_FILESYSPATH, &pszFilePath);
+							if (SUCCEEDED(hr)) {
+								strSelected.clear();
+								int path_size = wcslen(pszFilePath);
+								wchar_t* path_pointer = (wchar_t*)pszFilePath;
+								for (int i = 0; i < path_size; i++) {
+									strSelected += *path_pointer;
+									path_pointer++;
+								}
+								selected_paths.push_back(strSelected);
+ 								CoTaskMemFree(pszFilePath);
+							}
+							psi->Release();
+						}
+					}
+				}
+			}
+			pFileOpen->Release();
+		}
+		CoUninitialize();
+	}
+	return selected_paths;
+}

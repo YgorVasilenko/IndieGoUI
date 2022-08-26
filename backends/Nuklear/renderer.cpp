@@ -73,6 +73,8 @@ struct nk_glfw_vertex {
 
 std::map<std::string, struct nk_font *> loaded_fonts;
 
+std::map<unsigned int, struct nk_image> images;
+
 // Use winID to store window's context. If window destroyed and re-initializes
 // context should be same for respective winID
 std::map<std::string, struct nk_glfw*> glfw_storage;
@@ -352,14 +354,8 @@ void prepareUIRenderer(GLFWwindow* window, std::string & winID) {
 
 using namespace IndieGo::UI;
 
-struct NuklearInitData {
-    std::string winID;
-    GLFWwindow* window;
-};
-
 void Manager::scroll(void * window, double xoff, double yoff) {
     std::string glfw_win = *reinterpret_cast<std::string*>(window);
-    // GLFWwindow * glfw_win = reinterpret_cast<GLFWwindow*>(window);
     struct nk_glfw * glfw = glfw_storage[glfw_win];
 
     (void)xoff;
@@ -368,8 +364,6 @@ void Manager::scroll(void * window, double xoff, double yoff) {
 }
 
 void Manager::mouse_move(void * window, double x, double y) {
-    // GLFWwindow * glfw_win = reinterpret_cast<GLFWwindow*>(window);
-    // struct nk_glfw * glfw = glfw_storage[glfw_win];
 
     cursor_pos.x = x;
     cursor_pos.y = y;
@@ -402,7 +396,6 @@ void Manager::mouse_button(void * window, int button, int action, int mods){
 }
 
 void Manager::char_input(void * window, unsigned int codepoint) {
-    // GLFWwindow * glfw_win = reinterpret_cast<GLFWwindow*>(window);
     std::string glfw_win = *reinterpret_cast<std::string*>(window);
     struct nk_glfw * glfw = glfw_storage[glfw_win];
 
@@ -412,7 +405,6 @@ void Manager::char_input(void * window, unsigned int codepoint) {
 }
 
 void Manager::key_input(void * window, unsigned int codepoint, bool pressed) {
-    // GLFWwindow * glfw_win = reinterpret_cast<GLFWwindow*>(window);
     std::string glfw_win = *reinterpret_cast<std::string*>(window);
     struct nk_glfw * glfw = glfw_storage[glfw_win];
 
@@ -546,8 +538,13 @@ void UI_element::callUIfunction() {
             color_picker_unwrapped = false;
         }
     }
+    
+    if (type == UI_IMAGE) {
+        if (_data.i != -1)
+            nk_image(ctx, images[_data.i]);
+    }
 
-    if (type == UI_STRING_LABEL){
+    if (type == UI_STRING_LABEL) {
         nk_flags align;
         switch(text_align){
           case LEFT:
@@ -561,6 +558,12 @@ void UI_element::callUIfunction() {
             break;
         }
         nk_label(ctx, label.c_str(), align);
+    }
+    
+    if (type == UI_PROGRESS) {
+        nk_size curr = _data.ui;
+        nk_progress(ctx, &curr, 100, modifyable_progress_bar);
+        _data.ui = curr;
     }
 
     if (type == UI_ITEMS_LIST) {
@@ -577,6 +580,18 @@ void UI_element::callUIfunction() {
                 }
             }
         } else if (uiGroupRef.selectMethod == LIST_SELECT) {
+            nk_flags align;
+            switch(text_align){
+            case LEFT:
+                align = NK_TEXT_LEFT;
+                break;
+            case CENTER:
+                align = NK_TEXT_CENTERED;
+                break;
+            case RIGHT:
+                align = NK_TEXT_RIGHT;
+                break;
+            }
             std::regex e(uiGroupRef.regrex_filter);
             if (nk_group_begin(ctx, label.c_str(), NK_WINDOW_TITLE | NK_WINDOW_BORDER)) {
                 int selected = 0;
@@ -591,7 +606,7 @@ void UI_element::callUIfunction() {
                             continue;
                     }
                     nk_layout_row_dynamic(ctx, 20, 1);
-                    nk_selectable_label(ctx, uiGroupRef.elements[i].c_str(), NK_TEXT_CENTERED, &selected);
+                    nk_selectable_label(ctx, uiGroupRef.elements[i].c_str(), align, &selected);
                     if (selected) {
                         if ( uiGroupRef.selected_element != i )
                             uiGroupRef.selection_switch = true;
@@ -641,6 +656,18 @@ void UI_element::callUIfunction() {
     }
 }
 
+void UI_element::initImage(unsigned int texID, std::string path) {
+    if (type != UI_IMAGE) {
+        // TODO : add error message
+        return;
+    }
+    if (images.find(texID) == images.end()) {
+        images[texID] = nk_image_id((int)texID);
+    }
+    _data.i = texID;
+    label = path;
+}
+
 //--------------------------------------------------------
 //
 //            Widget display function. May use
@@ -676,22 +703,43 @@ void WIDGET::callImmediateBackend(UI_elements_map & UIMap){
 
     // TODO : prior to drawing, check if window's size changed
     // if so, try fitting widget to new size as much as possible
+    float x = screen_size.w * screen_region.x;
+    float y = screen_size.h * screen_region.y;
+    float w = screen_size.w * screen_region.w;
+    float h = screen_size.h * screen_region.h;
+
+    if (initialized_in_backend) {
+        nk_window_set_bounds(ctx, name.c_str(), nk_rect(x, y, w, h));
+    }
+
     if (
         nk_begin(
             ctx,
             name.c_str(),
             nk_rect(
-                (float)screen_region.x,
-                (float)screen_region.y,
-                (float)screen_region.w,
-                (float)screen_region.h
+                screen_size.w * screen_region.x,
+                screen_size.h * screen_region.y,
+                screen_size.w * screen_region.w,
+                screen_size.h * screen_region.h
             ),
             flags
         )
     ) {
+        initialized_in_backend = true;
         focused = nk_window_has_focus(ctx);
         hasCursor = nk_window_is_hovered(ctx);
         callWidgetUI(UIMap);
+        if (backgroundImage) {
+            nk_layout_row_dynamic(ctx, (float)screen_region.h, 1);
+            nk_image(ctx, images[img_idx]);
+        }
+    }
+    if (movable) {
+        // update screen_region with current bounds, if those are changed by user
+        screen_region.x = ctx->current->bounds.x / screen_size.w;
+        screen_region.y = ctx->current->bounds.y / screen_size.h;
+        screen_region.w = ctx->current->bounds.w / screen_size.w;
+        screen_region.h = ctx->current->bounds.h / screen_size.h;
     }
     nk_end(ctx);
 }
@@ -717,7 +765,6 @@ void WIDGET::allocateGroupEnd(){
 #define NK_GLFW_GL3_MOUSE_GRABBING
 
 void Manager::drawFrameStart(std::string & winID) {
-    // GLFWwindow * glfw_win = reinterpret_cast<GLFWwindow*>(window);
     struct nk_glfw * glfw = glfw_storage[winID];
 
     int i;
@@ -813,27 +860,22 @@ void Manager::drawFrameEnd(std::string & winID) {
     nk_glfw3_render(glfw, NK_ANTI_ALIASING_ON, MAX_VERTEX_BUFFER, MAX_ELEMENT_BUFFER);
 }
 
-void Manager::init(void * initData){
-    NuklearInitData * initPtr = reinterpret_cast<NuklearInitData*>(initData);
-    prepareUIRenderer(initPtr->window, initPtr->winID);
+void Manager::init(std::string winID, void * initData){
+    // NuklearInitData * initPtr = reinterpret_cast<NuklearInitData*>(initData);
+    prepareUIRenderer((GLFWwindow*)initData, winID);
 }
 
-void Manager::addWindow(void * initData){
-    NuklearInitData * initPtr = reinterpret_cast<NuklearInitData*>(initData);
-    prepareUIRenderer(initPtr->window, initPtr->winID);
+void Manager::addWindow(std::string winID, void * initData) {
+    prepareUIRenderer((GLFWwindow*)initData, winID);
 }
 
-void Manager::removeWindow(void * winData) {
-    // NuklearInitData * winPtr = reinterpret_cast<NuklearInitData*>(winData);
-    // if (glfw_storage.find(winPtr->winID) != glfw_storage.end()) {
-    //     std::cout << "[NUKLEAR::INFO] releasing context for " << winPtr->winID << std::endl;
-    //     // get rid of old context data before creating new window
-    //     nk_free(&glfw_storage[winPtr->winID]->ctx);
-    //     delete glfw_storage[winPtr->winID];
-    //     glfw_storage.erase(
-    //         glfw_storage.find(winPtr->winID)
-    //     );
-    // }
+void Manager::removeWindow(std::string winID, void * winData) {
+
 }
 
-
+//unsigned int Manager::addImage(unsigned int texID) {
+//    images.push_back(
+//        nk_image_id((int)texID)
+//    );
+//    return images.size() - 1; 
+//}

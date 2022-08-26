@@ -77,10 +77,10 @@ std::string getColorPropName(COLOR_ELEMENTS prop) {
 double curr_time = 0.0, prev_time = 0.0;
 unsigned int frames = 0;
 
-struct Win_init_data {
-    std::string winID = winID;
-    void* screen = NULL;
-} _init_data;
+// struct UI_Creator {
+//     std::name currWinId;
+//     vi
+// };
 
 int main() {
 
@@ -103,10 +103,7 @@ int main() {
     glfwSetKeyCallback(screen, key_callback);
 
     glViewport(0, 0, WIDTH, HEIGHT);
-
-    _init_data.screen = screen;
-    _init_data.winID = winID;
-    GUI.init( &_init_data);
+    GUI.init(winID, screen);
 
     // initialize test widget
     test_widget.screen_region.x = WIDTH / 4;

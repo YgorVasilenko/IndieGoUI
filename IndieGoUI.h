@@ -155,6 +155,7 @@ namespace IndieGo {
 		};
 
 		enum UI_ELEMENT_TYPE {
+			// parameterize BUTTON styling
 			UI_FLOAT,
 			UI_INT,
 			UI_UINT,
@@ -164,7 +165,9 @@ namespace IndieGo {
 			UI_BUTTON,
 			UI_BUTTON_SWITCH,
 			UI_ITEMS_LIST,
-			UI_COLOR_PICKER
+			UI_COLOR_PICKER,
+			UI_IMAGE,
+			UI_PROGRESS
 		};
 
 		enum TEXT_ALIGN {
@@ -175,6 +178,8 @@ namespace IndieGo {
 			union ui_data {
 				bool b;
 				float f;
+				// in case of UI_IMAGE this contains indxe of imgae in global images vector, it it's initialized.
+				// -1 otherwise
 				int i;
 				unsigned int ui;
 				colorf c;
@@ -187,8 +192,11 @@ namespace IndieGo {
 			bool hovered_by_keys = false;
 			bool selected_by_keys = false;
 
+			bool modifyable_progress_bar = false;
 			TEXT_ALIGN text_align = CENTER;
 			UI_ELEMENT_TYPE type;
+
+			// in case of UI_IMAGE this is used as a path to loaded image
 			std::string label = "";
 			bool color_picker_unwrapped = false;
 
@@ -204,6 +212,7 @@ namespace IndieGo {
 			unsigned char layout_col = 0;
 			// default implementation could be overrided
 			virtual void callUIfunction();
+			virtual void initImage(unsigned int texID, std::string path = "");
 		};
 		struct grid_row {
 			std::vector<std::string> cells;
@@ -250,6 +259,11 @@ namespace IndieGo {
 			// widgets provide place on screen to display ui elements
 			std::vector<std::string> widget_elements;
 			std::string name = "";
+			bool backgroundImage = false;
+			
+			// index in global array of images
+			// maintained by backend
+			unsigned int img_idx = 0;
 
 			float row_size = 25.f,
 				col_size = -1.f; // -1 == auto-scale
@@ -378,6 +392,7 @@ namespace IndieGo {
 
 			// convenience operator
 			UI_element & operator[](const std::string& id){
+				// TODO : add assert(elementExists)
 				return elements[id];
 			}
 
@@ -419,6 +434,8 @@ namespace IndieGo {
 				} else if (element.type == UI_UINT){
 					// all default uint values are 1
 					element._data.ui = 1;
+				} else if (element.type == UI_IMAGE) {
+					element._data.i = -1;
 				}
 			
 				elements[elt_name] = element;
@@ -442,12 +459,17 @@ namespace IndieGo {
 			};
 		};
 
-		struct region { short x, y, w, h; };
-		struct region_size { short w, h; };
+		template<typename T>
+		struct region { T x, y, w, h; };
+		
+		template<typename T>
+		struct region_size { T w, h; };
 
 		struct WIDGET : public WIDGET_BASE {
-			// widget's size and location on screen
-			region screen_region;
+
+			// widget's size and location on screen, in percentage with 0% 0% top-left
+			region<float> screen_region;
+			region_size<unsigned int> screen_size;
 
 			bool hidden = false;
 
@@ -476,8 +498,10 @@ namespace IndieGo {
 			bool scalable = true;
 
 			color_table style;
-			bool custom_style = false;
+			bool custom_style = true;
 		private:
+			bool initialized_in_backend = false;
+
 			void callWidgetUI(UI_elements_map & UIMap) {
 				bool curr_group_folded = false;
 				std::vector<elements_group>::iterator curr_group;
@@ -527,6 +551,9 @@ namespace IndieGo {
 		// Main UI's controlling memory struct - contains all possible memory maps and widgets,
 		// adds new ones and removes old, makes calls to Immediate-Mode backends
 		struct Manager {
+
+			region_size<unsigned int> screen_size;
+
 			// [win_id] = ui_map
 			std::map<std::string, UI_elements_map> UIMaps;
 
@@ -537,13 +564,13 @@ namespace IndieGo {
 
 			// provide init functions in backend renderer module
 			void init(
-				void * initData = NULL // different backends may require different init data, so keep this as void pointer
+				std::string winID, void * initData = NULL // different backends may require different init data, so keep this as void pointer
 			);
 			void addWindow(
-				void * initData = NULL // different backends may require different init data, so keep this as void pointer
+				std::string winID, void * initData = NULL // different backends may require different init data, so keep this as void pointer
 			);
 			void removeWindow(
-				void * initData = NULL // different backends may require different init data, so keep this as void pointer
+				std::string winID, void * initData = NULL // different backends may require different init data, so keep this as void pointer
 			);
 
 			void drawFrameStart(std::string & winID);
@@ -583,6 +610,9 @@ namespace IndieGo {
 				}
 				UIMaps[win_name] = map;
 			};
+
+			// adds new image to global vector of images. Returns index or recently added image
+			// unsigned int addImage(unsigned int texID);
 
 			WIDGET & addWidget(WIDGET & new_widget, const std::string & win_name = DEFAULT_WINDOW_NAME) {
 				// can't add widgets for window without map
@@ -632,6 +662,7 @@ namespace IndieGo {
 						hadFocus = true;
 
 					if (!widget->second.hidden){
+						widget->second.screen_size = screen_size;
 						widget->second.callImmediateBackend(UIMaps[curr_ui_map]);
 						if (widget->second.hasCursor)
 							hoveredWidgets[curr_ui_map] = & widget->second;
