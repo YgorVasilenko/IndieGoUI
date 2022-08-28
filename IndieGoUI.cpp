@@ -100,6 +100,13 @@ void Manager::serialize(const std::string & winID, const std::string & path, con
         w->mutable_widget()->set_scalable(widget.second.scalable);
         w->mutable_widget()->set_movable(widget.second.movable);
 
+        // special props
+        w->mutable_widget()->set_border_size(widget.second.border_size);
+        w->mutable_widget()->mutable_padding()->set_x(widget.second.padding.w);
+        w->mutable_widget()->mutable_padding()->set_y(widget.second.padding.h);
+        w->mutable_widget()->mutable_spacing()->set_x(widget.second.spacing.w);
+        w->mutable_widget()->mutable_spacing()->set_y(widget.second.spacing.h);
+
         // rows heights
         for (auto g_row : widget.second.layout_grid) {
             w->mutable_widget()->add_rows_heights(g_row.min_height);
@@ -135,7 +142,12 @@ void Manager::serialize(const std::string & winID, const std::string & path, con
             e->set_name(elt_name);
             e->set_widget_name(widget.first);
             e->set_type((unsigned int)UIMap[elt_name].type);
-            // TODO : check if add_to_new_row flag requires setting
+
+            e->set_border(UIMap[elt_name].border);
+            e->set_rounding(UIMap[elt_name].rounding);
+            e->mutable_padding()->set_x(UIMap[elt_name].padding.w);
+            e->mutable_padding()->set_y(UIMap[elt_name].padding.h);
+
             bool add_to_new_row = false;
             for (auto elt_group : widget.second.elements_groups) {
                 if (elt_group.start == elt_name) {
@@ -211,6 +223,13 @@ void Manager::deserialize(const std::string & winID, const std::string & path) {
         // styling
         WIDGET & added_w = GUI.getWidget(w.widget().name(), winID);
 
+        // special props
+        added_w.border_size = w.widget().border_size();
+        added_w.padding.h = w.widget().padding().y();
+        added_w.padding.w = w.widget().padding().x();
+        added_w.spacing.h = w.widget().spacing().y();
+        added_w.spacing.w = w.widget().spacing().x();
+
         // skinned props
         for (int j = 0; j < w.widget().skinned_props_size(); j++) {
             // TODO : check if image is loaded. Load, if not
@@ -247,6 +266,11 @@ void Manager::deserialize(const std::string & winID, const std::string & path) {
                 (UI_ELEMENT_TYPE)e.type(),
                 e.add_on_new_row()
             );
+            
+            UIMap[e.name()].border = e.border();
+            UIMap[e.name()].rounding = e.rounding();
+            UIMap[e.name()].padding.h = e.padding().y();
+            UIMap[e.name()].padding.w = e.padding().x();
 
             // skinned props
             for (int k = 0; k < e.skinned_props_size(); k++) {

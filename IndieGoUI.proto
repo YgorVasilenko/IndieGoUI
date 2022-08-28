@@ -20,6 +20,11 @@ message region {
     float h = 4;
 }
 
+message region_size {
+    float x = 1;
+    float y = 2;
+}
+
 message StyleColor {
     float r = 1;
     float g = 2;
@@ -37,11 +42,6 @@ message SkinnedProperty {
     uint32 prop_type = 2;
 }
 
-// message StyledProperty {
-//     StyleColor color = 1;
-//     // uint32 prop_type = 2;
-// }
-
 message WidgetBase {
     string name = 1;
     region size_loc = 2;
@@ -51,13 +51,18 @@ message WidgetBase {
     bool scalable = 6;
     bool movable = 7;
 
+    // different display settings
+    float border_size = 8; 
+    region_size padding = 9;
+	region_size spacing = 10;
+
     // on load when elements added to new row
     // it's size will be adjusted
-    repeated uint32 rows_heights = 8;
+    repeated uint32 rows_heights = 11;
 
     // on load skinned element will call useSkinImage
-    repeated SkinnedProperty skinned_props = 9;
-    repeated StyleColor styled_props = 10;
+    repeated SkinnedProperty skinned_props = 12;
+    repeated StyleColor styled_props = 13;
 }
 
 message Element {
@@ -66,9 +71,14 @@ message Element {
     uint32 type = 3;
     bool add_on_new_row = 4;
 
+    // different display settings
+    float border = 5; 
+	float rounding = 6;
+	region_size padding = 7;
+
     // on load skinned element will call useSkinImage
-    repeated SkinnedProperty skinned_props = 5;
-    repeated StyleColor styled_props = 6;
+    repeated SkinnedProperty skinned_props = 8;
+    repeated StyleColor styled_props = 9;
 }
 
 message Widget {

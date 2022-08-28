@@ -69,6 +69,9 @@ extern WidgetBaseDefaultTypeInternal _WidgetBase_default_instance_;
 class region;
 struct regionDefaultTypeInternal;
 extern regionDefaultTypeInternal _region_default_instance_;
+class region_size;
+struct region_sizeDefaultTypeInternal;
+extern region_sizeDefaultTypeInternal _region_size_default_instance_;
 }  // namespace ui_serialization
 PROTOBUF_NAMESPACE_OPEN
 template<> ::ui_serialization::Element* Arena::CreateMaybeMessage<::ui_serialization::Element>(Arena*);
@@ -79,6 +82,7 @@ template<> ::ui_serialization::StyleColor* Arena::CreateMaybeMessage<::ui_serial
 template<> ::ui_serialization::Widget* Arena::CreateMaybeMessage<::ui_serialization::Widget>(Arena*);
 template<> ::ui_serialization::WidgetBase* Arena::CreateMaybeMessage<::ui_serialization::WidgetBase>(Arena*);
 template<> ::ui_serialization::region* Arena::CreateMaybeMessage<::ui_serialization::region>(Arena*);
+template<> ::ui_serialization::region_size* Arena::CreateMaybeMessage<::ui_serialization::region_size>(Arena*);
 PROTOBUF_NAMESPACE_CLOSE
 namespace ui_serialization {
 
@@ -265,6 +269,165 @@ class region final :
 };
 // -------------------------------------------------------------------
 
+class region_size final :
+    public ::PROTOBUF_NAMESPACE_ID::Message /* @@protoc_insertion_point(class_definition:ui_serialization.region_size) */ {
+ public:
+  inline region_size() : region_size(nullptr) {}
+  ~region_size() override;
+  explicit PROTOBUF_CONSTEXPR region_size(::PROTOBUF_NAMESPACE_ID::internal::ConstantInitialized);
+
+  region_size(const region_size& from);
+  region_size(region_size&& from) noexcept
+    : region_size() {
+    *this = ::std::move(from);
+  }
+
+  inline region_size& operator=(const region_size& from) {
+    CopyFrom(from);
+    return *this;
+  }
+  inline region_size& operator=(region_size&& from) noexcept {
+    if (this == &from) return *this;
+    if (GetOwningArena() == from.GetOwningArena()
+  #ifdef PROTOBUF_FORCE_COPY_IN_MOVE
+        && GetOwningArena() != nullptr
+  #endif  // !PROTOBUF_FORCE_COPY_IN_MOVE
+    ) {
+      InternalSwap(&from);
+    } else {
+      CopyFrom(from);
+    }
+    return *this;
+  }
+
+  static const ::PROTOBUF_NAMESPACE_ID::Descriptor* descriptor() {
+    return GetDescriptor();
+  }
+  static const ::PROTOBUF_NAMESPACE_ID::Descriptor* GetDescriptor() {
+    return default_instance().GetMetadata().descriptor;
+  }
+  static const ::PROTOBUF_NAMESPACE_ID::Reflection* GetReflection() {
+    return default_instance().GetMetadata().reflection;
+  }
+  static const region_size& default_instance() {
+    return *internal_default_instance();
+  }
+  static inline const region_size* internal_default_instance() {
+    return reinterpret_cast<const region_size*>(
+               &_region_size_default_instance_);
+  }
+  static constexpr int kIndexInFileMessages =
+    1;
+
+  friend void swap(region_size& a, region_size& b) {
+    a.Swap(&b);
+  }
+  inline void Swap(region_size* other) {
+    if (other == this) return;
+  #ifdef PROTOBUF_FORCE_COPY_IN_SWAP
+    if (GetOwningArena() != nullptr &&
+        GetOwningArena() == other->GetOwningArena()) {
+   #else  // PROTOBUF_FORCE_COPY_IN_SWAP
+    if (GetOwningArena() == other->GetOwningArena()) {
+  #endif  // !PROTOBUF_FORCE_COPY_IN_SWAP
+      InternalSwap(other);
+    } else {
+      ::PROTOBUF_NAMESPACE_ID::internal::GenericSwap(this, other);
+    }
+  }
+  void UnsafeArenaSwap(region_size* other) {
+    if (other == this) return;
+    GOOGLE_DCHECK(GetOwningArena() == other->GetOwningArena());
+    InternalSwap(other);
+  }
+
+  // implements Message ----------------------------------------------
+
+  region_size* New(::PROTOBUF_NAMESPACE_ID::Arena* arena = nullptr) const final {
+    return CreateMaybeMessage<region_size>(arena);
+  }
+  using ::PROTOBUF_NAMESPACE_ID::Message::CopyFrom;
+  void CopyFrom(const region_size& from);
+  using ::PROTOBUF_NAMESPACE_ID::Message::MergeFrom;
+  void MergeFrom( const region_size& from) {
+    region_size::MergeImpl(*this, from);
+  }
+  private:
+  static void MergeImpl(::PROTOBUF_NAMESPACE_ID::Message& to_msg, const ::PROTOBUF_NAMESPACE_ID::Message& from_msg);
+  public:
+  PROTOBUF_ATTRIBUTE_REINITIALIZES void Clear() final;
+  bool IsInitialized() const final;
+
+  size_t ByteSizeLong() const final;
+  const char* _InternalParse(const char* ptr, ::PROTOBUF_NAMESPACE_ID::internal::ParseContext* ctx) final;
+  uint8_t* _InternalSerialize(
+      uint8_t* target, ::PROTOBUF_NAMESPACE_ID::io::EpsCopyOutputStream* stream) const final;
+  int GetCachedSize() const final { return _impl_._cached_size_.Get(); }
+
+  private:
+  void SharedCtor(::PROTOBUF_NAMESPACE_ID::Arena* arena, bool is_message_owned);
+  void SharedDtor();
+  void SetCachedSize(int size) const final;
+  void InternalSwap(region_size* other);
+
+  private:
+  friend class ::PROTOBUF_NAMESPACE_ID::internal::AnyMetadata;
+  static ::PROTOBUF_NAMESPACE_ID::StringPiece FullMessageName() {
+    return "ui_serialization.region_size";
+  }
+  protected:
+  explicit region_size(::PROTOBUF_NAMESPACE_ID::Arena* arena,
+                       bool is_message_owned = false);
+  public:
+
+  static const ClassData _class_data_;
+  const ::PROTOBUF_NAMESPACE_ID::Message::ClassData*GetClassData() const final;
+
+  ::PROTOBUF_NAMESPACE_ID::Metadata GetMetadata() const final;
+
+  // nested types ----------------------------------------------------
+
+  // accessors -------------------------------------------------------
+
+  enum : int {
+    kXFieldNumber = 1,
+    kYFieldNumber = 2,
+  };
+  // float x = 1;
+  void clear_x();
+  float x() const;
+  void set_x(float value);
+  private:
+  float _internal_x() const;
+  void _internal_set_x(float value);
+  public:
+
+  // float y = 2;
+  void clear_y();
+  float y() const;
+  void set_y(float value);
+  private:
+  float _internal_y() const;
+  void _internal_set_y(float value);
+  public:
+
+  // @@protoc_insertion_point(class_scope:ui_serialization.region_size)
+ private:
+  class _Internal;
+
+  template <typename T> friend class ::PROTOBUF_NAMESPACE_ID::Arena::InternalHelper;
+  typedef void InternalArenaConstructable_;
+  typedef void DestructorSkippable_;
+  struct Impl_ {
+    float x_;
+    float y_;
+    mutable ::PROTOBUF_NAMESPACE_ID::internal::CachedSize _cached_size_;
+  };
+  union { Impl_ _impl_; };
+  friend struct ::TableStruct_IndieGoUI_2eproto;
+};
+// -------------------------------------------------------------------
+
 class StyleColor final :
     public ::PROTOBUF_NAMESPACE_ID::Message /* @@protoc_insertion_point(class_definition:ui_serialization.StyleColor) */ {
  public:
@@ -313,7 +476,7 @@ class StyleColor final :
                &_StyleColor_default_instance_);
   }
   static constexpr int kIndexInFileMessages =
-    1;
+    2;
 
   friend void swap(StyleColor& a, StyleColor& b) {
     a.Swap(&b);
@@ -494,7 +657,7 @@ class SkinImage final :
                &_SkinImage_default_instance_);
   }
   static constexpr int kIndexInFileMessages =
-    2;
+    3;
 
   friend void swap(SkinImage& a, SkinImage& b) {
     a.Swap(&b);
@@ -667,7 +830,7 @@ class SkinnedProperty final :
                &_SkinnedProperty_default_instance_);
   }
   static constexpr int kIndexInFileMessages =
-    3;
+    4;
 
   friend void swap(SkinnedProperty& a, SkinnedProperty& b) {
     a.Swap(&b);
@@ -835,7 +998,7 @@ class WidgetBase final :
                &_WidgetBase_default_instance_);
   }
   static constexpr int kIndexInFileMessages =
-    4;
+    5;
 
   friend void swap(WidgetBase& a, WidgetBase& b) {
     a.Swap(&b);
@@ -908,18 +1071,21 @@ class WidgetBase final :
   // accessors -------------------------------------------------------
 
   enum : int {
-    kRowsHeightsFieldNumber = 8,
-    kSkinnedPropsFieldNumber = 9,
-    kStyledPropsFieldNumber = 10,
+    kRowsHeightsFieldNumber = 11,
+    kSkinnedPropsFieldNumber = 12,
+    kStyledPropsFieldNumber = 13,
     kNameFieldNumber = 1,
     kSizeLocFieldNumber = 2,
+    kPaddingFieldNumber = 9,
+    kSpacingFieldNumber = 10,
     kBorderedFieldNumber = 3,
     kTitledFieldNumber = 4,
     kMinimizableFieldNumber = 5,
     kScalableFieldNumber = 6,
     kMovableFieldNumber = 7,
+    kBorderSizeFieldNumber = 8,
   };
-  // repeated uint32 rows_heights = 8;
+  // repeated uint32 rows_heights = 11;
   int rows_heights_size() const;
   private:
   int _internal_rows_heights_size() const;
@@ -941,7 +1107,7 @@ class WidgetBase final :
   ::PROTOBUF_NAMESPACE_ID::RepeatedField< uint32_t >*
       mutable_rows_heights();
 
-  // repeated .ui_serialization.SkinnedProperty skinned_props = 9;
+  // repeated .ui_serialization.SkinnedProperty skinned_props = 12;
   int skinned_props_size() const;
   private:
   int _internal_skinned_props_size() const;
@@ -959,7 +1125,7 @@ class WidgetBase final :
   const ::PROTOBUF_NAMESPACE_ID::RepeatedPtrField< ::ui_serialization::SkinnedProperty >&
       skinned_props() const;
 
-  // repeated .ui_serialization.StyleColor styled_props = 10;
+  // repeated .ui_serialization.StyleColor styled_props = 13;
   int styled_props_size() const;
   private:
   int _internal_styled_props_size() const;
@@ -1009,6 +1175,42 @@ class WidgetBase final :
       ::ui_serialization::region* size_loc);
   ::ui_serialization::region* unsafe_arena_release_size_loc();
 
+  // .ui_serialization.region_size padding = 9;
+  bool has_padding() const;
+  private:
+  bool _internal_has_padding() const;
+  public:
+  void clear_padding();
+  const ::ui_serialization::region_size& padding() const;
+  PROTOBUF_NODISCARD ::ui_serialization::region_size* release_padding();
+  ::ui_serialization::region_size* mutable_padding();
+  void set_allocated_padding(::ui_serialization::region_size* padding);
+  private:
+  const ::ui_serialization::region_size& _internal_padding() const;
+  ::ui_serialization::region_size* _internal_mutable_padding();
+  public:
+  void unsafe_arena_set_allocated_padding(
+      ::ui_serialization::region_size* padding);
+  ::ui_serialization::region_size* unsafe_arena_release_padding();
+
+  // .ui_serialization.region_size spacing = 10;
+  bool has_spacing() const;
+  private:
+  bool _internal_has_spacing() const;
+  public:
+  void clear_spacing();
+  const ::ui_serialization::region_size& spacing() const;
+  PROTOBUF_NODISCARD ::ui_serialization::region_size* release_spacing();
+  ::ui_serialization::region_size* mutable_spacing();
+  void set_allocated_spacing(::ui_serialization::region_size* spacing);
+  private:
+  const ::ui_serialization::region_size& _internal_spacing() const;
+  ::ui_serialization::region_size* _internal_mutable_spacing();
+  public:
+  void unsafe_arena_set_allocated_spacing(
+      ::ui_serialization::region_size* spacing);
+  ::ui_serialization::region_size* unsafe_arena_release_spacing();
+
   // bool bordered = 3;
   void clear_bordered();
   bool bordered() const;
@@ -1054,6 +1256,15 @@ class WidgetBase final :
   void _internal_set_movable(bool value);
   public:
 
+  // float border_size = 8;
+  void clear_border_size();
+  float border_size() const;
+  void set_border_size(float value);
+  private:
+  float _internal_border_size() const;
+  void _internal_set_border_size(float value);
+  public:
+
   // @@protoc_insertion_point(class_scope:ui_serialization.WidgetBase)
  private:
   class _Internal;
@@ -1068,11 +1279,14 @@ class WidgetBase final :
     ::PROTOBUF_NAMESPACE_ID::RepeatedPtrField< ::ui_serialization::StyleColor > styled_props_;
     ::PROTOBUF_NAMESPACE_ID::internal::ArenaStringPtr name_;
     ::ui_serialization::region* size_loc_;
+    ::ui_serialization::region_size* padding_;
+    ::ui_serialization::region_size* spacing_;
     bool bordered_;
     bool titled_;
     bool minimizable_;
     bool scalable_;
     bool movable_;
+    float border_size_;
     mutable ::PROTOBUF_NAMESPACE_ID::internal::CachedSize _cached_size_;
   };
   union { Impl_ _impl_; };
@@ -1128,7 +1342,7 @@ class Element final :
                &_Element_default_instance_);
   }
   static constexpr int kIndexInFileMessages =
-    5;
+    6;
 
   friend void swap(Element& a, Element& b) {
     a.Swap(&b);
@@ -1201,14 +1415,17 @@ class Element final :
   // accessors -------------------------------------------------------
 
   enum : int {
-    kSkinnedPropsFieldNumber = 5,
-    kStyledPropsFieldNumber = 6,
+    kSkinnedPropsFieldNumber = 8,
+    kStyledPropsFieldNumber = 9,
     kNameFieldNumber = 1,
     kWidgetNameFieldNumber = 2,
+    kPaddingFieldNumber = 7,
     kTypeFieldNumber = 3,
     kAddOnNewRowFieldNumber = 4,
+    kBorderFieldNumber = 5,
+    kRoundingFieldNumber = 6,
   };
-  // repeated .ui_serialization.SkinnedProperty skinned_props = 5;
+  // repeated .ui_serialization.SkinnedProperty skinned_props = 8;
   int skinned_props_size() const;
   private:
   int _internal_skinned_props_size() const;
@@ -1226,7 +1443,7 @@ class Element final :
   const ::PROTOBUF_NAMESPACE_ID::RepeatedPtrField< ::ui_serialization::SkinnedProperty >&
       skinned_props() const;
 
-  // repeated .ui_serialization.StyleColor styled_props = 6;
+  // repeated .ui_serialization.StyleColor styled_props = 9;
   int styled_props_size() const;
   private:
   int _internal_styled_props_size() const;
@@ -1272,6 +1489,24 @@ class Element final :
   std::string* _internal_mutable_widget_name();
   public:
 
+  // .ui_serialization.region_size padding = 7;
+  bool has_padding() const;
+  private:
+  bool _internal_has_padding() const;
+  public:
+  void clear_padding();
+  const ::ui_serialization::region_size& padding() const;
+  PROTOBUF_NODISCARD ::ui_serialization::region_size* release_padding();
+  ::ui_serialization::region_size* mutable_padding();
+  void set_allocated_padding(::ui_serialization::region_size* padding);
+  private:
+  const ::ui_serialization::region_size& _internal_padding() const;
+  ::ui_serialization::region_size* _internal_mutable_padding();
+  public:
+  void unsafe_arena_set_allocated_padding(
+      ::ui_serialization::region_size* padding);
+  ::ui_serialization::region_size* unsafe_arena_release_padding();
+
   // uint32 type = 3;
   void clear_type();
   uint32_t type() const;
@@ -1290,6 +1525,24 @@ class Element final :
   void _internal_set_add_on_new_row(bool value);
   public:
 
+  // float border = 5;
+  void clear_border();
+  float border() const;
+  void set_border(float value);
+  private:
+  float _internal_border() const;
+  void _internal_set_border(float value);
+  public:
+
+  // float rounding = 6;
+  void clear_rounding();
+  float rounding() const;
+  void set_rounding(float value);
+  private:
+  float _internal_rounding() const;
+  void _internal_set_rounding(float value);
+  public:
+
   // @@protoc_insertion_point(class_scope:ui_serialization.Element)
  private:
   class _Internal;
@@ -1302,8 +1555,11 @@ class Element final :
     ::PROTOBUF_NAMESPACE_ID::RepeatedPtrField< ::ui_serialization::StyleColor > styled_props_;
     ::PROTOBUF_NAMESPACE_ID::internal::ArenaStringPtr name_;
     ::PROTOBUF_NAMESPACE_ID::internal::ArenaStringPtr widget_name_;
+    ::ui_serialization::region_size* padding_;
     uint32_t type_;
     bool add_on_new_row_;
+    float border_;
+    float rounding_;
     mutable ::PROTOBUF_NAMESPACE_ID::internal::CachedSize _cached_size_;
   };
   union { Impl_ _impl_; };
@@ -1359,7 +1615,7 @@ class Widget final :
                &_Widget_default_instance_);
   }
   static constexpr int kIndexInFileMessages =
-    6;
+    7;
 
   friend void swap(Widget& a, Widget& b) {
     a.Swap(&b);
@@ -1536,7 +1792,7 @@ class SerializedUI final :
                &_SerializedUI_default_instance_);
   }
   static constexpr int kIndexInFileMessages =
-    7;
+    8;
 
   friend void swap(SerializedUI& a, SerializedUI& b) {
     a.Swap(&b);
@@ -1732,6 +1988,50 @@ inline void region::_internal_set_h(float value) {
 inline void region::set_h(float value) {
   _internal_set_h(value);
   // @@protoc_insertion_point(field_set:ui_serialization.region.h)
+}
+
+// -------------------------------------------------------------------
+
+// region_size
+
+// float x = 1;
+inline void region_size::clear_x() {
+  _impl_.x_ = 0;
+}
+inline float region_size::_internal_x() const {
+  return _impl_.x_;
+}
+inline float region_size::x() const {
+  // @@protoc_insertion_point(field_get:ui_serialization.region_size.x)
+  return _internal_x();
+}
+inline void region_size::_internal_set_x(float value) {
+  
+  _impl_.x_ = value;
+}
+inline void region_size::set_x(float value) {
+  _internal_set_x(value);
+  // @@protoc_insertion_point(field_set:ui_serialization.region_size.x)
+}
+
+// float y = 2;
+inline void region_size::clear_y() {
+  _impl_.y_ = 0;
+}
+inline float region_size::_internal_y() const {
+  return _impl_.y_;
+}
+inline float region_size::y() const {
+  // @@protoc_insertion_point(field_get:ui_serialization.region_size.y)
+  return _internal_y();
+}
+inline void region_size::_internal_set_y(float value) {
+  
+  _impl_.y_ = value;
+}
+inline void region_size::set_y(float value) {
+  _internal_set_y(value);
+  // @@protoc_insertion_point(field_set:ui_serialization.region_size.y)
 }
 
 // -------------------------------------------------------------------
@@ -2320,7 +2620,207 @@ inline void WidgetBase::set_movable(bool value) {
   // @@protoc_insertion_point(field_set:ui_serialization.WidgetBase.movable)
 }
 
-// repeated uint32 rows_heights = 8;
+// float border_size = 8;
+inline void WidgetBase::clear_border_size() {
+  _impl_.border_size_ = 0;
+}
+inline float WidgetBase::_internal_border_size() const {
+  return _impl_.border_size_;
+}
+inline float WidgetBase::border_size() const {
+  // @@protoc_insertion_point(field_get:ui_serialization.WidgetBase.border_size)
+  return _internal_border_size();
+}
+inline void WidgetBase::_internal_set_border_size(float value) {
+  
+  _impl_.border_size_ = value;
+}
+inline void WidgetBase::set_border_size(float value) {
+  _internal_set_border_size(value);
+  // @@protoc_insertion_point(field_set:ui_serialization.WidgetBase.border_size)
+}
+
+// .ui_serialization.region_size padding = 9;
+inline bool WidgetBase::_internal_has_padding() const {
+  return this != internal_default_instance() && _impl_.padding_ != nullptr;
+}
+inline bool WidgetBase::has_padding() const {
+  return _internal_has_padding();
+}
+inline void WidgetBase::clear_padding() {
+  if (GetArenaForAllocation() == nullptr && _impl_.padding_ != nullptr) {
+    delete _impl_.padding_;
+  }
+  _impl_.padding_ = nullptr;
+}
+inline const ::ui_serialization::region_size& WidgetBase::_internal_padding() const {
+  const ::ui_serialization::region_size* p = _impl_.padding_;
+  return p != nullptr ? *p : reinterpret_cast<const ::ui_serialization::region_size&>(
+      ::ui_serialization::_region_size_default_instance_);
+}
+inline const ::ui_serialization::region_size& WidgetBase::padding() const {
+  // @@protoc_insertion_point(field_get:ui_serialization.WidgetBase.padding)
+  return _internal_padding();
+}
+inline void WidgetBase::unsafe_arena_set_allocated_padding(
+    ::ui_serialization::region_size* padding) {
+  if (GetArenaForAllocation() == nullptr) {
+    delete reinterpret_cast<::PROTOBUF_NAMESPACE_ID::MessageLite*>(_impl_.padding_);
+  }
+  _impl_.padding_ = padding;
+  if (padding) {
+    
+  } else {
+    
+  }
+  // @@protoc_insertion_point(field_unsafe_arena_set_allocated:ui_serialization.WidgetBase.padding)
+}
+inline ::ui_serialization::region_size* WidgetBase::release_padding() {
+  
+  ::ui_serialization::region_size* temp = _impl_.padding_;
+  _impl_.padding_ = nullptr;
+#ifdef PROTOBUF_FORCE_COPY_IN_RELEASE
+  auto* old =  reinterpret_cast<::PROTOBUF_NAMESPACE_ID::MessageLite*>(temp);
+  temp = ::PROTOBUF_NAMESPACE_ID::internal::DuplicateIfNonNull(temp);
+  if (GetArenaForAllocation() == nullptr) { delete old; }
+#else  // PROTOBUF_FORCE_COPY_IN_RELEASE
+  if (GetArenaForAllocation() != nullptr) {
+    temp = ::PROTOBUF_NAMESPACE_ID::internal::DuplicateIfNonNull(temp);
+  }
+#endif  // !PROTOBUF_FORCE_COPY_IN_RELEASE
+  return temp;
+}
+inline ::ui_serialization::region_size* WidgetBase::unsafe_arena_release_padding() {
+  // @@protoc_insertion_point(field_release:ui_serialization.WidgetBase.padding)
+  
+  ::ui_serialization::region_size* temp = _impl_.padding_;
+  _impl_.padding_ = nullptr;
+  return temp;
+}
+inline ::ui_serialization::region_size* WidgetBase::_internal_mutable_padding() {
+  
+  if (_impl_.padding_ == nullptr) {
+    auto* p = CreateMaybeMessage<::ui_serialization::region_size>(GetArenaForAllocation());
+    _impl_.padding_ = p;
+  }
+  return _impl_.padding_;
+}
+inline ::ui_serialization::region_size* WidgetBase::mutable_padding() {
+  ::ui_serialization::region_size* _msg = _internal_mutable_padding();
+  // @@protoc_insertion_point(field_mutable:ui_serialization.WidgetBase.padding)
+  return _msg;
+}
+inline void WidgetBase::set_allocated_padding(::ui_serialization::region_size* padding) {
+  ::PROTOBUF_NAMESPACE_ID::Arena* message_arena = GetArenaForAllocation();
+  if (message_arena == nullptr) {
+    delete _impl_.padding_;
+  }
+  if (padding) {
+    ::PROTOBUF_NAMESPACE_ID::Arena* submessage_arena =
+        ::PROTOBUF_NAMESPACE_ID::Arena::InternalGetOwningArena(padding);
+    if (message_arena != submessage_arena) {
+      padding = ::PROTOBUF_NAMESPACE_ID::internal::GetOwnedMessage(
+          message_arena, padding, submessage_arena);
+    }
+    
+  } else {
+    
+  }
+  _impl_.padding_ = padding;
+  // @@protoc_insertion_point(field_set_allocated:ui_serialization.WidgetBase.padding)
+}
+
+// .ui_serialization.region_size spacing = 10;
+inline bool WidgetBase::_internal_has_spacing() const {
+  return this != internal_default_instance() && _impl_.spacing_ != nullptr;
+}
+inline bool WidgetBase::has_spacing() const {
+  return _internal_has_spacing();
+}
+inline void WidgetBase::clear_spacing() {
+  if (GetArenaForAllocation() == nullptr && _impl_.spacing_ != nullptr) {
+    delete _impl_.spacing_;
+  }
+  _impl_.spacing_ = nullptr;
+}
+inline const ::ui_serialization::region_size& WidgetBase::_internal_spacing() const {
+  const ::ui_serialization::region_size* p = _impl_.spacing_;
+  return p != nullptr ? *p : reinterpret_cast<const ::ui_serialization::region_size&>(
+      ::ui_serialization::_region_size_default_instance_);
+}
+inline const ::ui_serialization::region_size& WidgetBase::spacing() const {
+  // @@protoc_insertion_point(field_get:ui_serialization.WidgetBase.spacing)
+  return _internal_spacing();
+}
+inline void WidgetBase::unsafe_arena_set_allocated_spacing(
+    ::ui_serialization::region_size* spacing) {
+  if (GetArenaForAllocation() == nullptr) {
+    delete reinterpret_cast<::PROTOBUF_NAMESPACE_ID::MessageLite*>(_impl_.spacing_);
+  }
+  _impl_.spacing_ = spacing;
+  if (spacing) {
+    
+  } else {
+    
+  }
+  // @@protoc_insertion_point(field_unsafe_arena_set_allocated:ui_serialization.WidgetBase.spacing)
+}
+inline ::ui_serialization::region_size* WidgetBase::release_spacing() {
+  
+  ::ui_serialization::region_size* temp = _impl_.spacing_;
+  _impl_.spacing_ = nullptr;
+#ifdef PROTOBUF_FORCE_COPY_IN_RELEASE
+  auto* old =  reinterpret_cast<::PROTOBUF_NAMESPACE_ID::MessageLite*>(temp);
+  temp = ::PROTOBUF_NAMESPACE_ID::internal::DuplicateIfNonNull(temp);
+  if (GetArenaForAllocation() == nullptr) { delete old; }
+#else  // PROTOBUF_FORCE_COPY_IN_RELEASE
+  if (GetArenaForAllocation() != nullptr) {
+    temp = ::PROTOBUF_NAMESPACE_ID::internal::DuplicateIfNonNull(temp);
+  }
+#endif  // !PROTOBUF_FORCE_COPY_IN_RELEASE
+  return temp;
+}
+inline ::ui_serialization::region_size* WidgetBase::unsafe_arena_release_spacing() {
+  // @@protoc_insertion_point(field_release:ui_serialization.WidgetBase.spacing)
+  
+  ::ui_serialization::region_size* temp = _impl_.spacing_;
+  _impl_.spacing_ = nullptr;
+  return temp;
+}
+inline ::ui_serialization::region_size* WidgetBase::_internal_mutable_spacing() {
+  
+  if (_impl_.spacing_ == nullptr) {
+    auto* p = CreateMaybeMessage<::ui_serialization::region_size>(GetArenaForAllocation());
+    _impl_.spacing_ = p;
+  }
+  return _impl_.spacing_;
+}
+inline ::ui_serialization::region_size* WidgetBase::mutable_spacing() {
+  ::ui_serialization::region_size* _msg = _internal_mutable_spacing();
+  // @@protoc_insertion_point(field_mutable:ui_serialization.WidgetBase.spacing)
+  return _msg;
+}
+inline void WidgetBase::set_allocated_spacing(::ui_serialization::region_size* spacing) {
+  ::PROTOBUF_NAMESPACE_ID::Arena* message_arena = GetArenaForAllocation();
+  if (message_arena == nullptr) {
+    delete _impl_.spacing_;
+  }
+  if (spacing) {
+    ::PROTOBUF_NAMESPACE_ID::Arena* submessage_arena =
+        ::PROTOBUF_NAMESPACE_ID::Arena::InternalGetOwningArena(spacing);
+    if (message_arena != submessage_arena) {
+      spacing = ::PROTOBUF_NAMESPACE_ID::internal::GetOwnedMessage(
+          message_arena, spacing, submessage_arena);
+    }
+    
+  } else {
+    
+  }
+  _impl_.spacing_ = spacing;
+  // @@protoc_insertion_point(field_set_allocated:ui_serialization.WidgetBase.spacing)
+}
+
+// repeated uint32 rows_heights = 11;
 inline int WidgetBase::_internal_rows_heights_size() const {
   return _impl_.rows_heights_.size();
 }
@@ -2367,7 +2867,7 @@ WidgetBase::mutable_rows_heights() {
   return _internal_mutable_rows_heights();
 }
 
-// repeated .ui_serialization.SkinnedProperty skinned_props = 9;
+// repeated .ui_serialization.SkinnedProperty skinned_props = 12;
 inline int WidgetBase::_internal_skinned_props_size() const {
   return _impl_.skinned_props_.size();
 }
@@ -2407,7 +2907,7 @@ WidgetBase::skinned_props() const {
   return _impl_.skinned_props_;
 }
 
-// repeated .ui_serialization.StyleColor styled_props = 10;
+// repeated .ui_serialization.StyleColor styled_props = 13;
 inline int WidgetBase::_internal_styled_props_size() const {
   return _impl_.styled_props_.size();
 }
@@ -2591,7 +3091,137 @@ inline void Element::set_add_on_new_row(bool value) {
   // @@protoc_insertion_point(field_set:ui_serialization.Element.add_on_new_row)
 }
 
-// repeated .ui_serialization.SkinnedProperty skinned_props = 5;
+// float border = 5;
+inline void Element::clear_border() {
+  _impl_.border_ = 0;
+}
+inline float Element::_internal_border() const {
+  return _impl_.border_;
+}
+inline float Element::border() const {
+  // @@protoc_insertion_point(field_get:ui_serialization.Element.border)
+  return _internal_border();
+}
+inline void Element::_internal_set_border(float value) {
+  
+  _impl_.border_ = value;
+}
+inline void Element::set_border(float value) {
+  _internal_set_border(value);
+  // @@protoc_insertion_point(field_set:ui_serialization.Element.border)
+}
+
+// float rounding = 6;
+inline void Element::clear_rounding() {
+  _impl_.rounding_ = 0;
+}
+inline float Element::_internal_rounding() const {
+  return _impl_.rounding_;
+}
+inline float Element::rounding() const {
+  // @@protoc_insertion_point(field_get:ui_serialization.Element.rounding)
+  return _internal_rounding();
+}
+inline void Element::_internal_set_rounding(float value) {
+  
+  _impl_.rounding_ = value;
+}
+inline void Element::set_rounding(float value) {
+  _internal_set_rounding(value);
+  // @@protoc_insertion_point(field_set:ui_serialization.Element.rounding)
+}
+
+// .ui_serialization.region_size padding = 7;
+inline bool Element::_internal_has_padding() const {
+  return this != internal_default_instance() && _impl_.padding_ != nullptr;
+}
+inline bool Element::has_padding() const {
+  return _internal_has_padding();
+}
+inline void Element::clear_padding() {
+  if (GetArenaForAllocation() == nullptr && _impl_.padding_ != nullptr) {
+    delete _impl_.padding_;
+  }
+  _impl_.padding_ = nullptr;
+}
+inline const ::ui_serialization::region_size& Element::_internal_padding() const {
+  const ::ui_serialization::region_size* p = _impl_.padding_;
+  return p != nullptr ? *p : reinterpret_cast<const ::ui_serialization::region_size&>(
+      ::ui_serialization::_region_size_default_instance_);
+}
+inline const ::ui_serialization::region_size& Element::padding() const {
+  // @@protoc_insertion_point(field_get:ui_serialization.Element.padding)
+  return _internal_padding();
+}
+inline void Element::unsafe_arena_set_allocated_padding(
+    ::ui_serialization::region_size* padding) {
+  if (GetArenaForAllocation() == nullptr) {
+    delete reinterpret_cast<::PROTOBUF_NAMESPACE_ID::MessageLite*>(_impl_.padding_);
+  }
+  _impl_.padding_ = padding;
+  if (padding) {
+    
+  } else {
+    
+  }
+  // @@protoc_insertion_point(field_unsafe_arena_set_allocated:ui_serialization.Element.padding)
+}
+inline ::ui_serialization::region_size* Element::release_padding() {
+  
+  ::ui_serialization::region_size* temp = _impl_.padding_;
+  _impl_.padding_ = nullptr;
+#ifdef PROTOBUF_FORCE_COPY_IN_RELEASE
+  auto* old =  reinterpret_cast<::PROTOBUF_NAMESPACE_ID::MessageLite*>(temp);
+  temp = ::PROTOBUF_NAMESPACE_ID::internal::DuplicateIfNonNull(temp);
+  if (GetArenaForAllocation() == nullptr) { delete old; }
+#else  // PROTOBUF_FORCE_COPY_IN_RELEASE
+  if (GetArenaForAllocation() != nullptr) {
+    temp = ::PROTOBUF_NAMESPACE_ID::internal::DuplicateIfNonNull(temp);
+  }
+#endif  // !PROTOBUF_FORCE_COPY_IN_RELEASE
+  return temp;
+}
+inline ::ui_serialization::region_size* Element::unsafe_arena_release_padding() {
+  // @@protoc_insertion_point(field_release:ui_serialization.Element.padding)
+  
+  ::ui_serialization::region_size* temp = _impl_.padding_;
+  _impl_.padding_ = nullptr;
+  return temp;
+}
+inline ::ui_serialization::region_size* Element::_internal_mutable_padding() {
+  
+  if (_impl_.padding_ == nullptr) {
+    auto* p = CreateMaybeMessage<::ui_serialization::region_size>(GetArenaForAllocation());
+    _impl_.padding_ = p;
+  }
+  return _impl_.padding_;
+}
+inline ::ui_serialization::region_size* Element::mutable_padding() {
+  ::ui_serialization::region_size* _msg = _internal_mutable_padding();
+  // @@protoc_insertion_point(field_mutable:ui_serialization.Element.padding)
+  return _msg;
+}
+inline void Element::set_allocated_padding(::ui_serialization::region_size* padding) {
+  ::PROTOBUF_NAMESPACE_ID::Arena* message_arena = GetArenaForAllocation();
+  if (message_arena == nullptr) {
+    delete _impl_.padding_;
+  }
+  if (padding) {
+    ::PROTOBUF_NAMESPACE_ID::Arena* submessage_arena =
+        ::PROTOBUF_NAMESPACE_ID::Arena::InternalGetOwningArena(padding);
+    if (message_arena != submessage_arena) {
+      padding = ::PROTOBUF_NAMESPACE_ID::internal::GetOwnedMessage(
+          message_arena, padding, submessage_arena);
+    }
+    
+  } else {
+    
+  }
+  _impl_.padding_ = padding;
+  // @@protoc_insertion_point(field_set_allocated:ui_serialization.Element.padding)
+}
+
+// repeated .ui_serialization.SkinnedProperty skinned_props = 8;
 inline int Element::_internal_skinned_props_size() const {
   return _impl_.skinned_props_.size();
 }
@@ -2631,7 +3261,7 @@ Element::skinned_props() const {
   return _impl_.skinned_props_;
 }
 
-// repeated .ui_serialization.StyleColor styled_props = 6;
+// repeated .ui_serialization.StyleColor styled_props = 9;
 inline int Element::_internal_styled_props_size() const {
   return _impl_.styled_props_.size();
 }
@@ -2852,6 +3482,8 @@ SerializedUI::widgets() const {
 #ifdef __GNUC__
   #pragma GCC diagnostic pop
 #endif  // __GNUC__
+// -------------------------------------------------------------------
+
 // -------------------------------------------------------------------
 
 // -------------------------------------------------------------------

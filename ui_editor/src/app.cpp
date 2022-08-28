@@ -1,5 +1,6 @@
 // TODO :
-// 2. Fonts
+// Fonts 
+// borders, padding, rounding, spacng
 // extra. split rows and columns
 
 #include <IndieGoUI.h>
@@ -203,6 +204,12 @@ int main() {
                     // modify text in selected text element
                     *UIMap["selected text"]._data.strPtr = UIMap[elements_list.getSelected()].label;
                 }
+                if (style_edit_mode == element_edit) {
+                    UIMap["border size"]._data.f = UIMap[elements_list.getSelected()].border;
+                    UIMap["padding x"]._data.f = UIMap[elements_list.getSelected()].padding.w;
+                    UIMap["padding y"]._data.f = UIMap[elements_list.getSelected()].padding.h;
+                    UIMap["rounding"]._data.f = UIMap[elements_list.getSelected()].rounding;   
+                }
             }
 
             for (int i = 0; i < w.layout_grid.size(); i++) {
@@ -223,6 +230,14 @@ int main() {
                     UIMap["Blue property color"]._data.ui = w.style.elements[style_elements_list.selected_element].b;
                     UIMap["Alpha property color"]._data.ui = w.style.elements[style_elements_list.selected_element].a;
                 }
+            }
+
+            if (style_edit_mode == widget_edit) {
+                UIMap["border size"]._data.f = w.border_size;
+                UIMap["padding x"]._data.f = w.padding.w;
+                UIMap["padding y"]._data.f = w.padding.h;
+                UIMap["spacing x"]._data.f = w.spacing.w;
+                UIMap["spacing y"]._data.f = w.spacing.h;
             }
         }
 
@@ -274,19 +289,32 @@ int main() {
             if (prev_selected_widget == widgets_list.selected_element) {
                 updateWidgetFromUI(widgets_list.getSelected(), winID);
                 WIDGET& w = GUI.getWidget(widgets_list.getSelected(), winID);
-                if (style_elements_list.selected_element != -1) {
-                    if (style_edit_mode == widget_edit) {
+                if (style_edit_mode == widget_edit) {
+                    if (style_elements_list.selected_element != -1) {
                         w.style.elements[style_elements_list.selected_element].r = UIMap["Red property color"]._data.ui;
                         w.style.elements[style_elements_list.selected_element].g = UIMap["Green property color"]._data.ui;
                         w.style.elements[style_elements_list.selected_element].b = UIMap["Blue property color"]._data.ui;
                         w.style.elements[style_elements_list.selected_element].a = UIMap["Alpha property color"]._data.ui;
                     }
+
+                    w.border_size = UIMap["border size"]._data.f;
+                    w.padding.w = UIMap["padding x"]._data.f;
+                    w.padding.h = UIMap["padding y"]._data.f;
+                    w.spacing.w = UIMap["spacing x"]._data.f;
+                    w.spacing.h = UIMap["spacing y"]._data.f;
                 }
 
                 if (elements_list.selected_element != -1 && prev_selected_element == elements_list.selected_element) {
                     if (UIMap[elements_list.getSelected()].type == UI_STRING_LABEL) {
                         // modify text in selected text element
                         UIMap[elements_list.getSelected()].label = *UIMap["selected text"]._data.strPtr;
+                    }
+
+                    if (style_edit_mode == element_edit) {
+                        UIMap[elements_list.getSelected()].border = UIMap["border size"]._data.f;
+                        UIMap[elements_list.getSelected()].padding.w = UIMap["padding x"]._data.f;
+                        UIMap[elements_list.getSelected()].padding.h = UIMap["padding y"]._data.f;
+                        UIMap[elements_list.getSelected()].rounding = UIMap["rounding"]._data.f;
                     }
                 }
 

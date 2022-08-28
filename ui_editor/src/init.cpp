@@ -64,16 +64,24 @@ void initWidgets() {
     UIMap.addElement("add new widget", UI_BUTTON, &c_widget, current_line++);
     UIMap["add new widget"].label = "add widget";
 
-    // list of all available widgets
+    // Row with lists
+    // ---------------------------------------------------------------------
     UIMap.addElement("widgets list", UI_ITEMS_LIST, &c_widget, current_line);
     UIMap["widgets list"].label = "widgets on screen";
 
     UIMap.addElement("elements list", UI_ITEMS_LIST, &c_widget, current_line);
     UIMap["elements list"].label = "elements in selected widget";
-
-    UIMap.addElement("widget rows", UI_ITEMS_LIST, &c_widget, current_line++);
+    
+    UIMap.addElement("widget rows", UI_ITEMS_LIST, &c_widget, current_line);
     UIMap["widget rows"].label = "widget rows";
-    c_widget.layout_grid[current_line - 1].min_height = 150;
+
+    UIMap.addElement("skinning property", UI_ITEMS_LIST, &c_widget, current_line++);
+    UIMap["skinning property"].label = "skinning property";
+    c_widget.layout_grid[current_line - 1].min_height = 0.139f;
+    // ---------------------------------------------------------------------
+
+    UIMap.addElement("hide widget", UI_BOOL, &c_widget, current_line);
+    UIMap["hide widget"].label = "hide widget";
 
     UIMap.addElement("new element name label", UI_STRING_LABEL, &c_widget, current_line);
     UIMap["new element name label"].label = "new element name:";
@@ -134,12 +142,35 @@ void initWidgets() {
     UIMap.addElement("img size y", UI_FLOAT, &c_widget, current_line++);
     UIMap["img size y"].label = "img size y";
     UIMap["img size y"]._data.f = 100.f;
-
-    UIMap.addElement("skinning property", UI_ITEMS_LIST, &c_widget, current_line++);
-    UIMap["skinning property"].label = "skinning property";
-    c_widget.layout_grid[current_line - 1].min_height = 150;
-    ui_string_group & skinning_props_list = *UIMap["skinning property"]._data.usgPtr;
     
+    // border and rounding
+    UIMap.addElement("border size", UI_FLOAT, &c_widget, current_line);
+    UIMap["border size"].label = "border size";
+    UIMap["border size"]._data.f = 1.f; // TODO : check it's non-zero
+
+    UIMap.addElement("rounding", UI_FLOAT, &c_widget, current_line);
+    UIMap["rounding"].label = "rounding";
+    UIMap["rounding"]._data.f = 1.f; // TODO : check it's non-zero
+
+    // padding 
+    UIMap.addElement("padding x", UI_FLOAT, &c_widget, current_line);
+    UIMap["padding x"].label = "padding x";
+    UIMap["padding x"]._data.f = 1.f; // TODO : check it's non-zero
+
+    UIMap.addElement("padding y", UI_FLOAT, &c_widget, current_line++);
+    UIMap["padding y"].label = "padding y";
+    UIMap["padding y"]._data.f = 1.f; // TODO : check it's non-zero
+
+    // widget's spacing
+    UIMap.addElement("spacing x", UI_FLOAT, &c_widget, current_line);
+    UIMap["spacing x"].label = "spacing x";
+    UIMap["spacing x"]._data.f = 1.f; // TODO : check it's non-zero
+
+    UIMap.addElement("spacing y", UI_FLOAT, &c_widget, current_line);
+    UIMap["spacing y"].label = "spacing y";
+    UIMap["spacing y"]._data.f = 1.f; // TODO : check it's non-zero
+
+    ui_string_group & skinning_props_list = *UIMap["skinning property"]._data.usgPtr;
     for (int i = background; i != hover_active; i++) {
         skinning_props_list.elements.push_back(
             getSkinPropName((IMAGE_SKIN_ELEMENT)i)
@@ -164,7 +195,7 @@ void initWidgets() {
     UIMap["style elements list"].label = "edit element styling";
     UIMap["style elements list"].text_align = LEFT;
     
-    s_widget.layout_grid[current_line - 1].min_height = 695;
+    s_widget.layout_grid[current_line - 1].min_height = 0.643f;
     ui_string_group & style_elements_list = *UIMap["style elements list"]._data.usgPtr;
 
     for (int i = UI_COLOR_TEXT; i != UI_COLOR_TAB_HEADER; i++) {

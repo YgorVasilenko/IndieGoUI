@@ -102,6 +102,11 @@ namespace IndieGo {
 			hover_active
 		};
 
+		enum CUSTOM_ELEMENTS {
+			border, 
+			rounding, 
+			padding
+		};
 		struct image_props {
 			// IMAGE_SKIN_ELEMENT : <idx in vector of global images, loaded by backend> : <index of crop from that image>
 			std::map<IMAGE_SKIN_ELEMENT, std::pair<int, int>> props = {
@@ -230,6 +235,7 @@ namespace IndieGo {
 			bool selected_by_keys = false;
 
 			bool modifyable_progress_bar = false;
+
 			TEXT_ALIGN text_align = CENTER;
 			UI_ELEMENT_TYPE type;
 
@@ -237,7 +243,12 @@ namespace IndieGo {
 			std::string label = "";
 			bool color_picker_unwrapped = false;
 
-			float min_height = 25.f;
+			float min_height = 0.023f;
+
+			// special properties, that can be called "common"
+			float border = 1.f; 
+			float rounding = 1.f;
+			region_size<float> padding = { 1.f, 1.f };
 
 			bool hidden = false;
 			bool takeSpaceIfHidden = true;
@@ -268,7 +279,7 @@ namespace IndieGo {
 		};
 		struct grid_row {
 			std::vector<std::string> cells;
-			float min_height = 25.f;
+			float min_height = 0.023f;
 		};
 
 
@@ -319,6 +330,10 @@ namespace IndieGo {
 
 			float row_size = 25.f,
 				col_size = -1.f; // -1 == auto-scale
+
+			float border_size = 1.f; 
+			region_size<float> padding = { 1.f, 1.f };
+			region_size<float> spacing = { 1.f, 1.f };
 
 			// 	layout_grid :
 			// i/j | 0 |    1     | 2
@@ -392,7 +407,7 @@ namespace IndieGo {
 			};
 
 			// returns position on layout, that element was eventually added to
-			std::pair<int, int> addElement(const std::string & elt_name, int row = -1, int col = -1, bool insert_row = false, bool overwrite_col = true, float min_height = 25.f){
+			std::pair<int, int> addElement(const std::string & elt_name, int row = -1, int col = -1, bool insert_row = false, bool overwrite_col = true, float min_height = 0.023f){
 				// Guard against widgets elements doubling
 				if (std::find(widget_elements.begin(), widget_elements.end(), elt_name) != widget_elements.end()){
 					std::cout << "[ERROR] addElement: element '" << elt_name << "' already exists in widget " << name << std::endl;
@@ -476,7 +491,7 @@ namespace IndieGo {
 				} else if (element.type == UI_ITEMS_LIST) {
 					element._data.usgPtr = new ui_string_group;
 				} else if (element.type == UI_COLOR_PICKER){
-					element.min_height = 200.f;
+					element.min_height = 0.185f;
 				} else if (element.type == UI_BUTTON || element.type == UI_BOOL){
 					// default all boolean switches to false
 					element._data.b = false;

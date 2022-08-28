@@ -493,6 +493,10 @@ void UI_element::callUIfunction() {
 
     if (type == UI_BUTTON) {
         // TODO : add skinning
+        ctx->style.button.border = border;
+        ctx->style.button.rounding = rounding;
+        ctx->style.button.padding = nk_vec2(padding.h, padding.w);
+
         struct nk_key_selector ks;
         if (hovered_by_keys) {
             ks.focused = true;
@@ -554,7 +558,6 @@ void UI_element::callUIfunction() {
     }
 
     if (type == UI_STRING_LABEL) {
-        // TODO : add skinning
         nk_flags align;
         switch(text_align){
           case LEFT:
@@ -601,6 +604,11 @@ void UI_element::callUIfunction() {
                 images[skinned_style.props[cursor_active].first][skinned_style.props[cursor_active].second].first
             );
         }
+
+        ctx->style.progress.border = border;
+        ctx->style.progress.rounding = rounding;
+        ctx->style.progress.padding = nk_vec2(padding.h, padding.w);
+
         nk_size curr = _data.ui;
         nk_progress(ctx, &curr, 100, modifyable_progress_bar);
         _data.ui = curr;
@@ -802,6 +810,9 @@ void WIDGET::callImmediateBackend(UI_elements_map & UIMap){
         );
     }
 
+    ctx->style.window.spacing = nk_vec2(spacing.h, spacing.w);
+    ctx->style.window.padding = nk_vec2(padding.h, padding.w);
+    ctx->style.window.border = border_size;
 
     if (
         nk_begin(
@@ -858,7 +869,8 @@ IndieGo::UI::region<float> WIDGET::getImgCrop(IndieGo::UI::IMAGE_SKIN_ELEMENT el
 }
 
 void WIDGET::allocateRow(unsigned int cols, float min_height){
-    nk_layout_row_dynamic(ctx, min_height, cols);
+    // TODO : make dependency on % from widget's screen region
+    nk_layout_row_dynamic(ctx, screen_size.h * min_height, cols);
 }
 
 void WIDGET::allocateEmptySpace(unsigned int fill_count){
@@ -985,10 +997,3 @@ void Manager::addWindow(std::string winID, void * initData) {
 void Manager::removeWindow(std::string winID, void * winData) {
 
 }
-
-//unsigned int Manager::addImage(unsigned int texID) {
-//    images.push_back(
-//        nk_image_id((int)texID)
-//    );
-//    return images.size() - 1; 
-//}
