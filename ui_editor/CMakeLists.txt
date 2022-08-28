@@ -4,8 +4,9 @@ project(UI_editor VERSION 1.0)
 
 set(RENDERER_INCLUDES .. ../os)
 
-# set(CMAKE_MODULE_PATH $ENV{CMAKE_MODULE_PATH})
-# include(common)
+# protobuf setup
+set(PROTOBUF_SRC $ENV{PROTOBUF_HOME}/src)
+set(PROTOBUF_LIB $ENV{PROTOBUF_HOME}/build/Debug)
 
 if (DEFINED BACKEND)
     message("BACKEND: ${BACKEND}")
@@ -30,6 +31,7 @@ add_executable(
     src/init.cpp
     src/glad.c
     ../IndieGoUI.cpp
+    ../IndieGoUI.pb.cc
     ${RENDERER_SRC}
 )
 
@@ -37,12 +39,16 @@ target_include_directories(
     UI_editor
     PUBLIC 
     ${RENDERER_INCLUDES}
+    ${PROTOBUF_SRC}
 )
 
 # link glfw library
 target_link_libraries(
     UI_editor
     PUBLIC "../lib/glfw3"
+
+    # serialization
+    PUBLIC ${PROTOBUF_LIB}/libprotobufd.lib
 )
 
 target_compile_definitions(
@@ -50,3 +56,5 @@ target_compile_definitions(
     WIDTH=1920
     HEIGHT=1080
 )
+
+set(CMAKE_CXX_FLAGS_DEBUG " /std:c++17 /DEBUG /Zi")

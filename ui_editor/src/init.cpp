@@ -26,7 +26,13 @@ void initWidgets() {
     UIMap.addElement("new widget name label", UI_STRING_LABEL, &c_widget, current_line);
     UIMap["new widget name label"].label = "widget name";
 
-    UIMap.addElement("new widget name", UI_STRING_INPUT, &c_widget, current_line++);
+    UIMap.addElement("new widget name", UI_STRING_INPUT, &c_widget, current_line);
+
+    UIMap.addElement("save widgets", UI_BUTTON, &c_widget, current_line);
+    UIMap["save widgets"].label = "save widgets";
+    UIMap.addElement("load widgets", UI_BUTTON, &c_widget, current_line++);
+    UIMap["load widgets"].label = "load widgets";
+
     // different flag settings
     UIMap.addElement("bordered", UI_BOOL, &c_widget, current_line);
     UIMap["bordered"].label = "bordered";

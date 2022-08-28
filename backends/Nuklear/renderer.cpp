@@ -67,14 +67,13 @@ struct nk_glfw_vertex {
   #define NK_SHADER_VERSION "#version 300 es\n"
 #endif
 
-
 #define MAX_VERTEX_BUFFER 512 * 1024
 #define MAX_ELEMENT_BUFFER 128 * 1024
 
 std::map<std::string, struct nk_font *> loaded_fonts;
 
 // texture_iid = vector<sub_images>
-std::map<unsigned int, std::vector<struct nk_image>> images;
+std::map<unsigned int, std::vector<std::pair<struct nk_image, IndieGo::UI::region<float>>>> images;
 
 // Use winID to store window's context. If window destroyed and re-initializes
 // context should be same for respective winID
@@ -551,7 +550,7 @@ void UI_element::callUIfunction() {
     if (type == UI_IMAGE) {
         // TODO : add skinning
         if (_data.i != -1)
-            nk_image(ctx, images[_data.i].back());
+            nk_image(ctx, images[_data.i].back().first);
     }
 
     if (type == UI_STRING_LABEL) {
@@ -574,32 +573,32 @@ void UI_element::callUIfunction() {
     if (type == UI_PROGRESS) {
         if (skinned_style.props[normal].first != -1) {
             ctx->style.progress.normal = nk_style_item_image(
-                images[skinned_style.props[normal].first][skinned_style.props[normal].second]
+                images[skinned_style.props[normal].first][skinned_style.props[normal].second].first
             );
         }
         if (skinned_style.props[hover].first != -1) {
             ctx->style.progress.hover = nk_style_item_image(
-                images[skinned_style.props[hover].first][skinned_style.props[hover].second]
+                images[skinned_style.props[hover].first][skinned_style.props[hover].second].first
             );
         }
         if (skinned_style.props[active].first != -1) {
             ctx->style.progress.active = nk_style_item_image(
-                images[skinned_style.props[active].first][skinned_style.props[active].second]
+                images[skinned_style.props[active].first][skinned_style.props[active].second].first
             );
         }
         if (skinned_style.props[cursor_normal].first != -1) {
             ctx->style.progress.cursor_normal = nk_style_item_image(
-                images[skinned_style.props[cursor_normal].first][skinned_style.props[cursor_normal].second]
+                images[skinned_style.props[cursor_normal].first][skinned_style.props[cursor_normal].second].first
             );
         }
         if (skinned_style.props[cursor_hover].first != -1) {
             ctx->style.progress.cursor_hover = nk_style_item_image(
-                images[skinned_style.props[cursor_hover].first][skinned_style.props[cursor_hover].second]
+                images[skinned_style.props[cursor_hover].first][skinned_style.props[cursor_hover].second].first
             );
         }
         if (skinned_style.props[cursor_active].first != -1) {
             ctx->style.progress.cursor_active = nk_style_item_image(
-                images[skinned_style.props[cursor_active].first][skinned_style.props[cursor_active].second]
+                images[skinned_style.props[cursor_active].first][skinned_style.props[cursor_active].second].first
             );
         }
         nk_size curr = _data.ui;
@@ -704,7 +703,7 @@ void UI_element::initImage(unsigned int texID, std::string path) {
         return;
     }
     if (images.find(texID) == images.end()) {
-        images[texID].push_back(nk_image_id((int)texID));
+        // images[texID].push_back(nk_image_id((int)texID));
     }
     _data.i = texID;
     label = path;
@@ -718,10 +717,17 @@ void UI_element::useSkinImage(
 	IMAGE_SKIN_ELEMENT elt
 ) {
     images[texID].push_back(
-        nk_subimage_id(texID, w,h, nk_rect(crop.x, crop.y, crop.w, crop.h))
+        // nk_subimage_id(texID, w,h, nk_rect(crop.x, crop.y, crop.w, crop.h))
+        std::pair<struct nk_image, region<float>> { nk_subimage_id(texID, w,h, nk_rect(crop.x, crop.y, crop.w, crop.h)), crop }
     );
     skinned_style.props[elt].first = texID;
     skinned_style.props[elt].second = images[texID].size() - 1;
+}
+
+IndieGo::UI::region<float> UI_element::getImgCrop(IndieGo::UI::IMAGE_SKIN_ELEMENT elt) {
+    int idx = skinned_style.props[elt].first;
+    if (idx == -1) return { 0.f, 0.f, 0.f, 0.f };
+    return images[ skinned_style.props[elt].first ][ skinned_style.props[elt].second ].second;
 }
 
 bool test_img_loaded = false;
@@ -775,24 +781,24 @@ void WIDGET::callImmediateBackend(UI_elements_map & UIMap){
     // Background
     if (skinned_style.props[background].first != -1) {
         ctx->style.window.fixed_background = nk_style_item_image(
-            images[skinned_style.props[background].first][skinned_style.props[background].second]
+            images[skinned_style.props[background].first][skinned_style.props[background].second].first
         );
     }
 
     // Header
     if (skinned_style.props[normal].first != -1) {
         ctx->style.window.header.normal = nk_style_item_image(
-            images[skinned_style.props[normal].first][skinned_style.props[normal].second]
+            images[skinned_style.props[normal].first][skinned_style.props[normal].second].first
         );
     }
     if (skinned_style.props[hover].first != -1) {
         ctx->style.window.header.hover = nk_style_item_image(
-            images[skinned_style.props[hover].first][skinned_style.props[hover].second]
+            images[skinned_style.props[hover].first][skinned_style.props[hover].second].first
         );
     }
     if (skinned_style.props[active].first != -1) {
         ctx->style.window.header.active = nk_style_item_image(
-            images[skinned_style.props[active].first][skinned_style.props[active].second]
+            images[skinned_style.props[active].first][skinned_style.props[active].second].first
         );
     }
 
@@ -837,10 +843,18 @@ void WIDGET::useSkinImage(
 	IMAGE_SKIN_ELEMENT elt
 ) {
     images[texID].push_back(
-        nk_subimage_id(texID, w,h, nk_rect(crop.x, crop.y, crop.w, crop.h))
+        // std::make_pair<struct nk_image, region<float>>(
+          std::pair<struct nk_image, region<float>> { nk_subimage_id(texID, w,h, nk_rect(crop.x, crop.y, crop.w, crop.h)), crop }
+       //  )
     );
     skinned_style.props[elt].first = texID;
     skinned_style.props[elt].second = images[texID].size() - 1;
+}
+
+IndieGo::UI::region<float> WIDGET::getImgCrop(IndieGo::UI::IMAGE_SKIN_ELEMENT elt) {
+    int idx = skinned_style.props[elt].first;
+    if (idx == -1) return { 0.f, 0.f, 0.f, 0.f };
+    return images[ skinned_style.props[elt].first ][ skinned_style.props[elt].second ].second;
 }
 
 void WIDGET::allocateRow(unsigned int cols, float min_height){

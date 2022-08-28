@@ -1,5 +1,6 @@
 // various functions for working with ui
 #include <IndieGoUI.h>
+#include <IndieGoUI.pb.h>
 
 using namespace IndieGo::UI;
 
@@ -7,22 +8,18 @@ extern Manager GUI;
 
 void createNewWidget(
     std::string newWidName, 
-    region_size<float> size, 
-    region_size<float> location,
+    region<float> screen_region,
     bool bordered,
     bool titled,
     bool minimizable,
     bool scalable,
     bool movable,
-    std::string & winID
+    const std::string & winID
 ) {
     WIDGET newWidget;
 
     // initialize new widget
-    newWidget.screen_region.x = location.w;
-    newWidget.screen_region.y = location.h;
-    newWidget.screen_region.w = size.w;
-    newWidget.screen_region.h = size.h;
+    newWidget.screen_region = screen_region;
     newWidget.name = newWidName;
 
     newWidget.border = bordered;
@@ -68,4 +65,208 @@ void addElement(
     // add element to widget
     UIMap.addElement(elt_name, type, &w, row);
     // TODO : process special cases
+}
+
+extern std::string skinning_img_path;
+extern unsigned int skinning_image_id;
+extern unsigned int si_w;
+extern unsigned int si_h;
+
+void Manager::serialize(const std::string & winID, const std::string & path, const std::vector<std::string> & skipWidgets) {
+    UI_elements_map & UIMap = GUI.UIMaps[winID];
+    ui_serialization::SerializedUI serialized_ui;
+    for (auto widget : GUI.widgets[winID]) {
+        if (std::find(skipWidgets.begin(), skipWidgets.end(), widget.first) != skipWidgets.end())
+            continue;
+
+        ui_serialization::Widget * w = serialized_ui.add_widgets();
+
+        w->mutable_widget()->set_name(widget.first);
+        
+        // width, height, location on screen
+        w->mutable_widget()->mutable_size_loc()->set_h(widget.second.screen_region.h);
+        w->mutable_widget()->mutable_size_loc()->set_w(widget.second.screen_region.w);
+        w->mutable_widget()->mutable_size_loc()->set_x(widget.second.screen_region.x);
+        w->mutable_widget()->mutable_size_loc()->set_y(widget.second.screen_region.y);
+
+        // various behavior/display flags
+        w->mutable_widget()->set_bordered(widget.second.border);
+        w->mutable_widget()->set_titled(widget.second.title);
+        w->mutable_widget()->set_minimizable(widget.second.minimizable);
+        w->mutable_widget()->set_scalable(widget.second.scalable);
+        w->mutable_widget()->set_movable(widget.second.movable);
+
+        // rows heights
+        for (auto g_row : widget.second.layout_grid) {
+            w->mutable_widget()->add_rows_heights(g_row.min_height);
+        }
+
+        // skinned props
+        for (auto prop : widget.second.skinned_style.props) {
+            if (prop.second.first != -1) {
+                ui_serialization::SkinnedProperty * sp = w->mutable_widget()->add_skinned_props();
+                sp->set_prop_type((unsigned int)prop.first);
+                sp->mutable_img()->set_path(skinning_img_path);
+
+                region<float> crop = widget.second.getImgCrop(prop.first);
+                sp->mutable_img()->mutable_crop()->set_h(crop.h);
+                sp->mutable_img()->mutable_crop()->set_w(crop.w);
+                sp->mutable_img()->mutable_crop()->set_x(crop.x);
+                sp->mutable_img()->mutable_crop()->set_y(crop.y);
+            }
+        }
+
+        // color styled props
+        for (int i = 0; i < 28; i++){
+            ui_serialization::StyleColor * sc = w->mutable_widget()->add_styled_props();
+            sc->set_r(widget.second.style.elements[i].r);
+            sc->set_g(widget.second.style.elements[i].g);
+            sc->set_b(widget.second.style.elements[i].b);
+            sc->set_a(widget.second.style.elements[i].a);
+        }
+
+        // elements related to widget
+        for (auto elt_name : widget.second.widget_elements) {
+            ui_serialization::Element * e = w->add_elements();
+            e->set_name(elt_name);
+            e->set_widget_name(widget.first);
+            e->set_type((unsigned int)UIMap[elt_name].type);
+            // TODO : check if add_to_new_row flag requires setting
+            bool add_to_new_row = false;
+            for (auto elt_group : widget.second.elements_groups) {
+                if (elt_group.start == elt_name) {
+                    add_to_new_row = true;
+                    break;
+                }
+            }
+            e->set_add_on_new_row(add_to_new_row);
+            // skinned props
+            for (auto prop : UIMap[elt_name].skinned_style.props) {
+                if (prop.second.first != -1) {
+                    ui_serialization::SkinnedProperty * sp = e->add_skinned_props();
+                    sp->set_prop_type((unsigned int)prop.first);
+                    sp->mutable_img()->set_path(skinning_img_path);
+
+                    region<float> crop = UIMap[elt_name].getImgCrop(prop.first);
+                    sp->mutable_img()->mutable_crop()->set_h(crop.h);
+                    sp->mutable_img()->mutable_crop()->set_w(crop.w);
+                    sp->mutable_img()->mutable_crop()->set_x(crop.x);
+                    sp->mutable_img()->mutable_crop()->set_y(crop.y);
+                }
+            }
+
+            // color styled props
+            for (int i = 0; i < 28; i++){
+                ui_serialization::StyleColor * sc = e->add_styled_props();
+                sc->set_r(widget.second.style.elements[i].r);
+                sc->set_g(widget.second.style.elements[i].g);
+                sc->set_b(widget.second.style.elements[i].b);
+                sc->set_a(widget.second.style.elements[i].a);
+            }
+        }
+    }
+    std::ofstream file(path, std::ios::binary);
+    serialized_ui.SerializeToOstream(&file);
+}
+
+void Manager::deserialize(const std::string & winID, const std::string & path) {
+    ui_serialization::SerializedUI serialized_ui;
+    std::ifstream file(path, std::ios::binary);
+    if (!serialized_ui.ParseFromIstream(&file)) {
+        std::cout << "[WORLD::ERROR] Failed to parse ui from: " << path << std::endl;
+        return;
+    } else {
+        std::cout << "[WORLD::INFO] Loading ui from: " + path << std::endl;
+    }
+    unsigned int idx = 0;
+    UI_elements_map & UIMap = GUI.UIMaps[winID];
+    // load ui widgets
+    for (int i = 0; i < serialized_ui.widgets_size(); i++) {
+        const ui_serialization::Widget & w = serialized_ui.widgets(i);
+
+        // region
+        region<float> screen_region;
+        screen_region.h = w.widget().size_loc().h();
+        screen_region.w = w.widget().size_loc().w();
+        screen_region.x = w.widget().size_loc().x();
+        screen_region.y = w.widget().size_loc().y();
+        
+        createNewWidget(
+            w.widget().name(),
+            screen_region,
+            w.widget().bordered(),
+            w.widget().titled(),
+            w.widget().minimizable(),
+            w.widget().scalable(),
+            w.widget().movable(),
+            winID
+        );
+
+        // styling
+        WIDGET & added_w = GUI.getWidget(w.widget().name(), winID);
+
+        // skinned props
+        for (int j = 0; j < w.widget().skinned_props_size(); j++) {
+            // TODO : check if image is loaded. Load, if not
+            const ui_serialization::SkinnedProperty & sp = w.widget().skinned_props(j);
+            region<float> crop_region;
+            crop_region.h = sp.img().crop().h();
+            crop_region.w = sp.img().crop().w();
+            crop_region.y = sp.img().crop().y();
+            crop_region.x = sp.img().crop().x();
+            added_w.useSkinImage(
+                skinning_image_id,
+                si_w,
+                si_h,
+                crop_region,
+                (IMAGE_SKIN_ELEMENT)sp.prop_type()
+            );
+        }
+
+        // color styled props
+        for (int j = 0; j < 28; j++) {
+            const ui_serialization::StyleColor & sc = w.widget().styled_props(j);
+            added_w.style.elements[j].r = sc.r();
+            added_w.style.elements[j].g = sc.g();
+            added_w.style.elements[j].b = sc.b();
+            added_w.style.elements[j].a = sc.a();
+        }
+        // add elements to related widget
+        for (int j = 0; j < w.elements_size(); j++) {
+            const ui_serialization::Element & e = w.elements(j);
+            addElement(
+                w.widget().name(),
+                winID,
+                e.name(),
+                (UI_ELEMENT_TYPE)e.type(),
+                e.add_on_new_row()
+            );
+
+            // skinned props
+            for (int k = 0; k < e.skinned_props_size(); k++) {
+                // TODO : check if image is loaded. Load, if not
+                const ui_serialization::SkinnedProperty & sp = e.skinned_props(j);
+                region<float> crop_region;
+                crop_region.h = sp.img().crop().h();
+                crop_region.w = sp.img().crop().w();
+                crop_region.y = sp.img().crop().y();
+                crop_region.x = sp.img().crop().x();
+                UIMap[e.name()].useSkinImage(
+                    skinning_image_id,
+                    si_w,
+                    si_h,
+                    crop_region,
+                    (IMAGE_SKIN_ELEMENT)sp.prop_type()
+                );
+            }
+            // color styled props
+            for (int k = 0; k < 28; k++) {
+                const ui_serialization::StyleColor & sc = e.styled_props(k);
+                UIMap[e.name()].style.elements[k].r = sc.r();
+                UIMap[e.name()].style.elements[k].g = sc.g();
+                UIMap[e.name()].style.elements[k].b = sc.b();
+                UIMap[e.name()].style.elements[k].a = sc.a();
+            }
+        }
+    }
 }

@@ -1,6 +1,5 @@
 // TODO :
 // 2. Fonts
-// 3. Serialization
 // extra. split rows and columns
 
 #include <IndieGoUI.h>
@@ -8,6 +7,8 @@
 #include <GLFW/glfw3.h>
 #include <chrono>
 #include <list>
+#include <filesystem>
+namespace fs = std::filesystem;
 
 // Plain simple code for window creation
 // Created window will hold a widget
@@ -55,14 +56,13 @@ unsigned int frames = 0;
 
 extern void createNewWidget(
     std::string newWidName, 
-    region_size<float> size,
-    region_size<float> location,
+    region<float> screen_region,
     bool bordered,
     bool titled,
     bool minimizable,
     bool scalable,
     bool movable,
-    std::string & winID
+    const std::string & winID
 );
 
 extern void checkUIValues(std::string winID);
@@ -151,18 +151,14 @@ int main() {
         if (UIMap["add new widget"]._data.b) {
             std::string new_widget_name = *UIMap["new widget name"]._data.strPtr;
             if (new_widget_name.size() > 0 && widgets_fill.find(new_widget_name) == widgets_fill.end()) {
-                region_size<float> new_widget_size = {
-                    UIMap["size x"]._data.f / 100.f,
-                    UIMap["size y"]._data.f / 100.f
-                };
-                region_size<float> new_widget_location = {
-                    UIMap["location x"]._data.f / 100.f,
-                    UIMap["location y"]._data.f / 100.f
-                };
+                region<float> new_widget_size_loc;
+                new_widget_size_loc.w = UIMap["size x"]._data.f / 100.f;
+                new_widget_size_loc.h = UIMap["size y"]._data.f / 100.f;
+                new_widget_size_loc.x = UIMap["location x"]._data.f / 100.f;
+                new_widget_size_loc.y = UIMap["location y"]._data.f / 100.f;
                 createNewWidget(
                     new_widget_name,
-                    new_widget_size,
-                    new_widget_location,
+                    new_widget_size_loc,
                     UIMap["bordered"]._data.b,
                     UIMap["titled"]._data.b,
                     UIMap["minimizable"]._data.b,
@@ -240,7 +236,16 @@ int main() {
             }
         }
 
-        // TODO : update style editing widget with proper element/widget style_enum values
+        if (UIMap["save widgets"]._data.b) {
+            std::string IndieGo_home = getenv("INDIEGO_HOME");
+            std::string project_name = fs::path( getenv("PROJECT_DIR") ).filename().string();
+            GUI.serialize(winID, IndieGo_home + "/ui_" + project_name + ".indg", { "UI creator", "style editor" });
+        }
+
+        if (UIMap["load widgets"]._data.b) {
+            std::string path = *getPaths().begin();
+            GUI.deserialize(winID, path);
+        }
 
         prev_selected_widget = widgets_list.selected_element;
 

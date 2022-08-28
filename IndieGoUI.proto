@@ -1,0 +1,84 @@
+// See README.txt for information and build instructions.
+//
+// Note: START and END tags are used in comments to define sections used in
+// tutorials.  They are not part of the syntax for Protocol Buffers.
+//
+// To get an in-depth walkthrough of this file and the related examples, see:
+// https://developers.google.com/protocol-buffers/docs/tutorials
+
+// [START declaration]
+syntax = "proto3";
+package ui_serialization;
+
+
+// UI data
+// ---------------------------------------------------------
+message region {
+    float x = 1;
+    float y = 2;
+    float w = 3;
+    float h = 4;
+}
+
+message StyleColor {
+    float r = 1;
+    float g = 2;
+    float b = 3;
+    float a = 4;
+}
+
+message SkinImage {
+    string path = 1;
+    region crop = 2;
+}
+
+message SkinnedProperty {
+    SkinImage img = 1;
+    uint32 prop_type = 2;
+}
+
+// message StyledProperty {
+//     StyleColor color = 1;
+//     // uint32 prop_type = 2;
+// }
+
+message WidgetBase {
+    string name = 1;
+    region size_loc = 2;
+    bool bordered = 3;
+    bool titled = 4;
+    bool minimizable = 5;
+    bool scalable = 6;
+    bool movable = 7;
+
+    // on load when elements added to new row
+    // it's size will be adjusted
+    repeated uint32 rows_heights = 8;
+
+    // on load skinned element will call useSkinImage
+    repeated SkinnedProperty skinned_props = 9;
+    repeated StyleColor styled_props = 10;
+}
+
+message Element {
+    string name = 1;
+    string widget_name = 2;
+    uint32 type = 3;
+    bool add_on_new_row = 4;
+
+    // on load skinned element will call useSkinImage
+    repeated SkinnedProperty skinned_props = 5;
+    repeated StyleColor styled_props = 6;
+}
+
+message Widget {
+    WidgetBase widget = 1;
+    repeated Element elements = 2;
+}
+
+// Binary file to serialize ui to
+message SerializedUI {
+    repeated Widget widgets = 1;
+}
+
+// [END messages]

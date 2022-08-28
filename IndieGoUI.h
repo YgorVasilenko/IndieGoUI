@@ -245,6 +245,7 @@ namespace IndieGo {
 			// style settings for various elements
 			color_table style;
 			image_props skinned_style;
+			virtual region<float> getImgCrop(IMAGE_SKIN_ELEMENT elt);
 
 			bool custom_style = true;
 			unsigned char layout_row = 0;
@@ -510,6 +511,7 @@ namespace IndieGo {
 			};
 		};
 
+		struct Manager;
 		struct WIDGET : public WIDGET_BASE {
 
 			// widget's size and location on screen, in percentage with 0% 0% top-left
@@ -553,7 +555,12 @@ namespace IndieGo {
 			color_table style;
 			image_props skinned_style;
 			bool custom_style = true;
+			friend struct Manager;
 		private:
+
+			// required for serialization
+			virtual region<float> getImgCrop(IMAGE_SKIN_ELEMENT elt);
+
 			bool initialized_in_backend = false;
 
 			void callWidgetUI(UI_elements_map & UIMap) {
@@ -615,6 +622,11 @@ namespace IndieGo {
 			// [win_id] = set of widgets
 			// application may have several windows, each loading different UI
 			std::map<std::string, std::map<std::string, WIDGET>> widgets;
+
+			// idea : set of parameters for cosecutive calls of
+			// addWidget, addElements add useSkinImage
+			void serialize(const std::string & winID, const std::string & path, const std::vector<std::string> & skipWidgets = {});
+			void deserialize(const std::string & winID, const std::string & path);
 
 			// provide init functions in backend renderer module
 			void init(
