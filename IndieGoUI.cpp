@@ -1,6 +1,9 @@
 // various functions for working with ui
 #include <IndieGoUI.h>
+
+#if !defined NO_SERIALIZATION !defined NO_UI_SERIALIZATION
 #include <IndieGoUI.pb.h>
+#endif
 
 using namespace IndieGo::UI;
 
@@ -67,12 +70,13 @@ void addElement(
     // TODO : process special cases
 }
 
-extern std::string skinning_img_path;
-extern unsigned int skinning_image_id;
-extern unsigned int si_w;
-extern unsigned int si_h;
+extern std::string skinning_img_path = "";
+extern unsigned int skinning_image_id = 0;
+extern unsigned int si_w = 0;
+extern unsigned int si_h = 0;
 
 void Manager::serialize(const std::string & winID, const std::string & path, const std::vector<std::string> & skipWidgets) {
+#if !defined NO_SERIALIZATION !defined NO_UI_SERIALIZATION
     UI_elements_map & UIMap = GUI.UIMaps[winID];
     ui_serialization::SerializedUI serialized_ui;
     for (auto widget : GUI.widgets[winID]) {
@@ -167,9 +171,11 @@ void Manager::serialize(const std::string & winID, const std::string & path, con
     }
     std::ofstream file(path, std::ios::binary);
     serialized_ui.SerializeToOstream(&file);
+#endif
 }
 
 void Manager::deserialize(const std::string & winID, const std::string & path) {
+#if !defined NO_SERIALIZATION !defined NO_UI_SERIALIZATION
     ui_serialization::SerializedUI serialized_ui;
     std::ifstream file(path, std::ios::binary);
     if (!serialized_ui.ParseFromIstream(&file)) {
@@ -269,4 +275,5 @@ void Manager::deserialize(const std::string & winID, const std::string & path) {
             }
         }
     }
+#endif
 }

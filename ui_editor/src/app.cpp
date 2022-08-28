@@ -87,10 +87,10 @@ extern void addElement(
     bool add_on_new_row
 );
 
-std::string skinning_img_path;
-unsigned int skinning_image_id = 0;
-unsigned int si_w = 0;
-unsigned int si_h = 0;
+extern std::string skinning_img_path;
+extern unsigned int skinning_image_id;
+extern unsigned int si_w;
+extern unsigned int si_h;
 
 int main() {
 
@@ -245,6 +245,14 @@ int main() {
         if (UIMap["load widgets"]._data.b) {
             std::string path = *getPaths().begin();
             GUI.deserialize(winID, path);
+
+            // update widgets list
+            widgets_list.elements.clear();
+            for (auto widget : GUI.widgets[winID]) {
+                if (widget.first == "UI creator") continue;
+                if (widget.first == "style editor") continue;
+                widgets_list.elements.push_back(widget.first);
+            }
         }
 
         prev_selected_widget = widgets_list.selected_element;
