@@ -1,6 +1,4 @@
 // TODO :
-// 1. make map { 'property_name' : used_sub_image }, call that in runtime
-// - almost done, only ui functionality connect left
 // 2. Fonts
 // 3. Serialization
 // extra. split rows and columns
@@ -281,6 +279,36 @@ int main() {
 
                 if (rows_list.selected_element != -1 && prev_selected_row == rows_list.selected_element) {
                     w.layout_grid[rows_list.selected_element].min_height = UIMap["row height"]._data.ui;
+                }
+
+                if (skinning_props_list.selected_element != -1) {
+                    if (UIMap["add skin"]._data.b) {
+                        region<float> crop = {
+                                si_w * (UIMap["img x"]._data.f / 100.f),
+                                si_h * (UIMap["img y"]._data.f / 100.f),
+                                si_w * (UIMap["img size x"]._data.f / 100.f),
+                                si_h * (UIMap["img size y"]._data.f / 100.f)
+                        };
+                        if (style_edit_mode == widget_edit) {
+                            w.useSkinImage(
+                                skinning_image_id,
+                                si_w,
+                                si_h,
+                                crop,
+                                (IMAGE_SKIN_ELEMENT)skinning_props_list.selected_element
+                            );
+                        } else {
+                            if (elements_list.selected_element != -1 && prev_selected_element == elements_list.selected_element) {
+                                UIMap[elements_list.getSelected()].useSkinImage(
+                                    skinning_image_id,
+                                    si_w,
+                                    si_h,
+                                    crop,
+                                    (IMAGE_SKIN_ELEMENT)skinning_props_list.selected_element
+                                );
+                            }
+                        }
+                    }
                 }
             }
         }
