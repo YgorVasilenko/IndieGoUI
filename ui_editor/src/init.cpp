@@ -166,9 +166,36 @@ void initWidgets() {
     UIMap["spacing x"].label = "spacing x";
     UIMap["spacing x"]._data.f = 1.f; // TODO : check it's non-zero
 
-    UIMap.addElement("spacing y", UI_FLOAT, &c_widget, current_line);
+    UIMap.addElement("spacing y", UI_FLOAT, &c_widget, current_line++);
     UIMap["spacing y"].label = "spacing y";
     UIMap["spacing y"]._data.f = 1.f; // TODO : check it's non-zero
+
+    // font loading elements
+    // "load font" button
+    UIMap.addElement("load font", UI_BUTTON, &c_widget, current_line);
+    UIMap["load font"].label = "load font";
+
+    // use selected font for currently selected element/widget
+    UIMap.addElement("use font", UI_BUTTON, &c_widget, current_line);
+    UIMap["use font"].label = "use font";
+
+    // font, currently used by element
+    UIMap.addElement("current font", UI_STRING_LABEL, &c_widget, current_line);
+    UIMap["current font"].label = "current font";
+
+    // "native" size of font (one, that it was loaded with)
+    UIMap.addElement("load font size", UI_FLOAT, &c_widget, current_line);
+    UIMap["load font size"].label = "load size";
+    UIMap["load font size"]._data.f = 16.f;
+
+    // displayed size of font, setted programmaticaly. Loses quality on bigger values
+    UIMap.addElement("programmed font size", UI_FLOAT, &c_widget, current_line++);
+    UIMap["programmed font size"].label = "programmed size";
+
+    // list of all available fonts
+    UIMap.addElement("available fonts", UI_ITEMS_LIST, &c_widget, current_line++);
+    UIMap["available fonts"].label = "available fonts";
+    c_widget.layout_grid[current_line - 1].min_height = 0.139f;
 
     ui_string_group & skinning_props_list = *UIMap["skinning property"]._data.usgPtr;
     for (int i = background; i != hover_active; i++) {

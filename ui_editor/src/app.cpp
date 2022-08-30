@@ -1,6 +1,7 @@
 // TODO :
 // Fonts 
-// borders, padding, rounding, spacng
+// - load fonts by adding to atlas
+// - reload atlas each time new font is loaded
 // extra. split rows and columns
 
 #include <IndieGoUI.h>
@@ -284,6 +285,13 @@ int main() {
         
         // back updates of widgets from ui selection
         checkUIValues(winID);
+        if (UIMap["load font"]._data.b) {
+            GUI.loadFont(
+                *getPaths().begin(), 
+                winID, 
+                UIMap["load font size"]._data.f
+            );
+        }
 
         if (widgets_list.selected_element != -1) {
             if (prev_selected_widget == widgets_list.selected_element) {

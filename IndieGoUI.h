@@ -250,6 +250,9 @@ namespace IndieGo {
 			float rounding = 1.f;
 			region_size<float> padding = { 1.f, 1.f };
 
+			float font_height = 0.023f;
+			std::string font = "Roboto-Regular";
+
 			bool hidden = false;
 			bool takeSpaceIfHidden = true;
 
@@ -330,6 +333,10 @@ namespace IndieGo {
 
 			float row_size = 25.f,
 				col_size = -1.f; // -1 == auto-scale
+
+			// font is switched in runtime
+			float font_height = 0.023f;
+			std::string font = "Roboto-Regular";
 
 			float border_size = 1.f; 
 			region_size<float> padding = { 1.f, 1.f };
@@ -633,6 +640,9 @@ namespace IndieGo {
 			// [win_id] = ui_map
 			std::map<std::string, UI_elements_map> UIMaps;
 
+			// paths of fonts, used by widgets
+			std::vector<std::string> loaded_fonts;
+
 			// widgets contain elements from specified maps
 			// [win_id] = set of widgets
 			// application may have several windows, each loading different UI
@@ -642,6 +652,8 @@ namespace IndieGo {
 			// addWidget, addElements add useSkinImage
 			void serialize(const std::string & winID, const std::string & path, const std::vector<std::string> & skipWidgets = {});
 			void deserialize(const std::string & winID, const std::string & path);
+
+			void loadFont(std::string path, std::string & winID, float font_size = 16.f);
 
 			// provide init functions in backend renderer module
 			void init(

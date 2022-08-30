@@ -13,6 +13,8 @@
 #include <IndieGoUI.h>
 #include <string>
 #include <regex>
+#include <filesystem>
+namespace fs = std::filesystem;
 
 enum nk_glfw_init_state{
     NK_GLFW3_DEFAULT=0,
@@ -44,7 +46,7 @@ struct nk_glfw {
     int display_width, display_height;
     struct nk_glfw_device ogl;
     struct nk_context ctx;
-    struct nk_font_atlas atlas;
+    // struct nk_font_atlas atlas;
     struct nk_vec2 fb_scale;
     unsigned int text[NK_GLFW_TEXT_MAX];
     int text_len;
@@ -70,7 +72,8 @@ struct nk_glfw_vertex {
 #define MAX_VERTEX_BUFFER 512 * 1024
 #define MAX_ELEMENT_BUFFER 128 * 1024
 
-std::map<std::string, struct nk_font *> loaded_fonts;
+// font_name = <fontPtr, font_size>
+std::map<std::string, std::pair<struct nk_font *, float>> backend_loaded_fonts;
 
 // texture_iid = vector<sub_images>
 std::map<unsigned int, std::vector<std::pair<struct nk_image, IndieGo::UI::region<float>>>> images;
@@ -79,8 +82,11 @@ std::map<unsigned int, std::vector<std::pair<struct nk_image, IndieGo::UI::regio
 // context should be same for respective winID
 std::map<std::string, struct nk_glfw*> glfw_storage;
 
+
+std::map<std::string, struct nk_font> fonts;
+
 // TODO - struct for several atlases loading
-struct nk_font_atlas * atlas = NULL;
+struct nk_font_atlas atlas;
 
 struct nk_vec2 cursor_pos;
 
@@ -90,6 +96,7 @@ NK_API bool disableMouse = false;
 
 void nk_glfw3_device_upload_atlas(struct nk_glfw* glfw, const void *image, int width, int height) {
     struct nk_glfw_device *dev = &glfw->ogl;
+    glDeleteTextures(1, &dev->font_tex);
     glGenTextures(1, &dev->font_tex);
     glBindTexture(GL_TEXTURE_2D, dev->font_tex);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
@@ -199,36 +206,23 @@ NK_API void nk_glfw3_device_create(struct nk_glfw* glfw) {
     glBindVertexArray(0);
 }
 
-struct nk_context* nk_glfw3_init(struct nk_glfw* glfw, GLFWwindow *win, enum nk_glfw_init_state init_state) {
-    glfwSetWindowUserPointer(win, glfw);
-    glfw->win = win;
-    nk_init_default(&glfw->ctx, 0);
-    glfw->ctx.clip.copy = nk_glfw3_clipboard_copy;
-    glfw->ctx.clip.paste = nk_glfw3_clipboard_paste;
-    glfw->ctx.clip.userdata = nk_handle_ptr(0);
-    glfw->last_button_click = 0;
-    nk_glfw3_device_create(glfw);
-
-    glfw->is_double_click_down = nk_false;
-    glfw->double_click_pos = nk_vec2(0, 0);
-
-    return &glfw->ctx;
-}
-
-void nk_glfw3_font_stash_begin(struct nk_glfw* glfw, struct nk_font_atlas **atlas) {
-    nk_font_atlas_init_default(&glfw->atlas);
-    nk_font_atlas_begin(&glfw->atlas);
-    *atlas = &glfw->atlas;
+// Leagcy functions for loading default font
+// ----------------------------------------------------------
+void nk_glfw3_font_stash_begin(struct nk_glfw* glfw) {
+    nk_font_atlas_init_default(&atlas);
+    nk_font_atlas_begin(&atlas);
+    // *atlas = &glfw->atlas;
 }
 
 void nk_glfw3_font_stash_end(struct nk_glfw* glfw) {
     const void* image; int w, h;
-    image = nk_font_atlas_bake(&glfw->atlas, &w, &h, NK_FONT_ATLAS_RGBA32);
+    image = nk_font_atlas_bake(&atlas, &w, &h, NK_FONT_ATLAS_RGBA32);
     nk_glfw3_device_upload_atlas(glfw, image, w, h);
-    nk_font_atlas_end(&glfw->atlas, nk_handle_id((int)glfw->ogl.font_tex), &glfw->ogl.null);
-    if (glfw->atlas.default_font)
-        nk_style_set_font(&glfw->ctx, &glfw->atlas.default_font->handle);
+    nk_font_atlas_end(&atlas, nk_handle_id((int)glfw->ogl.font_tex), &glfw->ogl.null);
+    if (&atlas.default_font)
+        nk_style_set_font(&glfw->ctx, &atlas.default_font->handle);
 }
+// ----------------------------------------------------------
 
 NK_API void nk_glfw3_render(struct nk_glfw* glfw, enum nk_anti_aliasing AA, int max_vertex_buffer, int max_element_buffer) {
 
@@ -348,7 +342,7 @@ void prepareUIRenderer(GLFWwindow* window, std::string & winID) {
 	glfw->is_double_click_down = nk_false;
 	glfw->double_click_pos = nk_vec2(0, 0);
 
-    nk_glfw3_font_stash_begin(glfw, &atlas);
+    nk_glfw3_font_stash_begin(glfw);
     nk_glfw3_font_stash_end(glfw);
 }
 
@@ -996,4 +990,34 @@ void Manager::addWindow(std::string winID, void * initData) {
 
 void Manager::removeWindow(std::string winID, void * winData) {
 
+}
+
+void Manager::loadFont(std::string path, std::string & winID, float font_size) {
+
+    if (std::find(loaded_fonts.begin(), loaded_fonts.end(), path) != loaded_fonts.end())
+        return;
+
+    const void *image; int w, h;
+    struct nk_font_config cfg = nk_font_config(0);
+    nk_font_atlas_init_default(&atlas);
+    nk_font_atlas_begin(&atlas);
+    std::string font_name = fs::path( path ).stem().string();
+
+    backend_loaded_fonts[font_name].first = nk_font_atlas_add_from_file(&atlas, path.c_str(), font_size, &cfg);
+    backend_loaded_fonts[font_name].second = font_size;
+
+    // reload all previously loaded fonts
+    for (auto font_path : loaded_fonts) {
+        font_name = fs::path( font_path ).stem().string();
+        nk_font_atlas_add_from_file(&atlas, font_path.c_str(), backend_loaded_fonts[font_name].second, &cfg);
+    }
+    
+    // memorize new font path
+    loaded_fonts.push_back(path);
+    image = nk_font_atlas_bake(&atlas, &w, &h, NK_FONT_ATLAS_RGBA32);
+
+    nk_glfw3_device_upload_atlas(glfw_storage[winID], image, w, h);
+    nk_font_atlas_end(&atlas, nk_handle_id((int)glfw_storage[winID]->ogl.font_tex), &glfw_storage[winID]->ogl.null);
+    
+    nk_style_set_font(&glfw_storage[winID]->ctx, &backend_loaded_fonts[font_name].first->handle);
 }
