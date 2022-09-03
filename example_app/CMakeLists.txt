@@ -42,6 +42,8 @@ target_link_libraries(
     PUBLIC "../lib/glfw3"
 )
 
+set(CMAKE_CXX_FLAGS_DEBUG " /std:c++17 /DEBUG /Zi")
+
 if(DEFINED CI_BUILD)
     message(STATUS "Building for ci...")
     target_compile_definitions(

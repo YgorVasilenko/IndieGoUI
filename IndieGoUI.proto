@@ -37,6 +37,11 @@ message SkinImage {
     region crop = 2;
 }
 
+message Font {
+    string name = 1;
+    float size = 2;
+}
+
 message SkinnedProperty {
     SkinImage img = 1;
     uint32 prop_type = 2;
@@ -51,18 +56,21 @@ message WidgetBase {
     bool scalable = 6;
     bool movable = 7;
 
+    Font font = 8;
+    
     // different display settings
-    float border_size = 8; 
-    region_size padding = 9;
-	region_size spacing = 10;
+    float border_size = 9; 
+    region_size padding = 10;
+	region_size spacing = 11;
 
     // on load when elements added to new row
     // it's size will be adjusted
-    repeated uint32 rows_heights = 11;
+    repeated uint32 rows_heights = 12;
 
     // on load skinned element will call useSkinImage
-    repeated SkinnedProperty skinned_props = 12;
-    repeated StyleColor styled_props = 13;
+    repeated SkinnedProperty skinned_props = 13;
+    repeated StyleColor styled_props = 14;
+
 }
 
 message Element {
@@ -70,15 +78,16 @@ message Element {
     string widget_name = 2;
     uint32 type = 3;
     bool add_on_new_row = 4;
+    Font font = 5;
 
     // different display settings
-    float border = 5; 
-	float rounding = 6;
-	region_size padding = 7;
+    float border = 6; 
+	float rounding = 7;
+	region_size padding = 8;
 
     // on load skinned element will call useSkinImage
-    repeated SkinnedProperty skinned_props = 8;
-    repeated StyleColor styled_props = 9;
+    repeated SkinnedProperty skinned_props = 9;
+    repeated StyleColor styled_props = 10;
 }
 
 message Widget {
@@ -88,7 +97,11 @@ message Widget {
 
 // Binary file to serialize ui to
 message SerializedUI {
-    repeated Widget widgets = 1;
+    // main manager loads fonts
+    // font.name here records path
+    // similar paths could be saved, just specifying font size
+    repeated Font fonts = 1;
+    repeated Widget widgets = 2;
 }
 
 // [END messages]

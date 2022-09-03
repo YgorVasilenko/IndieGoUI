@@ -59,15 +59,18 @@ void addElement(
         return;
 
     // figure row to add element on
-    unsigned int row = w.layout_grid.size() - 1;
-    if (add_on_new_row)
+    int row = w.layout_grid.size() - 1;
+    if (add_on_new_row || row == -1)
         row++;
     
     // get UIMap
     UI_elements_map & UIMap = GUI.UIMaps[winID];
     // add element to widget
     UIMap.addElement(elt_name, type, &w, row);
+
     // TODO : process special cases
+    w.layout_grid[row].in_pixels = false;
+    w.layout_grid[row].min_height = 0.25f;
 }
 
 extern std::string skinning_img_path = "";
@@ -106,6 +109,10 @@ void Manager::serialize(const std::string & winID, const std::string & path, con
         w->mutable_widget()->mutable_padding()->set_y(widget.second.padding.h);
         w->mutable_widget()->mutable_spacing()->set_x(widget.second.spacing.w);
         w->mutable_widget()->mutable_spacing()->set_y(widget.second.spacing.h);
+
+        // global widget font
+        w->mutable_widget()->mutable_font()->set_name(widget.second.font);
+        w->mutable_widget()->mutable_font()->set_size(widget.second.font_size);
 
         // rows heights
         for (auto g_row : widget.second.layout_grid) {
@@ -148,6 +155,10 @@ void Manager::serialize(const std::string & winID, const std::string & path, con
             e->mutable_padding()->set_x(UIMap[elt_name].padding.w);
             e->mutable_padding()->set_y(UIMap[elt_name].padding.h);
 
+            // individual component's used font data
+            e->mutable_font()->set_name(UIMap[elt_name].font);
+            e->mutable_font()->set_size(UIMap[elt_name].font_size);
+
             bool add_to_new_row = false;
             for (auto elt_group : widget.second.elements_groups) {
                 if (elt_group.start == elt_name) {
@@ -172,7 +183,7 @@ void Manager::serialize(const std::string & winID, const std::string & path, con
             }
 
             // color styled props
-            for (int i = 0; i < 28; i++){
+            for (int i = 0; i < 28; i++) {
                 ui_serialization::StyleColor * sc = e->add_styled_props();
                 sc->set_r(widget.second.style.elements[i].r);
                 sc->set_g(widget.second.style.elements[i].g);
@@ -181,6 +192,15 @@ void Manager::serialize(const std::string & winID, const std::string & path, con
             }
         }
     }
+
+    for (auto font : loaded_fonts) {
+        for (auto size : font.second.sizes) {
+            ui_serialization::Font * f = serialized_ui.add_fonts();
+            f->set_name(font.second.path);
+            f->set_size(size);
+        }
+    }
+
     std::ofstream file(path, std::ios::binary);
     serialized_ui.SerializeToOstream(&file);
 #endif
@@ -222,6 +242,10 @@ void Manager::deserialize(const std::string & winID, const std::string & path) {
 
         // styling
         WIDGET & added_w = GUI.getWidget(w.widget().name(), winID);
+
+        // font
+        added_w.font = w.widget().font().name();
+        added_w.font_size = w.widget().font().size();
 
         // special props
         added_w.border_size = w.widget().border_size();
@@ -272,6 +296,10 @@ void Manager::deserialize(const std::string & winID, const std::string & path) {
             UIMap[e.name()].padding.h = e.padding().y();
             UIMap[e.name()].padding.w = e.padding().x();
 
+            // individual component's font
+            UIMap[e.name()].font = e.font().name();
+            UIMap[e.name()].font_size = e.font().size();
+
             // skinned props
             for (int k = 0; k < e.skinned_props_size(); k++) {
                 // TODO : check if image is loaded. Load, if not
@@ -299,5 +327,12 @@ void Manager::deserialize(const std::string & winID, const std::string & path) {
             }
         }
     }
+
+    // load used fonts
+    for (int i = 0; i < serialized_ui.fonts_size(); i++) {
+        const ui_serialization::Font & f = serialized_ui.fonts(i);
+        loadFont(f.name(), winID, f.size());
+    }
+
 #endif
 }

@@ -198,6 +198,7 @@ namespace IndieGo {
 			UI_BOOL,
 			UI_STRING_INPUT,
 			UI_STRING_LABEL,
+			UI_STRING_TEXT,
 			UI_BUTTON,
 			UI_BUTTON_SWITCH,
 			UI_ITEMS_LIST,
@@ -243,7 +244,7 @@ namespace IndieGo {
 			std::string label = "";
 			bool color_picker_unwrapped = false;
 
-			float min_height = 0.023f;
+			float min_height = 23.f;
 
 			// special properties, that can be called "common"
 			float border = 1.f; 
@@ -251,7 +252,8 @@ namespace IndieGo {
 			region_size<float> padding = { 1.f, 1.f };
 
 			float font_height = 0.023f;
-			std::string font = "Roboto-Regular";
+			std::string font = "None";
+			float font_size = 16.f;
 
 			bool hidden = false;
 			bool takeSpaceIfHidden = true;
@@ -282,7 +284,9 @@ namespace IndieGo {
 		};
 		struct grid_row {
 			std::vector<std::string> cells;
-			float min_height = 0.023f;
+			// float min_height = 0.023f;
+			float min_height = 23.f;
+			bool in_pixels = true;
 		};
 
 
@@ -336,7 +340,8 @@ namespace IndieGo {
 
 			// font is switched in runtime
 			float font_height = 0.023f;
-			std::string font = "Roboto-Regular";
+			std::string font = "None";
+			float font_size = 16.f;
 
 			float border_size = 1.f; 
 			region_size<float> padding = { 1.f, 1.f };
@@ -414,7 +419,7 @@ namespace IndieGo {
 			};
 
 			// returns position on layout, that element was eventually added to
-			std::pair<int, int> addElement(const std::string & elt_name, int row = -1, int col = -1, bool insert_row = false, bool overwrite_col = true, float min_height = 0.023f){
+			std::pair<int, int> addElement(const std::string & elt_name, int row = -1, int col = -1, bool insert_row = false, bool overwrite_col = true, float min_height = 23.f) {
 				// Guard against widgets elements doubling
 				if (std::find(widget_elements.begin(), widget_elements.end(), elt_name) != widget_elements.end()){
 					std::cout << "[ERROR] addElement: element '" << elt_name << "' already exists in widget " << name << std::endl;
@@ -493,7 +498,7 @@ namespace IndieGo {
 
 				UI_element element;
 				element.type = type;
-				if (element.type == UI_STRING_INPUT){
+				if (element.type == UI_STRING_INPUT) {
 					element._data.strPtr = new std::string;
 				} else if (element.type == UI_ITEMS_LIST) {
 					element._data.usgPtr = new ui_string_group;
@@ -554,7 +559,7 @@ namespace IndieGo {
 
 			// provide implementation with actual drawing calls
 			virtual void callImmediateBackend(UI_elements_map & UIMap);
-			virtual void allocateRow(unsigned int cols, float min_height);
+			virtual void allocateRow(unsigned int cols, float min_height, bool in_pixels);
 			virtual void allocateEmptySpace(unsigned int fill_count = 1);
 			virtual void allocateGroupStart(elements_group & group, float min_height);
 			virtual void allocateGroupEnd();
@@ -595,7 +600,7 @@ namespace IndieGo {
 					curr_group = find_if(elements_groups.begin(), elements_groups.end(), [&first_elt ](elements_group & g){ return g.start == first_elt; });
 					if (curr_group == elements_groups.end()){
 						// TODO : allocate row only for visible elements
-						allocateRow(row.cells.size(), row.min_height);
+						allocateRow(row.cells.size(), row.min_height, row.in_pixels);
 					}
 					for (auto elt : row.cells){
 						// check, if element starts drawing group
@@ -630,6 +635,12 @@ namespace IndieGo {
 		struct TEXT_WIDGET : public WIDGET {
 
 		};
+		
+		struct font_data {
+			std::string path;
+			std::vector<float> sizes;
+			float runtime_set_size;
+		};
 
 		// Main UI's controlling memory struct - contains all possible memory maps and widgets,
 		// adds new ones and removes old, makes calls to Immediate-Mode backends
@@ -640,8 +651,10 @@ namespace IndieGo {
 			// [win_id] = ui_map
 			std::map<std::string, UI_elements_map> UIMaps;
 
-			// paths of fonts, used by widgets
-			std::vector<std::string> loaded_fonts;
+			// paths of fonts, used by widgets and vector of available sizes
+			std::string main_font = "None";
+			float main_font_size = 16.f;
+			std::map<std::string, font_data> loaded_fonts;
 
 			// widgets contain elements from specified maps
 			// [win_id] = set of widgets
@@ -653,7 +666,7 @@ namespace IndieGo {
 			void serialize(const std::string & winID, const std::string & path, const std::vector<std::string> & skipWidgets = {});
 			void deserialize(const std::string & winID, const std::string & path);
 
-			void loadFont(std::string path, std::string & winID, float font_size = 16.f);
+			void loadFont(std::string path, const std::string & winID, float font_size = 16.f);
 
 			// provide init functions in backend renderer module
 			void init(

@@ -126,6 +126,8 @@ int main() {
     ui_string_group & rows_list = *UIMap["widget rows"]._data.usgPtr;
     ui_string_group & skinning_props_list = *UIMap["skinning property"]._data.usgPtr;
     ui_string_group & style_elements_list = *UIMap["style elements list"]._data.usgPtr;
+    ui_string_group& available_fonts_list = *UIMap["available fonts"]._data.usgPtr;
+    ui_string_group& font_sizes_list = *UIMap["font sizes"]._data.usgPtr;
 
 	// set initial time to zero
 	glfwSetTime(0.0);
@@ -133,6 +135,7 @@ int main() {
     int prev_selected_widget = -1;
     int prev_selected_element = -1;
     int prev_selected_row = -1;
+    int prev_selected_font_size = -1;
     int width, height;
     while (!glfwWindowShouldClose(screen)) {
         glClearColor(0.2f, 0.3f, 0.3f, 1.0f);
@@ -185,7 +188,7 @@ int main() {
                 UIMap[*UIMap["new element name"]._data.strPtr].initImage(texID, img_path);
             }
             if (UIMap["add text"]._data.b) {
-                UI_ELEMENT_TYPE t = UI_STRING_LABEL;
+                UI_ELEMENT_TYPE t = UI_STRING_TEXT;
                 addElement(widgets_list.getSelected(), winID, *UIMap["new element name"]._data.strPtr, t, !UIMap["to same row"]._data.b);
             }
             if (UIMap["add slider"]._data.b) {
@@ -201,7 +204,7 @@ int main() {
                 elements_list.selected_element = prev_selected_element;
             }
             if (elements_list.selected_element != -1) {
-                if (UIMap[elements_list.getSelected()].type == UI_STRING_LABEL) {
+                if (UIMap[elements_list.getSelected()].type == UI_STRING_TEXT) {
                     // modify text in selected text element
                     *UIMap["selected text"]._data.strPtr = UIMap[elements_list.getSelected()].label;
                 }
@@ -221,7 +224,7 @@ int main() {
             }
 
             if (rows_list.selected_element != -1) {
-                UIMap["row height"]._data.ui = w.layout_grid[rows_list.selected_element].min_height;
+                UIMap["row height"]._data.f = w.layout_grid[rows_list.selected_element].min_height;
             }
 
             if (style_elements_list.selected_element != -1) {
@@ -291,6 +294,29 @@ int main() {
                 winID, 
                 UIMap["load font size"]._data.f
             );
+            // update fonts list
+            available_fonts_list.elements.clear();
+            for (auto font_path : GUI.loaded_fonts) {
+                available_fonts_list.elements.push_back( fs::path(font_path.first).stem().string() );
+            }
+        }
+
+        prev_selected_font_size = font_sizes_list.selected_element;
+        font_sizes_list.elements.clear();
+        if (available_fonts_list.selected_element != -1) {
+            for (auto size : GUI.loaded_fonts[available_fonts_list.getSelected()].sizes) {
+                font_sizes_list.elements.push_back(
+                    std::to_string(size)
+                );
+            }
+            font_sizes_list.selected_element = prev_selected_font_size;
+            // switch global font abd size to selected font and size
+            /*GUI.main_font = available_fonts_list.getSelected();
+            if (font_sizes_list.selected_element != -1) {
+                GUI.main_font_size = std::stof(
+                    font_sizes_list.getSelected()
+                );
+            }*/
         }
 
         if (widgets_list.selected_element != -1) {
@@ -313,7 +339,7 @@ int main() {
                 }
 
                 if (elements_list.selected_element != -1 && prev_selected_element == elements_list.selected_element) {
-                    if (UIMap[elements_list.getSelected()].type == UI_STRING_LABEL) {
+                    if (UIMap[elements_list.getSelected()].type == UI_STRING_TEXT) {
                         // modify text in selected text element
                         UIMap[elements_list.getSelected()].label = *UIMap["selected text"]._data.strPtr;
                     }
@@ -327,7 +353,7 @@ int main() {
                 }
 
                 if (rows_list.selected_element != -1 && prev_selected_row == rows_list.selected_element) {
-                    w.layout_grid[rows_list.selected_element].min_height = UIMap["row height"]._data.ui;
+                    w.layout_grid[rows_list.selected_element].min_height = UIMap["row height"]._data.f;
                 }
 
                 if (skinning_props_list.selected_element != -1) {
@@ -355,6 +381,23 @@ int main() {
                                     crop,
                                     (IMAGE_SKIN_ELEMENT)skinning_props_list.selected_element
                                 );
+                            }
+                        }
+                    }
+                }
+
+
+                if (UIMap["use font"]._data.b) {
+                    if (style_edit_mode == widget_edit) {
+                        if (available_fonts_list.selected_element != -1 && font_sizes_list.selected_element != -1) {
+                            w.font = available_fonts_list.getSelected();
+                            w.font_size = std::stof(font_sizes_list.getSelected());
+                        }
+                    } else {
+                        if (available_fonts_list.selected_element != -1 && font_sizes_list.selected_element != -1) {
+                            if (elements_list.selected_element != -1) {
+                                UIMap[elements_list.getSelected()].font = available_fonts_list.getSelected();
+                                UIMap[elements_list.getSelected()].font_size = std::stof(font_sizes_list.getSelected());
                             }
                         }
                     }

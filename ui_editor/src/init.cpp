@@ -77,7 +77,7 @@ void initWidgets() {
 
     UIMap.addElement("skinning property", UI_ITEMS_LIST, &c_widget, current_line++);
     UIMap["skinning property"].label = "skinning property";
-    c_widget.layout_grid[current_line - 1].min_height = 0.139f;
+    c_widget.layout_grid[current_line - 1].min_height = 150.f;
     // ---------------------------------------------------------------------
 
     UIMap.addElement("hide widget", UI_BOOL, &c_widget, current_line);
@@ -89,7 +89,7 @@ void initWidgets() {
     UIMap.addElement("new element name", UI_STRING_INPUT, &c_widget, current_line);
     UIMap["new element name"].label = "new element name";
 
-    UIMap.addElement("row height", UI_UINT, &c_widget, current_line++);
+    UIMap.addElement("row height", UI_FLOAT, &c_widget, current_line++);
     UIMap["row height"].label = "row height";
 
     UIMap.addElement("add image", UI_BUTTON, &c_widget, current_line);
@@ -193,9 +193,12 @@ void initWidgets() {
     UIMap["programmed font size"].label = "programmed size";
 
     // list of all available fonts
-    UIMap.addElement("available fonts", UI_ITEMS_LIST, &c_widget, current_line++);
+    UIMap.addElement("available fonts", UI_ITEMS_LIST, &c_widget, current_line);
     UIMap["available fonts"].label = "available fonts";
-    c_widget.layout_grid[current_line - 1].min_height = 0.139f;
+
+    UIMap.addElement("font sizes", UI_ITEMS_LIST, &c_widget, current_line++);
+    UIMap["font sizes"].label = "font sizes";
+    c_widget.layout_grid[current_line - 1].min_height = 150.f;
 
     ui_string_group & skinning_props_list = *UIMap["skinning property"]._data.usgPtr;
     for (int i = background; i != hover_active; i++) {
@@ -222,7 +225,7 @@ void initWidgets() {
     UIMap["style elements list"].label = "edit element styling";
     UIMap["style elements list"].text_align = LEFT;
     
-    s_widget.layout_grid[current_line - 1].min_height = 0.643f;
+    s_widget.layout_grid[current_line - 1].min_height = 693.f;
     ui_string_group & style_elements_list = *UIMap["style elements list"]._data.usgPtr;
 
     for (int i = UI_COLOR_TEXT; i != UI_COLOR_TAB_HEADER; i++) {

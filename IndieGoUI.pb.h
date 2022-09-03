@@ -48,6 +48,9 @@ namespace ui_serialization {
 class Element;
 struct ElementDefaultTypeInternal;
 extern ElementDefaultTypeInternal _Element_default_instance_;
+class Font;
+struct FontDefaultTypeInternal;
+extern FontDefaultTypeInternal _Font_default_instance_;
 class SerializedUI;
 struct SerializedUIDefaultTypeInternal;
 extern SerializedUIDefaultTypeInternal _SerializedUI_default_instance_;
@@ -75,6 +78,7 @@ extern region_sizeDefaultTypeInternal _region_size_default_instance_;
 }  // namespace ui_serialization
 PROTOBUF_NAMESPACE_OPEN
 template<> ::ui_serialization::Element* Arena::CreateMaybeMessage<::ui_serialization::Element>(Arena*);
+template<> ::ui_serialization::Font* Arena::CreateMaybeMessage<::ui_serialization::Font>(Arena*);
 template<> ::ui_serialization::SerializedUI* Arena::CreateMaybeMessage<::ui_serialization::SerializedUI>(Arena*);
 template<> ::ui_serialization::SkinImage* Arena::CreateMaybeMessage<::ui_serialization::SkinImage>(Arena*);
 template<> ::ui_serialization::SkinnedProperty* Arena::CreateMaybeMessage<::ui_serialization::SkinnedProperty>(Arena*);
@@ -782,6 +786,170 @@ class SkinImage final :
 };
 // -------------------------------------------------------------------
 
+class Font final :
+    public ::PROTOBUF_NAMESPACE_ID::Message /* @@protoc_insertion_point(class_definition:ui_serialization.Font) */ {
+ public:
+  inline Font() : Font(nullptr) {}
+  ~Font() override;
+  explicit PROTOBUF_CONSTEXPR Font(::PROTOBUF_NAMESPACE_ID::internal::ConstantInitialized);
+
+  Font(const Font& from);
+  Font(Font&& from) noexcept
+    : Font() {
+    *this = ::std::move(from);
+  }
+
+  inline Font& operator=(const Font& from) {
+    CopyFrom(from);
+    return *this;
+  }
+  inline Font& operator=(Font&& from) noexcept {
+    if (this == &from) return *this;
+    if (GetOwningArena() == from.GetOwningArena()
+  #ifdef PROTOBUF_FORCE_COPY_IN_MOVE
+        && GetOwningArena() != nullptr
+  #endif  // !PROTOBUF_FORCE_COPY_IN_MOVE
+    ) {
+      InternalSwap(&from);
+    } else {
+      CopyFrom(from);
+    }
+    return *this;
+  }
+
+  static const ::PROTOBUF_NAMESPACE_ID::Descriptor* descriptor() {
+    return GetDescriptor();
+  }
+  static const ::PROTOBUF_NAMESPACE_ID::Descriptor* GetDescriptor() {
+    return default_instance().GetMetadata().descriptor;
+  }
+  static const ::PROTOBUF_NAMESPACE_ID::Reflection* GetReflection() {
+    return default_instance().GetMetadata().reflection;
+  }
+  static const Font& default_instance() {
+    return *internal_default_instance();
+  }
+  static inline const Font* internal_default_instance() {
+    return reinterpret_cast<const Font*>(
+               &_Font_default_instance_);
+  }
+  static constexpr int kIndexInFileMessages =
+    4;
+
+  friend void swap(Font& a, Font& b) {
+    a.Swap(&b);
+  }
+  inline void Swap(Font* other) {
+    if (other == this) return;
+  #ifdef PROTOBUF_FORCE_COPY_IN_SWAP
+    if (GetOwningArena() != nullptr &&
+        GetOwningArena() == other->GetOwningArena()) {
+   #else  // PROTOBUF_FORCE_COPY_IN_SWAP
+    if (GetOwningArena() == other->GetOwningArena()) {
+  #endif  // !PROTOBUF_FORCE_COPY_IN_SWAP
+      InternalSwap(other);
+    } else {
+      ::PROTOBUF_NAMESPACE_ID::internal::GenericSwap(this, other);
+    }
+  }
+  void UnsafeArenaSwap(Font* other) {
+    if (other == this) return;
+    GOOGLE_DCHECK(GetOwningArena() == other->GetOwningArena());
+    InternalSwap(other);
+  }
+
+  // implements Message ----------------------------------------------
+
+  Font* New(::PROTOBUF_NAMESPACE_ID::Arena* arena = nullptr) const final {
+    return CreateMaybeMessage<Font>(arena);
+  }
+  using ::PROTOBUF_NAMESPACE_ID::Message::CopyFrom;
+  void CopyFrom(const Font& from);
+  using ::PROTOBUF_NAMESPACE_ID::Message::MergeFrom;
+  void MergeFrom( const Font& from) {
+    Font::MergeImpl(*this, from);
+  }
+  private:
+  static void MergeImpl(::PROTOBUF_NAMESPACE_ID::Message& to_msg, const ::PROTOBUF_NAMESPACE_ID::Message& from_msg);
+  public:
+  PROTOBUF_ATTRIBUTE_REINITIALIZES void Clear() final;
+  bool IsInitialized() const final;
+
+  size_t ByteSizeLong() const final;
+  const char* _InternalParse(const char* ptr, ::PROTOBUF_NAMESPACE_ID::internal::ParseContext* ctx) final;
+  uint8_t* _InternalSerialize(
+      uint8_t* target, ::PROTOBUF_NAMESPACE_ID::io::EpsCopyOutputStream* stream) const final;
+  int GetCachedSize() const final { return _impl_._cached_size_.Get(); }
+
+  private:
+  void SharedCtor(::PROTOBUF_NAMESPACE_ID::Arena* arena, bool is_message_owned);
+  void SharedDtor();
+  void SetCachedSize(int size) const final;
+  void InternalSwap(Font* other);
+
+  private:
+  friend class ::PROTOBUF_NAMESPACE_ID::internal::AnyMetadata;
+  static ::PROTOBUF_NAMESPACE_ID::StringPiece FullMessageName() {
+    return "ui_serialization.Font";
+  }
+  protected:
+  explicit Font(::PROTOBUF_NAMESPACE_ID::Arena* arena,
+                       bool is_message_owned = false);
+  public:
+
+  static const ClassData _class_data_;
+  const ::PROTOBUF_NAMESPACE_ID::Message::ClassData*GetClassData() const final;
+
+  ::PROTOBUF_NAMESPACE_ID::Metadata GetMetadata() const final;
+
+  // nested types ----------------------------------------------------
+
+  // accessors -------------------------------------------------------
+
+  enum : int {
+    kNameFieldNumber = 1,
+    kSizeFieldNumber = 2,
+  };
+  // string name = 1;
+  void clear_name();
+  const std::string& name() const;
+  template <typename ArgT0 = const std::string&, typename... ArgT>
+  void set_name(ArgT0&& arg0, ArgT... args);
+  std::string* mutable_name();
+  PROTOBUF_NODISCARD std::string* release_name();
+  void set_allocated_name(std::string* name);
+  private:
+  const std::string& _internal_name() const;
+  inline PROTOBUF_ALWAYS_INLINE void _internal_set_name(const std::string& value);
+  std::string* _internal_mutable_name();
+  public:
+
+  // float size = 2;
+  void clear_size();
+  float size() const;
+  void set_size(float value);
+  private:
+  float _internal_size() const;
+  void _internal_set_size(float value);
+  public:
+
+  // @@protoc_insertion_point(class_scope:ui_serialization.Font)
+ private:
+  class _Internal;
+
+  template <typename T> friend class ::PROTOBUF_NAMESPACE_ID::Arena::InternalHelper;
+  typedef void InternalArenaConstructable_;
+  typedef void DestructorSkippable_;
+  struct Impl_ {
+    ::PROTOBUF_NAMESPACE_ID::internal::ArenaStringPtr name_;
+    float size_;
+    mutable ::PROTOBUF_NAMESPACE_ID::internal::CachedSize _cached_size_;
+  };
+  union { Impl_ _impl_; };
+  friend struct ::TableStruct_IndieGoUI_2eproto;
+};
+// -------------------------------------------------------------------
+
 class SkinnedProperty final :
     public ::PROTOBUF_NAMESPACE_ID::Message /* @@protoc_insertion_point(class_definition:ui_serialization.SkinnedProperty) */ {
  public:
@@ -830,7 +998,7 @@ class SkinnedProperty final :
                &_SkinnedProperty_default_instance_);
   }
   static constexpr int kIndexInFileMessages =
-    4;
+    5;
 
   friend void swap(SkinnedProperty& a, SkinnedProperty& b) {
     a.Swap(&b);
@@ -998,7 +1166,7 @@ class WidgetBase final :
                &_WidgetBase_default_instance_);
   }
   static constexpr int kIndexInFileMessages =
-    5;
+    6;
 
   friend void swap(WidgetBase& a, WidgetBase& b) {
     a.Swap(&b);
@@ -1071,21 +1239,22 @@ class WidgetBase final :
   // accessors -------------------------------------------------------
 
   enum : int {
-    kRowsHeightsFieldNumber = 11,
-    kSkinnedPropsFieldNumber = 12,
-    kStyledPropsFieldNumber = 13,
+    kRowsHeightsFieldNumber = 12,
+    kSkinnedPropsFieldNumber = 13,
+    kStyledPropsFieldNumber = 14,
     kNameFieldNumber = 1,
     kSizeLocFieldNumber = 2,
-    kPaddingFieldNumber = 9,
-    kSpacingFieldNumber = 10,
+    kFontFieldNumber = 8,
+    kPaddingFieldNumber = 10,
+    kSpacingFieldNumber = 11,
     kBorderedFieldNumber = 3,
     kTitledFieldNumber = 4,
     kMinimizableFieldNumber = 5,
     kScalableFieldNumber = 6,
     kMovableFieldNumber = 7,
-    kBorderSizeFieldNumber = 8,
+    kBorderSizeFieldNumber = 9,
   };
-  // repeated uint32 rows_heights = 11;
+  // repeated uint32 rows_heights = 12;
   int rows_heights_size() const;
   private:
   int _internal_rows_heights_size() const;
@@ -1107,7 +1276,7 @@ class WidgetBase final :
   ::PROTOBUF_NAMESPACE_ID::RepeatedField< uint32_t >*
       mutable_rows_heights();
 
-  // repeated .ui_serialization.SkinnedProperty skinned_props = 12;
+  // repeated .ui_serialization.SkinnedProperty skinned_props = 13;
   int skinned_props_size() const;
   private:
   int _internal_skinned_props_size() const;
@@ -1125,7 +1294,7 @@ class WidgetBase final :
   const ::PROTOBUF_NAMESPACE_ID::RepeatedPtrField< ::ui_serialization::SkinnedProperty >&
       skinned_props() const;
 
-  // repeated .ui_serialization.StyleColor styled_props = 13;
+  // repeated .ui_serialization.StyleColor styled_props = 14;
   int styled_props_size() const;
   private:
   int _internal_styled_props_size() const;
@@ -1175,7 +1344,25 @@ class WidgetBase final :
       ::ui_serialization::region* size_loc);
   ::ui_serialization::region* unsafe_arena_release_size_loc();
 
-  // .ui_serialization.region_size padding = 9;
+  // .ui_serialization.Font font = 8;
+  bool has_font() const;
+  private:
+  bool _internal_has_font() const;
+  public:
+  void clear_font();
+  const ::ui_serialization::Font& font() const;
+  PROTOBUF_NODISCARD ::ui_serialization::Font* release_font();
+  ::ui_serialization::Font* mutable_font();
+  void set_allocated_font(::ui_serialization::Font* font);
+  private:
+  const ::ui_serialization::Font& _internal_font() const;
+  ::ui_serialization::Font* _internal_mutable_font();
+  public:
+  void unsafe_arena_set_allocated_font(
+      ::ui_serialization::Font* font);
+  ::ui_serialization::Font* unsafe_arena_release_font();
+
+  // .ui_serialization.region_size padding = 10;
   bool has_padding() const;
   private:
   bool _internal_has_padding() const;
@@ -1193,7 +1380,7 @@ class WidgetBase final :
       ::ui_serialization::region_size* padding);
   ::ui_serialization::region_size* unsafe_arena_release_padding();
 
-  // .ui_serialization.region_size spacing = 10;
+  // .ui_serialization.region_size spacing = 11;
   bool has_spacing() const;
   private:
   bool _internal_has_spacing() const;
@@ -1256,7 +1443,7 @@ class WidgetBase final :
   void _internal_set_movable(bool value);
   public:
 
-  // float border_size = 8;
+  // float border_size = 9;
   void clear_border_size();
   float border_size() const;
   void set_border_size(float value);
@@ -1279,6 +1466,7 @@ class WidgetBase final :
     ::PROTOBUF_NAMESPACE_ID::RepeatedPtrField< ::ui_serialization::StyleColor > styled_props_;
     ::PROTOBUF_NAMESPACE_ID::internal::ArenaStringPtr name_;
     ::ui_serialization::region* size_loc_;
+    ::ui_serialization::Font* font_;
     ::ui_serialization::region_size* padding_;
     ::ui_serialization::region_size* spacing_;
     bool bordered_;
@@ -1342,7 +1530,7 @@ class Element final :
                &_Element_default_instance_);
   }
   static constexpr int kIndexInFileMessages =
-    6;
+    7;
 
   friend void swap(Element& a, Element& b) {
     a.Swap(&b);
@@ -1415,17 +1603,18 @@ class Element final :
   // accessors -------------------------------------------------------
 
   enum : int {
-    kSkinnedPropsFieldNumber = 8,
-    kStyledPropsFieldNumber = 9,
+    kSkinnedPropsFieldNumber = 9,
+    kStyledPropsFieldNumber = 10,
     kNameFieldNumber = 1,
     kWidgetNameFieldNumber = 2,
-    kPaddingFieldNumber = 7,
+    kFontFieldNumber = 5,
+    kPaddingFieldNumber = 8,
     kTypeFieldNumber = 3,
     kAddOnNewRowFieldNumber = 4,
-    kBorderFieldNumber = 5,
-    kRoundingFieldNumber = 6,
+    kBorderFieldNumber = 6,
+    kRoundingFieldNumber = 7,
   };
-  // repeated .ui_serialization.SkinnedProperty skinned_props = 8;
+  // repeated .ui_serialization.SkinnedProperty skinned_props = 9;
   int skinned_props_size() const;
   private:
   int _internal_skinned_props_size() const;
@@ -1443,7 +1632,7 @@ class Element final :
   const ::PROTOBUF_NAMESPACE_ID::RepeatedPtrField< ::ui_serialization::SkinnedProperty >&
       skinned_props() const;
 
-  // repeated .ui_serialization.StyleColor styled_props = 9;
+  // repeated .ui_serialization.StyleColor styled_props = 10;
   int styled_props_size() const;
   private:
   int _internal_styled_props_size() const;
@@ -1489,7 +1678,25 @@ class Element final :
   std::string* _internal_mutable_widget_name();
   public:
 
-  // .ui_serialization.region_size padding = 7;
+  // .ui_serialization.Font font = 5;
+  bool has_font() const;
+  private:
+  bool _internal_has_font() const;
+  public:
+  void clear_font();
+  const ::ui_serialization::Font& font() const;
+  PROTOBUF_NODISCARD ::ui_serialization::Font* release_font();
+  ::ui_serialization::Font* mutable_font();
+  void set_allocated_font(::ui_serialization::Font* font);
+  private:
+  const ::ui_serialization::Font& _internal_font() const;
+  ::ui_serialization::Font* _internal_mutable_font();
+  public:
+  void unsafe_arena_set_allocated_font(
+      ::ui_serialization::Font* font);
+  ::ui_serialization::Font* unsafe_arena_release_font();
+
+  // .ui_serialization.region_size padding = 8;
   bool has_padding() const;
   private:
   bool _internal_has_padding() const;
@@ -1525,7 +1732,7 @@ class Element final :
   void _internal_set_add_on_new_row(bool value);
   public:
 
-  // float border = 5;
+  // float border = 6;
   void clear_border();
   float border() const;
   void set_border(float value);
@@ -1534,7 +1741,7 @@ class Element final :
   void _internal_set_border(float value);
   public:
 
-  // float rounding = 6;
+  // float rounding = 7;
   void clear_rounding();
   float rounding() const;
   void set_rounding(float value);
@@ -1555,6 +1762,7 @@ class Element final :
     ::PROTOBUF_NAMESPACE_ID::RepeatedPtrField< ::ui_serialization::StyleColor > styled_props_;
     ::PROTOBUF_NAMESPACE_ID::internal::ArenaStringPtr name_;
     ::PROTOBUF_NAMESPACE_ID::internal::ArenaStringPtr widget_name_;
+    ::ui_serialization::Font* font_;
     ::ui_serialization::region_size* padding_;
     uint32_t type_;
     bool add_on_new_row_;
@@ -1615,7 +1823,7 @@ class Widget final :
                &_Widget_default_instance_);
   }
   static constexpr int kIndexInFileMessages =
-    7;
+    8;
 
   friend void swap(Widget& a, Widget& b) {
     a.Swap(&b);
@@ -1792,7 +2000,7 @@ class SerializedUI final :
                &_SerializedUI_default_instance_);
   }
   static constexpr int kIndexInFileMessages =
-    8;
+    9;
 
   friend void swap(SerializedUI& a, SerializedUI& b) {
     a.Swap(&b);
@@ -1865,9 +2073,28 @@ class SerializedUI final :
   // accessors -------------------------------------------------------
 
   enum : int {
-    kWidgetsFieldNumber = 1,
+    kFontsFieldNumber = 1,
+    kWidgetsFieldNumber = 2,
   };
-  // repeated .ui_serialization.Widget widgets = 1;
+  // repeated .ui_serialization.Font fonts = 1;
+  int fonts_size() const;
+  private:
+  int _internal_fonts_size() const;
+  public:
+  void clear_fonts();
+  ::ui_serialization::Font* mutable_fonts(int index);
+  ::PROTOBUF_NAMESPACE_ID::RepeatedPtrField< ::ui_serialization::Font >*
+      mutable_fonts();
+  private:
+  const ::ui_serialization::Font& _internal_fonts(int index) const;
+  ::ui_serialization::Font* _internal_add_fonts();
+  public:
+  const ::ui_serialization::Font& fonts(int index) const;
+  ::ui_serialization::Font* add_fonts();
+  const ::PROTOBUF_NAMESPACE_ID::RepeatedPtrField< ::ui_serialization::Font >&
+      fonts() const;
+
+  // repeated .ui_serialization.Widget widgets = 2;
   int widgets_size() const;
   private:
   int _internal_widgets_size() const;
@@ -1893,6 +2120,7 @@ class SerializedUI final :
   typedef void InternalArenaConstructable_;
   typedef void DestructorSkippable_;
   struct Impl_ {
+    ::PROTOBUF_NAMESPACE_ID::RepeatedPtrField< ::ui_serialization::Font > fonts_;
     ::PROTOBUF_NAMESPACE_ID::RepeatedPtrField< ::ui_serialization::Widget > widgets_;
     mutable ::PROTOBUF_NAMESPACE_ID::internal::CachedSize _cached_size_;
   };
@@ -2264,6 +2492,80 @@ inline void SkinImage::set_allocated_crop(::ui_serialization::region* crop) {
 
 // -------------------------------------------------------------------
 
+// Font
+
+// string name = 1;
+inline void Font::clear_name() {
+  _impl_.name_.ClearToEmpty();
+}
+inline const std::string& Font::name() const {
+  // @@protoc_insertion_point(field_get:ui_serialization.Font.name)
+  return _internal_name();
+}
+template <typename ArgT0, typename... ArgT>
+inline PROTOBUF_ALWAYS_INLINE
+void Font::set_name(ArgT0&& arg0, ArgT... args) {
+ 
+ _impl_.name_.Set(static_cast<ArgT0 &&>(arg0), args..., GetArenaForAllocation());
+  // @@protoc_insertion_point(field_set:ui_serialization.Font.name)
+}
+inline std::string* Font::mutable_name() {
+  std::string* _s = _internal_mutable_name();
+  // @@protoc_insertion_point(field_mutable:ui_serialization.Font.name)
+  return _s;
+}
+inline const std::string& Font::_internal_name() const {
+  return _impl_.name_.Get();
+}
+inline void Font::_internal_set_name(const std::string& value) {
+  
+  _impl_.name_.Set(value, GetArenaForAllocation());
+}
+inline std::string* Font::_internal_mutable_name() {
+  
+  return _impl_.name_.Mutable(GetArenaForAllocation());
+}
+inline std::string* Font::release_name() {
+  // @@protoc_insertion_point(field_release:ui_serialization.Font.name)
+  return _impl_.name_.Release();
+}
+inline void Font::set_allocated_name(std::string* name) {
+  if (name != nullptr) {
+    
+  } else {
+    
+  }
+  _impl_.name_.SetAllocated(name, GetArenaForAllocation());
+#ifdef PROTOBUF_FORCE_COPY_DEFAULT_STRING
+  if (_impl_.name_.IsDefault()) {
+    _impl_.name_.Set("", GetArenaForAllocation());
+  }
+#endif // PROTOBUF_FORCE_COPY_DEFAULT_STRING
+  // @@protoc_insertion_point(field_set_allocated:ui_serialization.Font.name)
+}
+
+// float size = 2;
+inline void Font::clear_size() {
+  _impl_.size_ = 0;
+}
+inline float Font::_internal_size() const {
+  return _impl_.size_;
+}
+inline float Font::size() const {
+  // @@protoc_insertion_point(field_get:ui_serialization.Font.size)
+  return _internal_size();
+}
+inline void Font::_internal_set_size(float value) {
+  
+  _impl_.size_ = value;
+}
+inline void Font::set_size(float value) {
+  _internal_set_size(value);
+  // @@protoc_insertion_point(field_set:ui_serialization.Font.size)
+}
+
+// -------------------------------------------------------------------
+
 // SkinnedProperty
 
 // .ui_serialization.SkinImage img = 1;
@@ -2620,7 +2922,97 @@ inline void WidgetBase::set_movable(bool value) {
   // @@protoc_insertion_point(field_set:ui_serialization.WidgetBase.movable)
 }
 
-// float border_size = 8;
+// .ui_serialization.Font font = 8;
+inline bool WidgetBase::_internal_has_font() const {
+  return this != internal_default_instance() && _impl_.font_ != nullptr;
+}
+inline bool WidgetBase::has_font() const {
+  return _internal_has_font();
+}
+inline void WidgetBase::clear_font() {
+  if (GetArenaForAllocation() == nullptr && _impl_.font_ != nullptr) {
+    delete _impl_.font_;
+  }
+  _impl_.font_ = nullptr;
+}
+inline const ::ui_serialization::Font& WidgetBase::_internal_font() const {
+  const ::ui_serialization::Font* p = _impl_.font_;
+  return p != nullptr ? *p : reinterpret_cast<const ::ui_serialization::Font&>(
+      ::ui_serialization::_Font_default_instance_);
+}
+inline const ::ui_serialization::Font& WidgetBase::font() const {
+  // @@protoc_insertion_point(field_get:ui_serialization.WidgetBase.font)
+  return _internal_font();
+}
+inline void WidgetBase::unsafe_arena_set_allocated_font(
+    ::ui_serialization::Font* font) {
+  if (GetArenaForAllocation() == nullptr) {
+    delete reinterpret_cast<::PROTOBUF_NAMESPACE_ID::MessageLite*>(_impl_.font_);
+  }
+  _impl_.font_ = font;
+  if (font) {
+    
+  } else {
+    
+  }
+  // @@protoc_insertion_point(field_unsafe_arena_set_allocated:ui_serialization.WidgetBase.font)
+}
+inline ::ui_serialization::Font* WidgetBase::release_font() {
+  
+  ::ui_serialization::Font* temp = _impl_.font_;
+  _impl_.font_ = nullptr;
+#ifdef PROTOBUF_FORCE_COPY_IN_RELEASE
+  auto* old =  reinterpret_cast<::PROTOBUF_NAMESPACE_ID::MessageLite*>(temp);
+  temp = ::PROTOBUF_NAMESPACE_ID::internal::DuplicateIfNonNull(temp);
+  if (GetArenaForAllocation() == nullptr) { delete old; }
+#else  // PROTOBUF_FORCE_COPY_IN_RELEASE
+  if (GetArenaForAllocation() != nullptr) {
+    temp = ::PROTOBUF_NAMESPACE_ID::internal::DuplicateIfNonNull(temp);
+  }
+#endif  // !PROTOBUF_FORCE_COPY_IN_RELEASE
+  return temp;
+}
+inline ::ui_serialization::Font* WidgetBase::unsafe_arena_release_font() {
+  // @@protoc_insertion_point(field_release:ui_serialization.WidgetBase.font)
+  
+  ::ui_serialization::Font* temp = _impl_.font_;
+  _impl_.font_ = nullptr;
+  return temp;
+}
+inline ::ui_serialization::Font* WidgetBase::_internal_mutable_font() {
+  
+  if (_impl_.font_ == nullptr) {
+    auto* p = CreateMaybeMessage<::ui_serialization::Font>(GetArenaForAllocation());
+    _impl_.font_ = p;
+  }
+  return _impl_.font_;
+}
+inline ::ui_serialization::Font* WidgetBase::mutable_font() {
+  ::ui_serialization::Font* _msg = _internal_mutable_font();
+  // @@protoc_insertion_point(field_mutable:ui_serialization.WidgetBase.font)
+  return _msg;
+}
+inline void WidgetBase::set_allocated_font(::ui_serialization::Font* font) {
+  ::PROTOBUF_NAMESPACE_ID::Arena* message_arena = GetArenaForAllocation();
+  if (message_arena == nullptr) {
+    delete _impl_.font_;
+  }
+  if (font) {
+    ::PROTOBUF_NAMESPACE_ID::Arena* submessage_arena =
+        ::PROTOBUF_NAMESPACE_ID::Arena::InternalGetOwningArena(font);
+    if (message_arena != submessage_arena) {
+      font = ::PROTOBUF_NAMESPACE_ID::internal::GetOwnedMessage(
+          message_arena, font, submessage_arena);
+    }
+    
+  } else {
+    
+  }
+  _impl_.font_ = font;
+  // @@protoc_insertion_point(field_set_allocated:ui_serialization.WidgetBase.font)
+}
+
+// float border_size = 9;
 inline void WidgetBase::clear_border_size() {
   _impl_.border_size_ = 0;
 }
@@ -2640,7 +3032,7 @@ inline void WidgetBase::set_border_size(float value) {
   // @@protoc_insertion_point(field_set:ui_serialization.WidgetBase.border_size)
 }
 
-// .ui_serialization.region_size padding = 9;
+// .ui_serialization.region_size padding = 10;
 inline bool WidgetBase::_internal_has_padding() const {
   return this != internal_default_instance() && _impl_.padding_ != nullptr;
 }
@@ -2730,7 +3122,7 @@ inline void WidgetBase::set_allocated_padding(::ui_serialization::region_size* p
   // @@protoc_insertion_point(field_set_allocated:ui_serialization.WidgetBase.padding)
 }
 
-// .ui_serialization.region_size spacing = 10;
+// .ui_serialization.region_size spacing = 11;
 inline bool WidgetBase::_internal_has_spacing() const {
   return this != internal_default_instance() && _impl_.spacing_ != nullptr;
 }
@@ -2820,7 +3212,7 @@ inline void WidgetBase::set_allocated_spacing(::ui_serialization::region_size* s
   // @@protoc_insertion_point(field_set_allocated:ui_serialization.WidgetBase.spacing)
 }
 
-// repeated uint32 rows_heights = 11;
+// repeated uint32 rows_heights = 12;
 inline int WidgetBase::_internal_rows_heights_size() const {
   return _impl_.rows_heights_.size();
 }
@@ -2867,7 +3259,7 @@ WidgetBase::mutable_rows_heights() {
   return _internal_mutable_rows_heights();
 }
 
-// repeated .ui_serialization.SkinnedProperty skinned_props = 12;
+// repeated .ui_serialization.SkinnedProperty skinned_props = 13;
 inline int WidgetBase::_internal_skinned_props_size() const {
   return _impl_.skinned_props_.size();
 }
@@ -2907,7 +3299,7 @@ WidgetBase::skinned_props() const {
   return _impl_.skinned_props_;
 }
 
-// repeated .ui_serialization.StyleColor styled_props = 13;
+// repeated .ui_serialization.StyleColor styled_props = 14;
 inline int WidgetBase::_internal_styled_props_size() const {
   return _impl_.styled_props_.size();
 }
@@ -3091,7 +3483,97 @@ inline void Element::set_add_on_new_row(bool value) {
   // @@protoc_insertion_point(field_set:ui_serialization.Element.add_on_new_row)
 }
 
-// float border = 5;
+// .ui_serialization.Font font = 5;
+inline bool Element::_internal_has_font() const {
+  return this != internal_default_instance() && _impl_.font_ != nullptr;
+}
+inline bool Element::has_font() const {
+  return _internal_has_font();
+}
+inline void Element::clear_font() {
+  if (GetArenaForAllocation() == nullptr && _impl_.font_ != nullptr) {
+    delete _impl_.font_;
+  }
+  _impl_.font_ = nullptr;
+}
+inline const ::ui_serialization::Font& Element::_internal_font() const {
+  const ::ui_serialization::Font* p = _impl_.font_;
+  return p != nullptr ? *p : reinterpret_cast<const ::ui_serialization::Font&>(
+      ::ui_serialization::_Font_default_instance_);
+}
+inline const ::ui_serialization::Font& Element::font() const {
+  // @@protoc_insertion_point(field_get:ui_serialization.Element.font)
+  return _internal_font();
+}
+inline void Element::unsafe_arena_set_allocated_font(
+    ::ui_serialization::Font* font) {
+  if (GetArenaForAllocation() == nullptr) {
+    delete reinterpret_cast<::PROTOBUF_NAMESPACE_ID::MessageLite*>(_impl_.font_);
+  }
+  _impl_.font_ = font;
+  if (font) {
+    
+  } else {
+    
+  }
+  // @@protoc_insertion_point(field_unsafe_arena_set_allocated:ui_serialization.Element.font)
+}
+inline ::ui_serialization::Font* Element::release_font() {
+  
+  ::ui_serialization::Font* temp = _impl_.font_;
+  _impl_.font_ = nullptr;
+#ifdef PROTOBUF_FORCE_COPY_IN_RELEASE
+  auto* old =  reinterpret_cast<::PROTOBUF_NAMESPACE_ID::MessageLite*>(temp);
+  temp = ::PROTOBUF_NAMESPACE_ID::internal::DuplicateIfNonNull(temp);
+  if (GetArenaForAllocation() == nullptr) { delete old; }
+#else  // PROTOBUF_FORCE_COPY_IN_RELEASE
+  if (GetArenaForAllocation() != nullptr) {
+    temp = ::PROTOBUF_NAMESPACE_ID::internal::DuplicateIfNonNull(temp);
+  }
+#endif  // !PROTOBUF_FORCE_COPY_IN_RELEASE
+  return temp;
+}
+inline ::ui_serialization::Font* Element::unsafe_arena_release_font() {
+  // @@protoc_insertion_point(field_release:ui_serialization.Element.font)
+  
+  ::ui_serialization::Font* temp = _impl_.font_;
+  _impl_.font_ = nullptr;
+  return temp;
+}
+inline ::ui_serialization::Font* Element::_internal_mutable_font() {
+  
+  if (_impl_.font_ == nullptr) {
+    auto* p = CreateMaybeMessage<::ui_serialization::Font>(GetArenaForAllocation());
+    _impl_.font_ = p;
+  }
+  return _impl_.font_;
+}
+inline ::ui_serialization::Font* Element::mutable_font() {
+  ::ui_serialization::Font* _msg = _internal_mutable_font();
+  // @@protoc_insertion_point(field_mutable:ui_serialization.Element.font)
+  return _msg;
+}
+inline void Element::set_allocated_font(::ui_serialization::Font* font) {
+  ::PROTOBUF_NAMESPACE_ID::Arena* message_arena = GetArenaForAllocation();
+  if (message_arena == nullptr) {
+    delete _impl_.font_;
+  }
+  if (font) {
+    ::PROTOBUF_NAMESPACE_ID::Arena* submessage_arena =
+        ::PROTOBUF_NAMESPACE_ID::Arena::InternalGetOwningArena(font);
+    if (message_arena != submessage_arena) {
+      font = ::PROTOBUF_NAMESPACE_ID::internal::GetOwnedMessage(
+          message_arena, font, submessage_arena);
+    }
+    
+  } else {
+    
+  }
+  _impl_.font_ = font;
+  // @@protoc_insertion_point(field_set_allocated:ui_serialization.Element.font)
+}
+
+// float border = 6;
 inline void Element::clear_border() {
   _impl_.border_ = 0;
 }
@@ -3111,7 +3593,7 @@ inline void Element::set_border(float value) {
   // @@protoc_insertion_point(field_set:ui_serialization.Element.border)
 }
 
-// float rounding = 6;
+// float rounding = 7;
 inline void Element::clear_rounding() {
   _impl_.rounding_ = 0;
 }
@@ -3131,7 +3613,7 @@ inline void Element::set_rounding(float value) {
   // @@protoc_insertion_point(field_set:ui_serialization.Element.rounding)
 }
 
-// .ui_serialization.region_size padding = 7;
+// .ui_serialization.region_size padding = 8;
 inline bool Element::_internal_has_padding() const {
   return this != internal_default_instance() && _impl_.padding_ != nullptr;
 }
@@ -3221,7 +3703,7 @@ inline void Element::set_allocated_padding(::ui_serialization::region_size* padd
   // @@protoc_insertion_point(field_set_allocated:ui_serialization.Element.padding)
 }
 
-// repeated .ui_serialization.SkinnedProperty skinned_props = 8;
+// repeated .ui_serialization.SkinnedProperty skinned_props = 9;
 inline int Element::_internal_skinned_props_size() const {
   return _impl_.skinned_props_.size();
 }
@@ -3261,7 +3743,7 @@ Element::skinned_props() const {
   return _impl_.skinned_props_;
 }
 
-// repeated .ui_serialization.StyleColor styled_props = 9;
+// repeated .ui_serialization.StyleColor styled_props = 10;
 inline int Element::_internal_styled_props_size() const {
   return _impl_.styled_props_.size();
 }
@@ -3439,7 +3921,47 @@ Widget::elements() const {
 
 // SerializedUI
 
-// repeated .ui_serialization.Widget widgets = 1;
+// repeated .ui_serialization.Font fonts = 1;
+inline int SerializedUI::_internal_fonts_size() const {
+  return _impl_.fonts_.size();
+}
+inline int SerializedUI::fonts_size() const {
+  return _internal_fonts_size();
+}
+inline void SerializedUI::clear_fonts() {
+  _impl_.fonts_.Clear();
+}
+inline ::ui_serialization::Font* SerializedUI::mutable_fonts(int index) {
+  // @@protoc_insertion_point(field_mutable:ui_serialization.SerializedUI.fonts)
+  return _impl_.fonts_.Mutable(index);
+}
+inline ::PROTOBUF_NAMESPACE_ID::RepeatedPtrField< ::ui_serialization::Font >*
+SerializedUI::mutable_fonts() {
+  // @@protoc_insertion_point(field_mutable_list:ui_serialization.SerializedUI.fonts)
+  return &_impl_.fonts_;
+}
+inline const ::ui_serialization::Font& SerializedUI::_internal_fonts(int index) const {
+  return _impl_.fonts_.Get(index);
+}
+inline const ::ui_serialization::Font& SerializedUI::fonts(int index) const {
+  // @@protoc_insertion_point(field_get:ui_serialization.SerializedUI.fonts)
+  return _internal_fonts(index);
+}
+inline ::ui_serialization::Font* SerializedUI::_internal_add_fonts() {
+  return _impl_.fonts_.Add();
+}
+inline ::ui_serialization::Font* SerializedUI::add_fonts() {
+  ::ui_serialization::Font* _add = _internal_add_fonts();
+  // @@protoc_insertion_point(field_add:ui_serialization.SerializedUI.fonts)
+  return _add;
+}
+inline const ::PROTOBUF_NAMESPACE_ID::RepeatedPtrField< ::ui_serialization::Font >&
+SerializedUI::fonts() const {
+  // @@protoc_insertion_point(field_list:ui_serialization.SerializedUI.fonts)
+  return _impl_.fonts_;
+}
+
+// repeated .ui_serialization.Widget widgets = 2;
 inline int SerializedUI::_internal_widgets_size() const {
   return _impl_.widgets_.size();
 }
@@ -3482,6 +4004,8 @@ SerializedUI::widgets() const {
 #ifdef __GNUC__
   #pragma GCC diagnostic pop
 #endif  // __GNUC__
+// -------------------------------------------------------------------
+
 // -------------------------------------------------------------------
 
 // -------------------------------------------------------------------

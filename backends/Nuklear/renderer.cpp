@@ -72,8 +72,8 @@ struct nk_glfw_vertex {
 #define MAX_VERTEX_BUFFER 512 * 1024
 #define MAX_ELEMENT_BUFFER 128 * 1024
 
-// font_name = <fontPtr, font_size>
-std::map<std::string, std::pair<struct nk_font *, float>> backend_loaded_fonts;
+// font_name = font_size : <fontPtr>
+std::map<std::string, std::map<float, struct nk_font *>> backend_loaded_fonts;
 
 // texture_iid = vector<sub_images>
 std::map<unsigned int, std::vector<std::pair<struct nk_image, IndieGo::UI::region<float>>>> images;
@@ -410,7 +410,7 @@ void Manager::key_input(void * window, unsigned int codepoint, bool pressed) {
 }
 
 // Memory for string input storage
-char text[64] = {};
+char text[512] = {};
 int text_len;
 
 void stringToText(std::string & str) {
@@ -438,6 +438,13 @@ void textToString(std::string & str) {
 void UI_element::callUIfunction() {
     if (custom_style)
         nk_style_from_table(ctx, (struct nk_color*)style.elements);
+
+    if (font != "None") {
+        nk_style_set_font(
+            ctx,
+            &backend_loaded_fonts[font][font_size]->handle
+        );
+    }
 
     std::string full_name;
     nk_bool nk_val;
@@ -480,7 +487,7 @@ void UI_element::callUIfunction() {
         // TODO : add skinning
         std::string& stringRef = *_data.strPtr;
         stringToText(stringRef);
-        nk_edit_string(ctx, NK_EDIT_SIMPLE, text, &text_len, 64, nk_filter_default);
+        nk_edit_string(ctx, NK_EDIT_SIMPLE, text, &text_len, 512, nk_filter_default);
         textToString(stringRef);
         return;
     }
@@ -565,6 +572,10 @@ void UI_element::callUIfunction() {
             break;
         }
         nk_label(ctx, label.c_str(), align);
+    }
+
+    if (type == UI_STRING_TEXT) {
+        nk_label_wrap(ctx, label.c_str());
     }
     
     if (type == UI_PROGRESS) {
@@ -808,6 +819,13 @@ void WIDGET::callImmediateBackend(UI_elements_map & UIMap){
     ctx->style.window.padding = nk_vec2(padding.h, padding.w);
     ctx->style.window.border = border_size;
 
+    if (font != "None") {
+        nk_style_set_font(
+            ctx,
+            &backend_loaded_fonts[font][font_size]->handle
+        );
+    }
+
     if (
         nk_begin(
             ctx,
@@ -862,9 +880,14 @@ IndieGo::UI::region<float> WIDGET::getImgCrop(IndieGo::UI::IMAGE_SKIN_ELEMENT el
     return images[ skinned_style.props[elt].first ][ skinned_style.props[elt].second ].second;
 }
 
-void WIDGET::allocateRow(unsigned int cols, float min_height){
-    // TODO : make dependency on % from widget's screen region
-    nk_layout_row_dynamic(ctx, screen_size.h * min_height, cols);
+void WIDGET::allocateRow(unsigned int cols, float min_height, bool in_pixels) {
+    float height = in_pixels ? min_height : screen_size.h * screen_region.h * min_height;
+    nk_layout_row_dynamic(
+        ctx, 
+        // first get size of widget in pixels, then get size of row
+        height,
+        cols
+    );
 }
 
 void WIDGET::allocateEmptySpace(unsigned int fill_count){
@@ -971,6 +994,14 @@ void Manager::drawFrameStart(std::string & winID) {
     nk_input_end(&glfw->ctx);
     glfw->text_len = 0;
     glfw->scroll = nk_vec2(0,0);
+
+    // set "default global" font
+    if (main_font != "None") {
+        nk_style_set_font(
+            &glfw->ctx, 
+            &backend_loaded_fonts[main_font][main_font_size]->handle
+        );
+    }
 }
 
 void Manager::drawFrameEnd(std::string & winID) {
@@ -992,32 +1023,36 @@ void Manager::removeWindow(std::string winID, void * winData) {
 
 }
 
-void Manager::loadFont(std::string path, std::string & winID, float font_size) {
+void * img_data = NULL;
+void Manager::loadFont(std::string path, const std::string & winID, float font_size) {
 
-    if (std::find(loaded_fonts.begin(), loaded_fonts.end(), path) != loaded_fonts.end())
+    std::string font_name = fs::path(path).stem().string();
+    if (std::find(loaded_fonts[font_name].sizes.begin(), loaded_fonts[font_name].sizes.end(), font_size) != loaded_fonts[font_name].sizes.end())
         return;
 
     const void *image; int w, h;
     struct nk_font_config cfg = nk_font_config(0);
     nk_font_atlas_init_default(&atlas);
     nk_font_atlas_begin(&atlas);
-    std::string font_name = fs::path( path ).stem().string();
 
-    backend_loaded_fonts[font_name].first = nk_font_atlas_add_from_file(&atlas, path.c_str(), font_size, &cfg);
-    backend_loaded_fonts[font_name].second = font_size;
+    loaded_fonts[ font_name ].sizes.push_back(font_size);
+    loaded_fonts[ fs::path(path).stem().string() ].path = path;
 
-    // reload all previously loaded fonts
-    for (auto font_path : loaded_fonts) {
-        font_name = fs::path( font_path ).stem().string();
-        nk_font_atlas_add_from_file(&atlas, font_path.c_str(), backend_loaded_fonts[font_name].second, &cfg);
+    backend_loaded_fonts.clear();
+
+    for (auto font : loaded_fonts) {
+        for (auto font_size : font.second.sizes) {
+            backend_loaded_fonts[font.first][font_size] = nk_font_atlas_add_from_file(&atlas, font.second.path.c_str(), font_size, &cfg);
+        }
     }
-    
-    // memorize new font path
-    loaded_fonts.push_back(path);
+
     image = nk_font_atlas_bake(&atlas, &w, &h, NK_FONT_ATLAS_RGBA32);
 
     nk_glfw3_device_upload_atlas(glfw_storage[winID], image, w, h);
     nk_font_atlas_end(&atlas, nk_handle_id((int)glfw_storage[winID]->ogl.font_tex), &glfw_storage[winID]->ogl.null);
-    
-    nk_style_set_font(&glfw_storage[winID]->ctx, &backend_loaded_fonts[font_name].first->handle);
+    // nk_init_default(&glfw_storage[winID]->ctx, &backend_loaded_fonts[font_name][font_size]->handle);
+    if (main_font == "None") {
+        main_font = font_name;
+        main_font_size = font_size;
+    }
 }
