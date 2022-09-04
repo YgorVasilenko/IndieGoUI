@@ -436,8 +436,8 @@ void textToString(std::string & str) {
 //-------------------------------------------------------
 
 void UI_element::callUIfunction() {
-    if (custom_style)
-        nk_style_from_table(ctx, (struct nk_color*)style.elements);
+    /*if (custom_style)
+        nk_style_from_table(ctx, (struct nk_color*)style.elements);*/
 
     if (font != "None") {
         nk_style_set_font(

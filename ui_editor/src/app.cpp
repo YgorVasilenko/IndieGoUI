@@ -69,8 +69,8 @@ extern void createNewWidget(
 
 extern void checkUIValues(std::string winID);
 
-extern void updateWidgetFromUI(std::string widID, std::string winID);
-extern void updateUIFromWidget(std::string widID, std::string winID);
+extern void updateWidgetFromUI(std::string widID, std::string winID, bool do_styling, int styling_element);
+extern void updateUIFromWidget(std::string widID, std::string winID, bool do_styling, int styling_element);
 extern void useBackgroundImage(std::string widID, std::string winID, unsigned int texID);
 extern unsigned int load_image(const char *filename, bool load_skinning_image = false);
 extern std::list<std::string> getPaths();
@@ -93,6 +93,32 @@ extern std::string skinning_img_path;
 extern unsigned int skinning_image_id;
 extern unsigned int si_w;
 extern unsigned int si_h;
+
+template<typename T> 
+void useSkin(T & item, std::string winID) {
+    UI_elements_map & UIMap = GUI.UIMaps[winID];
+    ui_string_group & skinning_props_list = *UIMap["skinning property"]._data.usgPtr;
+    region<float> crop = {
+        si_w * (UIMap["img x"]._data.f / 100.f),
+        si_h * (UIMap["img y"]._data.f / 100.f),
+        si_w * (UIMap["img size x"]._data.f / 100.f),
+        si_h * (UIMap["img size y"]._data.f / 100.f)
+    };
+
+    item.useSkinImage(
+        skinning_image_id,
+        si_w,
+        si_h,
+        crop,
+        (IMAGE_SKIN_ELEMENT)skinning_props_list.selected_element
+    );
+}
+
+// template<T = WIDGET> 
+// void useSkin(WIDGET & item, std::string winID);
+
+// template<UI_element> 
+// void useSkin(UI_element & item, std::string winID);
 
 int main() {
 
@@ -134,6 +160,7 @@ int main() {
 
     int prev_selected_widget = -1;
     int prev_selected_element = -1;
+    int prev_selected_style_element = -1;
     int prev_selected_row = -1;
     int prev_selected_font_size = -1;
     int width, height;
@@ -196,7 +223,14 @@ int main() {
                 addElement(widgets_list.getSelected(), winID, *UIMap["new element name"]._data.strPtr, t, !UIMap["to same row"]._data.b);
                 UIMap[*UIMap["new element name"]._data.strPtr].modifyable_progress_bar = true; // hard-code for now
             }
-            updateUIFromWidget(widgets_list.getSelected(), winID);
+            
+            updateUIFromWidget(
+                widgets_list.getSelected(), 
+                winID, 
+                style_edit_mode == widget_edit,
+                style_elements_list.selected_element
+            );
+
             for (auto element : w.widget_elements) {
                 elements_list.elements.push_back(element);
             }
@@ -212,7 +246,7 @@ int main() {
                     UIMap["border size"]._data.f = UIMap[elements_list.getSelected()].border;
                     UIMap["padding x"]._data.f = UIMap[elements_list.getSelected()].padding.w;
                     UIMap["padding y"]._data.f = UIMap[elements_list.getSelected()].padding.h;
-                    UIMap["rounding"]._data.f = UIMap[elements_list.getSelected()].rounding;   
+                    UIMap["rounding"]._data.f = UIMap[elements_list.getSelected()].rounding;
                 }
             }
 
@@ -225,23 +259,6 @@ int main() {
 
             if (rows_list.selected_element != -1) {
                 UIMap["row height"]._data.f = w.layout_grid[rows_list.selected_element].min_height;
-            }
-
-            if (style_elements_list.selected_element != -1) {
-                if (style_edit_mode == widget_edit) {
-                    UIMap["Red property color"]._data.ui = w.style.elements[style_elements_list.selected_element].r;
-                    UIMap["Green property color"]._data.ui = w.style.elements[style_elements_list.selected_element].g;
-                    UIMap["Blue property color"]._data.ui = w.style.elements[style_elements_list.selected_element].b;
-                    UIMap["Alpha property color"]._data.ui = w.style.elements[style_elements_list.selected_element].a;
-                }
-            }
-
-            if (style_edit_mode == widget_edit) {
-                UIMap["border size"]._data.f = w.border_size;
-                UIMap["padding x"]._data.f = w.padding.w;
-                UIMap["padding y"]._data.f = w.padding.h;
-                UIMap["spacing x"]._data.f = w.spacing.w;
-                UIMap["spacing y"]._data.f = w.spacing.h;
             }
         }
 
@@ -272,10 +289,15 @@ int main() {
                 if (widget.first == "style editor") continue;
                 widgets_list.elements.push_back(widget.first);
             }
+            available_fonts_list.elements.clear();
+            for (auto font : GUI.loaded_fonts) {
+                available_fonts_list.elements.push_back(font.first);
+            }
         }
 
         prev_selected_widget = widgets_list.selected_element;
-
+        prev_selected_style_element = style_elements_list.selected_element;
+        
         // update screen size each frame before calling immediate backend
         glfwGetWindowSize(screen, &width, &height);
 
@@ -321,23 +343,13 @@ int main() {
 
         if (widgets_list.selected_element != -1) {
             if (prev_selected_widget == widgets_list.selected_element) {
-                updateWidgetFromUI(widgets_list.getSelected(), winID);
+                updateWidgetFromUI(
+                    widgets_list.getSelected(), 
+                    winID, 
+                    style_edit_mode == widget_edit, 
+                    style_elements_list.selected_element == prev_selected_style_element ? style_elements_list.selected_element : -1
+                );
                 WIDGET& w = GUI.getWidget(widgets_list.getSelected(), winID);
-                if (style_edit_mode == widget_edit) {
-                    if (style_elements_list.selected_element != -1) {
-                        w.style.elements[style_elements_list.selected_element].r = UIMap["Red property color"]._data.ui;
-                        w.style.elements[style_elements_list.selected_element].g = UIMap["Green property color"]._data.ui;
-                        w.style.elements[style_elements_list.selected_element].b = UIMap["Blue property color"]._data.ui;
-                        w.style.elements[style_elements_list.selected_element].a = UIMap["Alpha property color"]._data.ui;
-                    }
-
-                    w.border_size = UIMap["border size"]._data.f;
-                    w.padding.w = UIMap["padding x"]._data.f;
-                    w.padding.h = UIMap["padding y"]._data.f;
-                    w.spacing.w = UIMap["spacing x"]._data.f;
-                    w.spacing.h = UIMap["spacing y"]._data.f;
-                }
-
                 if (elements_list.selected_element != -1 && prev_selected_element == elements_list.selected_element) {
                     if (UIMap[elements_list.getSelected()].type == UI_STRING_TEXT) {
                         // modify text in selected text element
@@ -358,42 +370,17 @@ int main() {
 
                 if (skinning_props_list.selected_element != -1) {
                     if (UIMap["add skin"]._data.b) {
-                        region<float> crop = {
-                                si_w * (UIMap["img x"]._data.f / 100.f),
-                                si_h * (UIMap["img y"]._data.f / 100.f),
-                                si_w * (UIMap["img size x"]._data.f / 100.f),
-                                si_h * (UIMap["img size y"]._data.f / 100.f)
-                        };
                         if (style_edit_mode == widget_edit) {
-                            w.useSkinImage(
-                                skinning_image_id,
-                                si_w,
-                                si_h,
-                                crop,
-                                (IMAGE_SKIN_ELEMENT)skinning_props_list.selected_element
-                            );
+                            useSkin(w, winID);
                         } else {
-                            if (elements_list.selected_element != -1 && prev_selected_element == elements_list.selected_element) {
-                                UIMap[elements_list.getSelected()].useSkinImage(
-                                    skinning_image_id,
-                                    si_w,
-                                    si_h,
-                                    crop,
-                                    (IMAGE_SKIN_ELEMENT)skinning_props_list.selected_element
-                                );
-                            }
+                            useSkin(UIMap[elements_list.getSelected()], winID);
                         }
                     }
                 }
 
 
                 if (UIMap["use font"]._data.b) {
-                    if (style_edit_mode == widget_edit) {
-                        if (available_fonts_list.selected_element != -1 && font_sizes_list.selected_element != -1) {
-                            w.font = available_fonts_list.getSelected();
-                            w.font_size = std::stof(font_sizes_list.getSelected());
-                        }
-                    } else {
+                    if (style_edit_mode == element_edit) {
                         if (available_fonts_list.selected_element != -1 && font_sizes_list.selected_element != -1) {
                             if (elements_list.selected_element != -1) {
                                 UIMap[elements_list.getSelected()].font = available_fonts_list.getSelected();

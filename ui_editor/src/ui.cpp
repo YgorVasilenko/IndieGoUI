@@ -11,7 +11,12 @@ using namespace IndieGo::UI;
 
 extern Manager GUI;
 
-void updateWidgetFromUI(std::string widID, std::string winID) {
+void updateWidgetFromUI(
+    std::string widID, 
+    std::string winID, 
+    bool do_styling,
+    int styling_element
+) {
     WIDGET & w = GUI.getWidget(widID, winID);
     UI_elements_map & UIMap = GUI.UIMaps[winID];
 
@@ -31,10 +36,39 @@ void updateWidgetFromUI(std::string widID, std::string winID) {
     w.scalable = UIMap["scalable"]._data.b;
     w.movable = UIMap["movable"]._data.b;
 
-    // TODO : add elements to widget
+    if (do_styling) {
+        if (styling_element != -1) {
+            w.style.elements[styling_element].r = UIMap["Red property color"]._data.ui;
+            w.style.elements[styling_element].g = UIMap["Green property color"]._data.ui;
+            w.style.elements[styling_element].b = UIMap["Blue property color"]._data.ui;
+            w.style.elements[styling_element].a = UIMap["Alpha property color"]._data.ui;
+        }
+
+        // "general" elements update
+        w.border_size = UIMap["border size"]._data.f;
+        w.padding.w = UIMap["padding x"]._data.f;
+        w.padding.h = UIMap["padding y"]._data.f;
+        w.spacing.w = UIMap["spacing x"]._data.f;
+        w.spacing.h = UIMap["spacing y"]._data.f;
+        
+        if (UIMap["use font"]._data.b) {
+            ui_string_group& available_fonts_list = *UIMap["available fonts"]._data.usgPtr;
+            ui_string_group& font_sizes_list = *UIMap["font sizes"]._data.usgPtr;
+
+            if (available_fonts_list.selected_element != -1 && font_sizes_list.selected_element != -1) {
+                w.font = available_fonts_list.getSelected();
+                w.font_size = std::stof(font_sizes_list.getSelected());
+            }
+        }
+    }
 }
 
-void updateUIFromWidget(std::string widID, std::string winID) {
+void updateUIFromWidget(
+    std::string widID, 
+    std::string winID, 
+    bool do_styling,
+    int styling_element
+) {
     WIDGET & w = GUI.getWidget(widID, winID);
     UI_elements_map & UIMap = GUI.UIMaps[winID];
 
@@ -54,7 +88,20 @@ void updateUIFromWidget(std::string widID, std::string winID) {
     UIMap["scalable"]._data.b = w.scalable;
     UIMap["movable"]._data.b = w.movable;
 
-    // TODO : add "widget elements" list and update it
+    if (do_styling) {
+        if (styling_element != -1) {
+            UIMap["Red property color"]._data.ui = w.style.elements[styling_element].r;
+            UIMap["Green property color"]._data.ui = w.style.elements[styling_element].g;
+            UIMap["Blue property color"]._data.ui = w.style.elements[styling_element].b;
+            UIMap["Alpha property color"]._data.ui = w.style.elements[styling_element].a;
+        }
+
+        UIMap["border size"]._data.f = w.border_size;
+        UIMap["padding x"]._data.f = w.padding.w;
+        UIMap["padding y"]._data.f = w.padding.h;
+        UIMap["spacing x"]._data.f = w.spacing.w;
+        UIMap["spacing y"]._data.f = w.spacing.h;
+    }
 }
 
 void checkUIValues(std::string winID) {
@@ -83,6 +130,20 @@ void checkUIValues(std::string winID) {
 
     if (UIMap["size y"]._data.f < 0.f)
         UIMap["size y"]._data.f = 0.f;
+
+
+    if (UIMap["Red property color"]._data.ui > 255)
+        UIMap["Red property color"]._data.ui = 255;
+
+    if (UIMap["Green property color"]._data.ui > 255)
+        UIMap["Green property color"]._data.ui = 255;
+    
+
+    if (UIMap["Blue property color"]._data.ui > 255)
+        UIMap["Blue property color"]._data.ui = 255;
+    
+    if (UIMap["Alpha property color"]._data.ui > 255)
+        UIMap["Alpha property color"]._data.ui = 255;
 }
 
 std::vector<unsigned int> loadedImages;
