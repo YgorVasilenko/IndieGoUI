@@ -1607,12 +1607,14 @@ class Element final :
     kStyledPropsFieldNumber = 10,
     kNameFieldNumber = 1,
     kWidgetNameFieldNumber = 2,
+    kLabelFieldNumber = 11,
     kFontFieldNumber = 5,
     kPaddingFieldNumber = 8,
     kTypeFieldNumber = 3,
     kAddOnNewRowFieldNumber = 4,
     kBorderFieldNumber = 6,
     kRoundingFieldNumber = 7,
+    kTextAlignFieldNumber = 12,
   };
   // repeated .ui_serialization.SkinnedProperty skinned_props = 9;
   int skinned_props_size() const;
@@ -1676,6 +1678,20 @@ class Element final :
   const std::string& _internal_widget_name() const;
   inline PROTOBUF_ALWAYS_INLINE void _internal_set_widget_name(const std::string& value);
   std::string* _internal_mutable_widget_name();
+  public:
+
+  // string label = 11;
+  void clear_label();
+  const std::string& label() const;
+  template <typename ArgT0 = const std::string&, typename... ArgT>
+  void set_label(ArgT0&& arg0, ArgT... args);
+  std::string* mutable_label();
+  PROTOBUF_NODISCARD std::string* release_label();
+  void set_allocated_label(std::string* label);
+  private:
+  const std::string& _internal_label() const;
+  inline PROTOBUF_ALWAYS_INLINE void _internal_set_label(const std::string& value);
+  std::string* _internal_mutable_label();
   public:
 
   // .ui_serialization.Font font = 5;
@@ -1750,6 +1766,15 @@ class Element final :
   void _internal_set_rounding(float value);
   public:
 
+  // uint32 text_align = 12;
+  void clear_text_align();
+  uint32_t text_align() const;
+  void set_text_align(uint32_t value);
+  private:
+  uint32_t _internal_text_align() const;
+  void _internal_set_text_align(uint32_t value);
+  public:
+
   // @@protoc_insertion_point(class_scope:ui_serialization.Element)
  private:
   class _Internal;
@@ -1762,12 +1787,14 @@ class Element final :
     ::PROTOBUF_NAMESPACE_ID::RepeatedPtrField< ::ui_serialization::StyleColor > styled_props_;
     ::PROTOBUF_NAMESPACE_ID::internal::ArenaStringPtr name_;
     ::PROTOBUF_NAMESPACE_ID::internal::ArenaStringPtr widget_name_;
+    ::PROTOBUF_NAMESPACE_ID::internal::ArenaStringPtr label_;
     ::ui_serialization::Font* font_;
     ::ui_serialization::region_size* padding_;
     uint32_t type_;
     bool add_on_new_row_;
     float border_;
     float rounding_;
+    uint32_t text_align_;
     mutable ::PROTOBUF_NAMESPACE_ID::internal::CachedSize _cached_size_;
   };
   union { Impl_ _impl_; };
@@ -3781,6 +3808,76 @@ inline const ::PROTOBUF_NAMESPACE_ID::RepeatedPtrField< ::ui_serialization::Styl
 Element::styled_props() const {
   // @@protoc_insertion_point(field_list:ui_serialization.Element.styled_props)
   return _impl_.styled_props_;
+}
+
+// string label = 11;
+inline void Element::clear_label() {
+  _impl_.label_.ClearToEmpty();
+}
+inline const std::string& Element::label() const {
+  // @@protoc_insertion_point(field_get:ui_serialization.Element.label)
+  return _internal_label();
+}
+template <typename ArgT0, typename... ArgT>
+inline PROTOBUF_ALWAYS_INLINE
+void Element::set_label(ArgT0&& arg0, ArgT... args) {
+ 
+ _impl_.label_.Set(static_cast<ArgT0 &&>(arg0), args..., GetArenaForAllocation());
+  // @@protoc_insertion_point(field_set:ui_serialization.Element.label)
+}
+inline std::string* Element::mutable_label() {
+  std::string* _s = _internal_mutable_label();
+  // @@protoc_insertion_point(field_mutable:ui_serialization.Element.label)
+  return _s;
+}
+inline const std::string& Element::_internal_label() const {
+  return _impl_.label_.Get();
+}
+inline void Element::_internal_set_label(const std::string& value) {
+  
+  _impl_.label_.Set(value, GetArenaForAllocation());
+}
+inline std::string* Element::_internal_mutable_label() {
+  
+  return _impl_.label_.Mutable(GetArenaForAllocation());
+}
+inline std::string* Element::release_label() {
+  // @@protoc_insertion_point(field_release:ui_serialization.Element.label)
+  return _impl_.label_.Release();
+}
+inline void Element::set_allocated_label(std::string* label) {
+  if (label != nullptr) {
+    
+  } else {
+    
+  }
+  _impl_.label_.SetAllocated(label, GetArenaForAllocation());
+#ifdef PROTOBUF_FORCE_COPY_DEFAULT_STRING
+  if (_impl_.label_.IsDefault()) {
+    _impl_.label_.Set("", GetArenaForAllocation());
+  }
+#endif // PROTOBUF_FORCE_COPY_DEFAULT_STRING
+  // @@protoc_insertion_point(field_set_allocated:ui_serialization.Element.label)
+}
+
+// uint32 text_align = 12;
+inline void Element::clear_text_align() {
+  _impl_.text_align_ = 0u;
+}
+inline uint32_t Element::_internal_text_align() const {
+  return _impl_.text_align_;
+}
+inline uint32_t Element::text_align() const {
+  // @@protoc_insertion_point(field_get:ui_serialization.Element.text_align)
+  return _internal_text_align();
+}
+inline void Element::_internal_set_text_align(uint32_t value) {
+  
+  _impl_.text_align_ = value;
+}
+inline void Element::set_text_align(uint32_t value) {
+  _internal_set_text_align(value);
+  // @@protoc_insertion_point(field_set:ui_serialization.Element.text_align)
 }
 
 // -------------------------------------------------------------------

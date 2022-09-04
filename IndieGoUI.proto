@@ -88,6 +88,10 @@ message Element {
     // on load skinned element will call useSkinImage
     repeated SkinnedProperty skinned_props = 9;
     repeated StyleColor styled_props = 10;
+
+    string label = 11;
+    uint32 text_align = 12;
+    // TODO : add items from UI_ITEMS_LIST
 }
 
 message Widget {

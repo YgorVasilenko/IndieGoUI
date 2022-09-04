@@ -159,6 +159,9 @@ void Manager::serialize(const std::string & winID, const std::string & path, con
             e->mutable_font()->set_name(UIMap[elt_name].font);
             e->mutable_font()->set_size(UIMap[elt_name].font_size);
 
+            e->set_label(UIMap[elt_name].label);
+            e->set_text_align((unsigned int)UIMap[elt_name].text_align);
+
             bool add_to_new_row = false;
             for (auto elt_group : widget.second.elements_groups) {
                 if (elt_group.start == elt_name) {
@@ -299,6 +302,9 @@ void Manager::deserialize(const std::string & winID, const std::string & path) {
             // individual component's font
             UIMap[e.name()].font = e.font().name();
             UIMap[e.name()].font_size = e.font().size();
+            
+            UIMap[e.name()].label = e.label();
+            UIMap[e.name()].text_align = (TEXT_ALIGN)e.text_align();
 
             // skinned props
             for (int k = 0; k < e.skinned_props_size(); k++) {

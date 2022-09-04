@@ -142,12 +142,14 @@ PROTOBUF_CONSTEXPR Element::Element(
   , /*decltype(_impl_.styled_props_)*/{}
   , /*decltype(_impl_.name_)*/{&::_pbi::fixed_address_empty_string, ::_pbi::ConstantInitialized{}}
   , /*decltype(_impl_.widget_name_)*/{&::_pbi::fixed_address_empty_string, ::_pbi::ConstantInitialized{}}
+  , /*decltype(_impl_.label_)*/{&::_pbi::fixed_address_empty_string, ::_pbi::ConstantInitialized{}}
   , /*decltype(_impl_.font_)*/nullptr
   , /*decltype(_impl_.padding_)*/nullptr
   , /*decltype(_impl_.type_)*/0u
   , /*decltype(_impl_.add_on_new_row_)*/false
   , /*decltype(_impl_.border_)*/0
   , /*decltype(_impl_.rounding_)*/0
+  , /*decltype(_impl_.text_align_)*/0u
   , /*decltype(_impl_._cached_size_)*/{}} {}
 struct ElementDefaultTypeInternal {
   PROTOBUF_CONSTEXPR ElementDefaultTypeInternal()
@@ -296,6 +298,8 @@ const uint32_t TableStruct_IndieGoUI_2eproto::offsets[] PROTOBUF_SECTION_VARIABL
   PROTOBUF_FIELD_OFFSET(::ui_serialization::Element, _impl_.padding_),
   PROTOBUF_FIELD_OFFSET(::ui_serialization::Element, _impl_.skinned_props_),
   PROTOBUF_FIELD_OFFSET(::ui_serialization::Element, _impl_.styled_props_),
+  PROTOBUF_FIELD_OFFSET(::ui_serialization::Element, _impl_.label_),
+  PROTOBUF_FIELD_OFFSET(::ui_serialization::Element, _impl_.text_align_),
   ~0u,  // no _has_bits_
   PROTOBUF_FIELD_OFFSET(::ui_serialization::Widget, _internal_metadata_),
   ~0u,  // no _extensions_
@@ -326,8 +330,8 @@ static const ::_pbi::MigrationSchema schemas[] PROTOBUF_SECTION_VARIABLE(protode
   { 54, -1, -1, sizeof(::ui_serialization::SkinnedProperty)},
   { 64, -1, -1, sizeof(::ui_serialization::WidgetBase)},
   { 86, -1, -1, sizeof(::ui_serialization::Element)},
-  { 104, -1, -1, sizeof(::ui_serialization::Widget)},
-  { 114, -1, -1, sizeof(::ui_serialization::SerializedUI)},
+  { 106, -1, -1, sizeof(::ui_serialization::Widget)},
+  { 116, -1, -1, sizeof(::ui_serialization::SerializedUI)},
 };
 
 static const ::_pb::Message* const file_default_instances[] = {
@@ -364,7 +368,7 @@ const char descriptor_table_protodef_IndieGoUI_2eproto[] PROTOBUF_SECTION_VARIAB
   "_size\022\024\n\014rows_heights\030\014 \003(\r\0228\n\rskinned_p"
   "rops\030\r \003(\0132!.ui_serialization.SkinnedPro"
   "perty\0222\n\014styled_props\030\016 \003(\0132\034.ui_seriali"
-  "zation.StyleColor\"\270\002\n\007Element\022\014\n\004name\030\001 "
+  "zation.StyleColor\"\333\002\n\007Element\022\014\n\004name\030\001 "
   "\001(\t\022\023\n\013widget_name\030\002 \001(\t\022\014\n\004type\030\003 \001(\r\022\026"
   "\n\016add_on_new_row\030\004 \001(\010\022$\n\004font\030\005 \001(\0132\026.u"
   "i_serialization.Font\022\016\n\006border\030\006 \001(\002\022\020\n\010"
@@ -372,16 +376,17 @@ const char descriptor_table_protodef_IndieGoUI_2eproto[] PROTOBUF_SECTION_VARIAB
   "ialization.region_size\0228\n\rskinned_props\030"
   "\t \003(\0132!.ui_serialization.SkinnedProperty"
   "\0222\n\014styled_props\030\n \003(\0132\034.ui_serializatio"
-  "n.StyleColor\"c\n\006Widget\022,\n\006widget\030\001 \001(\0132\034"
-  ".ui_serialization.WidgetBase\022+\n\010elements"
-  "\030\002 \003(\0132\031.ui_serialization.Element\"`\n\014Ser"
-  "ializedUI\022%\n\005fonts\030\001 \003(\0132\026.ui_serializat"
-  "ion.Font\022)\n\007widgets\030\002 \003(\0132\030.ui_serializa"
-  "tion.Widgetb\006proto3"
+  "n.StyleColor\022\r\n\005label\030\013 \001(\t\022\022\n\ntext_alig"
+  "n\030\014 \001(\r\"c\n\006Widget\022,\n\006widget\030\001 \001(\0132\034.ui_s"
+  "erialization.WidgetBase\022+\n\010elements\030\002 \003("
+  "\0132\031.ui_serialization.Element\"`\n\014Serializ"
+  "edUI\022%\n\005fonts\030\001 \003(\0132\026.ui_serialization.F"
+  "ont\022)\n\007widgets\030\002 \003(\0132\030.ui_serialization."
+  "Widgetb\006proto3"
   ;
 static ::_pbi::once_flag descriptor_table_IndieGoUI_2eproto_once;
 const ::_pbi::DescriptorTable descriptor_table_IndieGoUI_2eproto = {
-    false, false, 1339, descriptor_table_protodef_IndieGoUI_2eproto,
+    false, false, 1374, descriptor_table_protodef_IndieGoUI_2eproto,
     "IndieGoUI.proto",
     &descriptor_table_IndieGoUI_2eproto_once, nullptr, 0, 10,
     schemas, file_default_instances, TableStruct_IndieGoUI_2eproto::offsets,
@@ -2630,12 +2635,14 @@ Element::Element(const Element& from)
     , decltype(_impl_.styled_props_){from._impl_.styled_props_}
     , decltype(_impl_.name_){}
     , decltype(_impl_.widget_name_){}
+    , decltype(_impl_.label_){}
     , decltype(_impl_.font_){nullptr}
     , decltype(_impl_.padding_){nullptr}
     , decltype(_impl_.type_){}
     , decltype(_impl_.add_on_new_row_){}
     , decltype(_impl_.border_){}
     , decltype(_impl_.rounding_){}
+    , decltype(_impl_.text_align_){}
     , /*decltype(_impl_._cached_size_)*/{}};
 
   _internal_metadata_.MergeFrom<::PROTOBUF_NAMESPACE_ID::UnknownFieldSet>(from._internal_metadata_);
@@ -2655,6 +2662,14 @@ Element::Element(const Element& from)
     _this->_impl_.widget_name_.Set(from._internal_widget_name(), 
       _this->GetArenaForAllocation());
   }
+  _impl_.label_.InitDefault();
+  #ifdef PROTOBUF_FORCE_COPY_DEFAULT_STRING
+    _impl_.label_.Set("", GetArenaForAllocation());
+  #endif // PROTOBUF_FORCE_COPY_DEFAULT_STRING
+  if (!from._internal_label().empty()) {
+    _this->_impl_.label_.Set(from._internal_label(), 
+      _this->GetArenaForAllocation());
+  }
   if (from._internal_has_font()) {
     _this->_impl_.font_ = new ::ui_serialization::Font(*from._impl_.font_);
   }
@@ -2662,8 +2677,8 @@ Element::Element(const Element& from)
     _this->_impl_.padding_ = new ::ui_serialization::region_size(*from._impl_.padding_);
   }
   ::memcpy(&_impl_.type_, &from._impl_.type_,
-    static_cast<size_t>(reinterpret_cast<char*>(&_impl_.rounding_) -
-    reinterpret_cast<char*>(&_impl_.type_)) + sizeof(_impl_.rounding_));
+    static_cast<size_t>(reinterpret_cast<char*>(&_impl_.text_align_) -
+    reinterpret_cast<char*>(&_impl_.type_)) + sizeof(_impl_.text_align_));
   // @@protoc_insertion_point(copy_constructor:ui_serialization.Element)
 }
 
@@ -2676,12 +2691,14 @@ inline void Element::SharedCtor(
     , decltype(_impl_.styled_props_){arena}
     , decltype(_impl_.name_){}
     , decltype(_impl_.widget_name_){}
+    , decltype(_impl_.label_){}
     , decltype(_impl_.font_){nullptr}
     , decltype(_impl_.padding_){nullptr}
     , decltype(_impl_.type_){0u}
     , decltype(_impl_.add_on_new_row_){false}
     , decltype(_impl_.border_){0}
     , decltype(_impl_.rounding_){0}
+    , decltype(_impl_.text_align_){0u}
     , /*decltype(_impl_._cached_size_)*/{}
   };
   _impl_.name_.InitDefault();
@@ -2691,6 +2708,10 @@ inline void Element::SharedCtor(
   _impl_.widget_name_.InitDefault();
   #ifdef PROTOBUF_FORCE_COPY_DEFAULT_STRING
     _impl_.widget_name_.Set("", GetArenaForAllocation());
+  #endif // PROTOBUF_FORCE_COPY_DEFAULT_STRING
+  _impl_.label_.InitDefault();
+  #ifdef PROTOBUF_FORCE_COPY_DEFAULT_STRING
+    _impl_.label_.Set("", GetArenaForAllocation());
   #endif // PROTOBUF_FORCE_COPY_DEFAULT_STRING
 }
 
@@ -2709,6 +2730,7 @@ inline void Element::SharedDtor() {
   _impl_.styled_props_.~RepeatedPtrField();
   _impl_.name_.Destroy();
   _impl_.widget_name_.Destroy();
+  _impl_.label_.Destroy();
   if (this != internal_default_instance()) delete _impl_.font_;
   if (this != internal_default_instance()) delete _impl_.padding_;
 }
@@ -2727,6 +2749,7 @@ void Element::Clear() {
   _impl_.styled_props_.Clear();
   _impl_.name_.ClearToEmpty();
   _impl_.widget_name_.ClearToEmpty();
+  _impl_.label_.ClearToEmpty();
   if (GetArenaForAllocation() == nullptr && _impl_.font_ != nullptr) {
     delete _impl_.font_;
   }
@@ -2736,8 +2759,8 @@ void Element::Clear() {
   }
   _impl_.padding_ = nullptr;
   ::memset(&_impl_.type_, 0, static_cast<size_t>(
-      reinterpret_cast<char*>(&_impl_.rounding_) -
-      reinterpret_cast<char*>(&_impl_.type_)) + sizeof(_impl_.rounding_));
+      reinterpret_cast<char*>(&_impl_.text_align_) -
+      reinterpret_cast<char*>(&_impl_.type_)) + sizeof(_impl_.text_align_));
   _internal_metadata_.Clear<::PROTOBUF_NAMESPACE_ID::UnknownFieldSet>();
 }
 
@@ -2838,6 +2861,24 @@ const char* Element::_InternalParse(const char* ptr, ::_pbi::ParseContext* ctx) 
             CHK_(ptr);
             if (!ctx->DataAvailable(ptr)) break;
           } while (::PROTOBUF_NAMESPACE_ID::internal::ExpectTag<82>(ptr));
+        } else
+          goto handle_unusual;
+        continue;
+      // string label = 11;
+      case 11:
+        if (PROTOBUF_PREDICT_TRUE(static_cast<uint8_t>(tag) == 90)) {
+          auto str = _internal_mutable_label();
+          ptr = ::_pbi::InlineGreedyStringParser(str, ptr, ctx);
+          CHK_(ptr);
+          CHK_(::_pbi::VerifyUTF8(str, "ui_serialization.Element.label"));
+        } else
+          goto handle_unusual;
+        continue;
+      // uint32 text_align = 12;
+      case 12:
+        if (PROTOBUF_PREDICT_TRUE(static_cast<uint8_t>(tag) == 96)) {
+          _impl_.text_align_ = ::PROTOBUF_NAMESPACE_ID::internal::ReadVarint32(&ptr);
+          CHK_(ptr);
         } else
           goto handle_unusual;
         continue;
@@ -2952,6 +2993,22 @@ uint8_t* Element::_InternalSerialize(
         InternalWriteMessage(10, repfield, repfield.GetCachedSize(), target, stream);
   }
 
+  // string label = 11;
+  if (!this->_internal_label().empty()) {
+    ::PROTOBUF_NAMESPACE_ID::internal::WireFormatLite::VerifyUtf8String(
+      this->_internal_label().data(), static_cast<int>(this->_internal_label().length()),
+      ::PROTOBUF_NAMESPACE_ID::internal::WireFormatLite::SERIALIZE,
+      "ui_serialization.Element.label");
+    target = stream->WriteStringMaybeAliased(
+        11, this->_internal_label(), target);
+  }
+
+  // uint32 text_align = 12;
+  if (this->_internal_text_align() != 0) {
+    target = stream->EnsureSpace(target);
+    target = ::_pbi::WireFormatLite::WriteUInt32ToArray(12, this->_internal_text_align(), target);
+  }
+
   if (PROTOBUF_PREDICT_FALSE(_internal_metadata_.have_unknown_fields())) {
     target = ::_pbi::WireFormat::InternalSerializeUnknownFieldsToArray(
         _internal_metadata_.unknown_fields<::PROTOBUF_NAMESPACE_ID::UnknownFieldSet>(::PROTOBUF_NAMESPACE_ID::UnknownFieldSet::default_instance), target, stream);
@@ -2996,6 +3053,13 @@ size_t Element::ByteSizeLong() const {
         this->_internal_widget_name());
   }
 
+  // string label = 11;
+  if (!this->_internal_label().empty()) {
+    total_size += 1 +
+      ::PROTOBUF_NAMESPACE_ID::internal::WireFormatLite::StringSize(
+        this->_internal_label());
+  }
+
   // .ui_serialization.Font font = 5;
   if (this->_internal_has_font()) {
     total_size += 1 +
@@ -3038,6 +3102,11 @@ size_t Element::ByteSizeLong() const {
     total_size += 1 + 4;
   }
 
+  // uint32 text_align = 12;
+  if (this->_internal_text_align() != 0) {
+    total_size += ::_pbi::WireFormatLite::UInt32SizePlusOne(this->_internal_text_align());
+  }
+
   return MaybeComputeUnknownFieldsSize(total_size, &_impl_._cached_size_);
 }
 
@@ -3063,6 +3132,9 @@ void Element::MergeImpl(::PROTOBUF_NAMESPACE_ID::Message& to_msg, const ::PROTOB
   }
   if (!from._internal_widget_name().empty()) {
     _this->_internal_set_widget_name(from._internal_widget_name());
+  }
+  if (!from._internal_label().empty()) {
+    _this->_internal_set_label(from._internal_label());
   }
   if (from._internal_has_font()) {
     _this->_internal_mutable_font()->::ui_serialization::Font::MergeFrom(
@@ -3091,6 +3163,9 @@ void Element::MergeImpl(::PROTOBUF_NAMESPACE_ID::Message& to_msg, const ::PROTOB
   memcpy(&raw_rounding, &tmp_rounding, sizeof(tmp_rounding));
   if (raw_rounding != 0) {
     _this->_internal_set_rounding(from._internal_rounding());
+  }
+  if (from._internal_text_align() != 0) {
+    _this->_internal_set_text_align(from._internal_text_align());
   }
   _this->_internal_metadata_.MergeFrom<::PROTOBUF_NAMESPACE_ID::UnknownFieldSet>(from._internal_metadata_);
 }
@@ -3121,9 +3196,13 @@ void Element::InternalSwap(Element* other) {
       &_impl_.widget_name_, lhs_arena,
       &other->_impl_.widget_name_, rhs_arena
   );
+  ::PROTOBUF_NAMESPACE_ID::internal::ArenaStringPtr::InternalSwap(
+      &_impl_.label_, lhs_arena,
+      &other->_impl_.label_, rhs_arena
+  );
   ::PROTOBUF_NAMESPACE_ID::internal::memswap<
-      PROTOBUF_FIELD_OFFSET(Element, _impl_.rounding_)
-      + sizeof(Element::_impl_.rounding_)
+      PROTOBUF_FIELD_OFFSET(Element, _impl_.text_align_)
+      + sizeof(Element::_impl_.text_align_)
       - PROTOBUF_FIELD_OFFSET(Element, _impl_.font_)>(
           reinterpret_cast<char*>(&_impl_.font_),
           reinterpret_cast<char*>(&other->_impl_.font_));
