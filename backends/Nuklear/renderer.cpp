@@ -1036,13 +1036,25 @@ void Manager::loadFont(std::string path, const std::string & winID, float font_s
     nk_font_atlas_begin(&atlas);
 
     loaded_fonts[ font_name ].sizes.push_back(font_size);
-    loaded_fonts[ fs::path(path).stem().string() ].path = path;
+    char * pd = getenv("PROJECT_DIR");
+    std::string project_dir = "";
+    if (pd) {
+        project_dir = pd;
+        if (path.find(project_dir) != std::string::npos)
+            loaded_fonts[fs::path(path).stem().string()].path = path.substr(
+                project_dir.size(), path.size()
+            );
+        else
+            loaded_fonts[fs::path(path).stem().string()].path = path;
+    } else {
+        loaded_fonts[ fs::path(path).stem().string() ].path = path;
+    }
 
     backend_loaded_fonts.clear();
 
     for (auto font : loaded_fonts) {
         for (auto font_size : font.second.sizes) {
-            backend_loaded_fonts[font.first][font_size] = nk_font_atlas_add_from_file(&atlas, font.second.path.c_str(), font_size, &cfg);
+            backend_loaded_fonts[font.first][font_size] = nk_font_atlas_add_from_file(&atlas, (project_dir + font.second.path).c_str(), font_size, &cfg);
         }
     }
 
