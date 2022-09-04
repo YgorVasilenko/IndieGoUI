@@ -69,8 +69,14 @@ extern void createNewWidget(
 
 extern void checkUIValues(std::string winID);
 
-extern void updateWidgetFromUI(std::string widID, std::string winID, bool do_styling, int styling_element);
-extern void updateUIFromWidget(std::string widID, std::string winID, bool do_styling, int styling_element);
+// widgest style <-> UI update functions
+extern void updateWidgetFromUI(std::string widID, std::string winID, bool do_styling, int styling_element, int layout_row);
+extern void updateUIFromWidget(std::string widID, std::string winID, bool do_styling, int styling_element, int layout_row);
+
+// element style <-> UI update functions
+extern void updateElementFromUI(std::string elementName, std::string winID, bool do_styling);
+void updateUIFromElement(std::string elementName, std::string winID, bool do_styling);
+
 extern void useBackgroundImage(std::string widID, std::string winID, unsigned int texID);
 extern unsigned int load_image(const char *filename, bool load_skinning_image = false);
 extern std::list<std::string> getPaths();
@@ -113,12 +119,6 @@ void useSkin(T & item, std::string winID) {
         (IMAGE_SKIN_ELEMENT)skinning_props_list.selected_element
     );
 }
-
-// template<T = WIDGET> 
-// void useSkin(WIDGET & item, std::string winID);
-
-// template<UI_element> 
-// void useSkin(UI_element & item, std::string winID);
 
 int main() {
 
@@ -223,13 +223,6 @@ int main() {
                 addElement(widgets_list.getSelected(), winID, *UIMap["new element name"]._data.strPtr, t, !UIMap["to same row"]._data.b);
                 UIMap[*UIMap["new element name"]._data.strPtr].modifyable_progress_bar = true; // hard-code for now
             }
-            
-            updateUIFromWidget(
-                widgets_list.getSelected(), 
-                winID, 
-                style_edit_mode == widget_edit,
-                style_elements_list.selected_element
-            );
 
             for (auto element : w.widget_elements) {
                 elements_list.elements.push_back(element);
@@ -238,16 +231,11 @@ int main() {
                 elements_list.selected_element = prev_selected_element;
             }
             if (elements_list.selected_element != -1) {
-                if (UIMap[elements_list.getSelected()].type == UI_STRING_TEXT) {
-                    // modify text in selected text element
-                    *UIMap["selected text"]._data.strPtr = UIMap[elements_list.getSelected()].label;
-                }
-                if (style_edit_mode == element_edit) {
-                    UIMap["border size"]._data.f = UIMap[elements_list.getSelected()].border;
-                    UIMap["padding x"]._data.f = UIMap[elements_list.getSelected()].padding.w;
-                    UIMap["padding y"]._data.f = UIMap[elements_list.getSelected()].padding.h;
-                    UIMap["rounding"]._data.f = UIMap[elements_list.getSelected()].rounding;
-                }
+                updateUIFromElement(
+                    elements_list.getSelected(),
+                    winID,
+                    style_edit_mode == element_edit
+                );
             }
 
             for (int i = 0; i < w.layout_grid.size(); i++) {
@@ -256,10 +244,14 @@ int main() {
             if (prev_selected_row < rows_list.elements.size()) {
                 rows_list.selected_element = prev_selected_row;
             }
-
-            if (rows_list.selected_element != -1) {
-                UIMap["row height"]._data.f = w.layout_grid[rows_list.selected_element].min_height;
-            }
+            
+            updateUIFromWidget(
+                widgets_list.getSelected(), 
+                winID, 
+                style_edit_mode == widget_edit,
+                style_elements_list.selected_element,
+                rows_list.selected_element
+            );
         }
 
         if (UIMap["style edit mode"]._data.b) {
@@ -347,27 +339,10 @@ int main() {
                     widgets_list.getSelected(), 
                     winID, 
                     style_edit_mode == widget_edit, 
-                    style_elements_list.selected_element == prev_selected_style_element ? style_elements_list.selected_element : -1
+                    style_elements_list.selected_element == prev_selected_style_element ? style_elements_list.selected_element : -1,
+                    rows_list.selected_element == prev_selected_row ? rows_list.selected_element : -1
                 );
                 WIDGET& w = GUI.getWidget(widgets_list.getSelected(), winID);
-                if (elements_list.selected_element != -1 && prev_selected_element == elements_list.selected_element) {
-                    if (UIMap[elements_list.getSelected()].type == UI_STRING_TEXT) {
-                        // modify text in selected text element
-                        UIMap[elements_list.getSelected()].label = *UIMap["selected text"]._data.strPtr;
-                    }
-
-                    if (style_edit_mode == element_edit) {
-                        UIMap[elements_list.getSelected()].border = UIMap["border size"]._data.f;
-                        UIMap[elements_list.getSelected()].padding.w = UIMap["padding x"]._data.f;
-                        UIMap[elements_list.getSelected()].padding.h = UIMap["padding y"]._data.f;
-                        UIMap[elements_list.getSelected()].rounding = UIMap["rounding"]._data.f;
-                    }
-                }
-
-                if (rows_list.selected_element != -1 && prev_selected_row == rows_list.selected_element) {
-                    w.layout_grid[rows_list.selected_element].min_height = UIMap["row height"]._data.f;
-                }
-
                 if (skinning_props_list.selected_element != -1) {
                     if (UIMap["add skin"]._data.b) {
                         if (style_edit_mode == widget_edit) {
@@ -377,19 +352,15 @@ int main() {
                         }
                     }
                 }
-
-
-                if (UIMap["use font"]._data.b) {
-                    if (style_edit_mode == element_edit) {
-                        if (available_fonts_list.selected_element != -1 && font_sizes_list.selected_element != -1) {
-                            if (elements_list.selected_element != -1) {
-                                UIMap[elements_list.getSelected()].font = available_fonts_list.getSelected();
-                                UIMap[elements_list.getSelected()].font_size = std::stof(font_sizes_list.getSelected());
-                            }
-                        }
-                    }
-                }
             }
+        }
+
+        if (elements_list.selected_element != -1 && prev_selected_element == elements_list.selected_element) {
+            updateElementFromUI(
+                elements_list.getSelected(),
+                winID,
+                style_edit_mode == element_edit
+            );
         }
 
         glfwSwapBuffers(screen);

@@ -11,17 +11,73 @@ using namespace IndieGo::UI;
 
 extern Manager GUI;
 
+void updateElementFromUI(
+    std::string elementName, 
+    std::string winID, 
+    bool do_styling
+) {
+    UI_elements_map & UIMap = GUI.UIMaps[winID];
+    UI_element & e = UIMap[elementName];
+
+    if (do_styling) {
+        e.border = UIMap["border size"]._data.f;
+        e.padding.w = UIMap["padding x"]._data.f;
+        e.padding.h = UIMap["padding y"]._data.f;
+        e.rounding = UIMap["rounding"]._data.f;
+
+        if (UIMap["use font"]._data.b) {
+            ui_string_group& available_fonts_list = *UIMap["available fonts"]._data.usgPtr;
+            ui_string_group& font_sizes_list = *UIMap["font sizes"]._data.usgPtr;
+
+            if (available_fonts_list.selected_element != -1 && font_sizes_list.selected_element != -1) {
+                e.font = available_fonts_list.getSelected();
+                e.font_size = std::stof(font_sizes_list.getSelected());
+            }
+        }
+    }
+
+    if (e.type == UI_STRING_TEXT) {
+        // modify text in selected text element
+        e.label = *UIMap["selected text"]._data.strPtr;
+    }
+}
+
+void updateUIFromElement(
+    std::string elementName, 
+    std::string winID, 
+    bool do_styling
+) {
+    UI_elements_map & UIMap = GUI.UIMaps[winID];
+    UI_element & e = UIMap[elementName];
+
+    if (do_styling) {
+        UIMap["border size"]._data.f = e.border;
+        UIMap["padding x"]._data.f = e.padding.w;
+        UIMap["padding y"]._data.f = e.padding.h;
+        UIMap["rounding"]._data.f = e.rounding;
+    }
+
+    if (e.type == UI_STRING_TEXT) {
+        // modify text in selected text element
+        *UIMap["selected text"]._data.strPtr = e.label;
+    }
+}
+
 void updateWidgetFromUI(
     std::string widID, 
     std::string winID, 
     bool do_styling,
-    int styling_element
+    int styling_element,
+    int layout_row
 ) {
     WIDGET & w = GUI.getWidget(widID, winID);
     UI_elements_map & UIMap = GUI.UIMaps[winID];
 
+    if (layout_row != -1) {
+        w.layout_grid[layout_row].min_height = UIMap["row height"]._data.f;
+    }
+
     // location
-    // TODO : update screen_region with information from renderer
     w.screen_region.x = UIMap["location x"]._data.f / 100.f;
     w.screen_region.y = UIMap["location y"]._data.f / 100.f;
 
@@ -37,13 +93,6 @@ void updateWidgetFromUI(
     w.movable = UIMap["movable"]._data.b;
 
     if (do_styling) {
-        if (styling_element != -1) {
-            w.style.elements[styling_element].r = UIMap["Red property color"]._data.ui;
-            w.style.elements[styling_element].g = UIMap["Green property color"]._data.ui;
-            w.style.elements[styling_element].b = UIMap["Blue property color"]._data.ui;
-            w.style.elements[styling_element].a = UIMap["Alpha property color"]._data.ui;
-        }
-
         // "general" elements update
         w.border_size = UIMap["border size"]._data.f;
         w.padding.w = UIMap["padding x"]._data.f;
@@ -61,18 +110,29 @@ void updateWidgetFromUI(
             }
         }
     }
+
+    if (styling_element != -1) {
+        w.style.elements[styling_element].r = UIMap["Red property color"]._data.ui;
+        w.style.elements[styling_element].g = UIMap["Green property color"]._data.ui;
+        w.style.elements[styling_element].b = UIMap["Blue property color"]._data.ui;
+        w.style.elements[styling_element].a = UIMap["Alpha property color"]._data.ui;
+    }
 }
 
 void updateUIFromWidget(
     std::string widID, 
     std::string winID, 
     bool do_styling,
-    int styling_element
+    int styling_element,
+    int layout_row
 ) {
     WIDGET & w = GUI.getWidget(widID, winID);
     UI_elements_map & UIMap = GUI.UIMaps[winID];
 
-    // TODO : probably fix sizes and location update for movable widgets
+    if (layout_row != -1) {
+        UIMap["row height"]._data.f = w.layout_grid[layout_row].min_height;
+    }
+
     // location
     UIMap["location x"]._data.f = w.screen_region.x * 100.f;
     UIMap["location y"]._data.f = w.screen_region.y * 100.f;
