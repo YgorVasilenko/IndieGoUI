@@ -1040,12 +1040,12 @@ void Manager::loadFont(std::string path, const std::string & winID, float font_s
     std::string project_dir = "";
     if (pd) {
         project_dir = pd;
-        if (path.find(project_dir) != std::string::npos)
-            loaded_fonts[fs::path(path).stem().string()].path = path.substr(
-                project_dir.size(), path.size()
-            );
-        else
-            loaded_fonts[fs::path(path).stem().string()].path = path;
+        //if (path.find(project_dir) != std::string::npos)
+        loaded_fonts[fs::path(path).stem().string()].path = path.substr(
+            project_dir.size(), path.size()
+        );
+        /*else
+            loaded_fonts[fs::path(path).stem().string()].path = path;*/
     } else {
         loaded_fonts[ fs::path(path).stem().string() ].path = path;
     }
