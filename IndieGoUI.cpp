@@ -206,6 +206,7 @@ void Manager::serialize(const std::string & winID, const std::string & path, con
 
     std::ofstream file(path, std::ios::binary);
     serialized_ui.SerializeToOstream(&file);
+    file.close();
 #endif
 }
 
@@ -256,15 +257,6 @@ void Manager::deserialize(const std::string & winID, const std::string & path) {
         added_w.padding.w = w.widget().padding().x();
         added_w.spacing.h = w.widget().spacing().y();
         added_w.spacing.w = w.widget().spacing().x();
-
-        // row heights
-        for (int j = 0; j < w.widget().rows_heights_size(); j++) {
-            added_w.layout_grid[j].min_height = w.widget().rows_heights(j);
-        }
-
-        // for (auto g_row : widget.second.layout_grid) {
-        //     w->mutable_widget()->add_rows_heights(g_row.min_height);
-        // }
 
         // skinned props
         for (int j = 0; j < w.widget().skinned_props_size(); j++) {
@@ -340,6 +332,11 @@ void Manager::deserialize(const std::string & winID, const std::string & path) {
                 UIMap[e.name()].style.elements[k].b = sc.b();
                 UIMap[e.name()].style.elements[k].a = sc.a();
             }
+        }
+
+        // row heights
+        for (int j = 0; j < w.widget().rows_heights_size(); j++) {
+            added_w.layout_grid[j].min_height = w.widget().rows_heights(j);
         }
     }
 

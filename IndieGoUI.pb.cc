@@ -112,7 +112,6 @@ PROTOBUF_ATTRIBUTE_NO_DESTROY PROTOBUF_CONSTINIT PROTOBUF_ATTRIBUTE_INIT_PRIORIT
 PROTOBUF_CONSTEXPR WidgetBase::WidgetBase(
     ::_pbi::ConstantInitialized): _impl_{
     /*decltype(_impl_.rows_heights_)*/{}
-  , /*decltype(_impl_._rows_heights_cached_byte_size_)*/{0}
   , /*decltype(_impl_.skinned_props_)*/{}
   , /*decltype(_impl_.styled_props_)*/{}
   , /*decltype(_impl_.name_)*/{&::_pbi::fixed_address_empty_string, ::_pbi::ConstantInitialized{}}
@@ -365,7 +364,7 @@ const char descriptor_table_protodef_IndieGoUI_2eproto[] PROTOBUF_SECTION_VARIAB
   "ion.Font\022\023\n\013border_size\030\t \001(\002\022.\n\007padding"
   "\030\n \001(\0132\035.ui_serialization.region_size\022.\n"
   "\007spacing\030\013 \001(\0132\035.ui_serialization.region"
-  "_size\022\024\n\014rows_heights\030\014 \003(\r\0228\n\rskinned_p"
+  "_size\022\024\n\014rows_heights\030\014 \003(\002\0228\n\rskinned_p"
   "rops\030\r \003(\0132!.ui_serialization.SkinnedPro"
   "perty\0222\n\014styled_props\030\016 \003(\0132\034.ui_seriali"
   "zation.StyleColor\"\333\002\n\007Element\022\014\n\004name\030\001 "
@@ -1998,7 +1997,6 @@ WidgetBase::WidgetBase(const WidgetBase& from)
   WidgetBase* const _this = this; (void)_this;
   new (&_impl_) Impl_{
       decltype(_impl_.rows_heights_){from._impl_.rows_heights_}
-    , /*decltype(_impl_._rows_heights_cached_byte_size_)*/{0}
     , decltype(_impl_.skinned_props_){from._impl_.skinned_props_}
     , decltype(_impl_.styled_props_){from._impl_.styled_props_}
     , decltype(_impl_.name_){}
@@ -2047,7 +2045,6 @@ inline void WidgetBase::SharedCtor(
   (void)is_message_owned;
   new (&_impl_) Impl_{
       decltype(_impl_.rows_heights_){arena}
-    , /*decltype(_impl_._rows_heights_cached_byte_size_)*/{0}
     , decltype(_impl_.skinned_props_){arena}
     , decltype(_impl_.styled_props_){arena}
     , decltype(_impl_.name_){}
@@ -2222,14 +2219,14 @@ const char* WidgetBase::_InternalParse(const char* ptr, ::_pbi::ParseContext* ct
         } else
           goto handle_unusual;
         continue;
-      // repeated uint32 rows_heights = 12;
+      // repeated float rows_heights = 12;
       case 12:
         if (PROTOBUF_PREDICT_TRUE(static_cast<uint8_t>(tag) == 98)) {
-          ptr = ::PROTOBUF_NAMESPACE_ID::internal::PackedUInt32Parser(_internal_mutable_rows_heights(), ptr, ctx);
+          ptr = ::PROTOBUF_NAMESPACE_ID::internal::PackedFloatParser(_internal_mutable_rows_heights(), ptr, ctx);
           CHK_(ptr);
-        } else if (static_cast<uint8_t>(tag) == 96) {
-          _internal_add_rows_heights(::PROTOBUF_NAMESPACE_ID::internal::ReadVarint32(&ptr));
-          CHK_(ptr);
+        } else if (static_cast<uint8_t>(tag) == 101) {
+          _internal_add_rows_heights(::PROTOBUF_NAMESPACE_ID::internal::UnalignedLoad<float>(ptr));
+          ptr += sizeof(float);
         } else
           goto handle_unusual;
         continue;
@@ -2366,13 +2363,9 @@ uint8_t* WidgetBase::_InternalSerialize(
         _Internal::spacing(this).GetCachedSize(), target, stream);
   }
 
-  // repeated uint32 rows_heights = 12;
-  {
-    int byte_size = _impl_._rows_heights_cached_byte_size_.Get();
-    if (byte_size > 0) {
-      target = stream->WriteUInt32Packed(
-          12, _internal_rows_heights(), byte_size, target);
-    }
+  // repeated float rows_heights = 12;
+  if (this->_internal_rows_heights_size() > 0) {
+    target = stream->WriteFixedPacked(12, _internal_rows_heights(), target);
   }
 
   // repeated .ui_serialization.SkinnedProperty skinned_props = 13;
@@ -2407,16 +2400,14 @@ size_t WidgetBase::ByteSizeLong() const {
   // Prevent compiler warnings about cached_has_bits being unused
   (void) cached_has_bits;
 
-  // repeated uint32 rows_heights = 12;
+  // repeated float rows_heights = 12;
   {
-    size_t data_size = ::_pbi::WireFormatLite::
-      UInt32Size(this->_impl_.rows_heights_);
+    unsigned int count = static_cast<unsigned int>(this->_internal_rows_heights_size());
+    size_t data_size = 4UL * count;
     if (data_size > 0) {
       total_size += 1 +
         ::_pbi::WireFormatLite::Int32Size(static_cast<int32_t>(data_size));
     }
-    int cached_size = ::_pbi::ToCachedSize(data_size);
-    _impl_._rows_heights_cached_byte_size_.Set(cached_size);
     total_size += data_size;
   }
 

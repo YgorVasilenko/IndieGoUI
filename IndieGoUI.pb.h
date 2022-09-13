@@ -1254,26 +1254,26 @@ class WidgetBase final :
     kMovableFieldNumber = 7,
     kBorderSizeFieldNumber = 9,
   };
-  // repeated uint32 rows_heights = 12;
+  // repeated float rows_heights = 12;
   int rows_heights_size() const;
   private:
   int _internal_rows_heights_size() const;
   public:
   void clear_rows_heights();
   private:
-  uint32_t _internal_rows_heights(int index) const;
-  const ::PROTOBUF_NAMESPACE_ID::RepeatedField< uint32_t >&
+  float _internal_rows_heights(int index) const;
+  const ::PROTOBUF_NAMESPACE_ID::RepeatedField< float >&
       _internal_rows_heights() const;
-  void _internal_add_rows_heights(uint32_t value);
-  ::PROTOBUF_NAMESPACE_ID::RepeatedField< uint32_t >*
+  void _internal_add_rows_heights(float value);
+  ::PROTOBUF_NAMESPACE_ID::RepeatedField< float >*
       _internal_mutable_rows_heights();
   public:
-  uint32_t rows_heights(int index) const;
-  void set_rows_heights(int index, uint32_t value);
-  void add_rows_heights(uint32_t value);
-  const ::PROTOBUF_NAMESPACE_ID::RepeatedField< uint32_t >&
+  float rows_heights(int index) const;
+  void set_rows_heights(int index, float value);
+  void add_rows_heights(float value);
+  const ::PROTOBUF_NAMESPACE_ID::RepeatedField< float >&
       rows_heights() const;
-  ::PROTOBUF_NAMESPACE_ID::RepeatedField< uint32_t >*
+  ::PROTOBUF_NAMESPACE_ID::RepeatedField< float >*
       mutable_rows_heights();
 
   // repeated .ui_serialization.SkinnedProperty skinned_props = 13;
@@ -1460,8 +1460,7 @@ class WidgetBase final :
   typedef void InternalArenaConstructable_;
   typedef void DestructorSkippable_;
   struct Impl_ {
-    ::PROTOBUF_NAMESPACE_ID::RepeatedField< uint32_t > rows_heights_;
-    mutable ::PROTOBUF_NAMESPACE_ID::internal::CachedSize _rows_heights_cached_byte_size_;
+    ::PROTOBUF_NAMESPACE_ID::RepeatedField< float > rows_heights_;
     ::PROTOBUF_NAMESPACE_ID::RepeatedPtrField< ::ui_serialization::SkinnedProperty > skinned_props_;
     ::PROTOBUF_NAMESPACE_ID::RepeatedPtrField< ::ui_serialization::StyleColor > styled_props_;
     ::PROTOBUF_NAMESPACE_ID::internal::ArenaStringPtr name_;
@@ -3239,7 +3238,7 @@ inline void WidgetBase::set_allocated_spacing(::ui_serialization::region_size* s
   // @@protoc_insertion_point(field_set_allocated:ui_serialization.WidgetBase.spacing)
 }
 
-// repeated uint32 rows_heights = 12;
+// repeated float rows_heights = 12;
 inline int WidgetBase::_internal_rows_heights_size() const {
   return _impl_.rows_heights_.size();
 }
@@ -3249,38 +3248,38 @@ inline int WidgetBase::rows_heights_size() const {
 inline void WidgetBase::clear_rows_heights() {
   _impl_.rows_heights_.Clear();
 }
-inline uint32_t WidgetBase::_internal_rows_heights(int index) const {
+inline float WidgetBase::_internal_rows_heights(int index) const {
   return _impl_.rows_heights_.Get(index);
 }
-inline uint32_t WidgetBase::rows_heights(int index) const {
+inline float WidgetBase::rows_heights(int index) const {
   // @@protoc_insertion_point(field_get:ui_serialization.WidgetBase.rows_heights)
   return _internal_rows_heights(index);
 }
-inline void WidgetBase::set_rows_heights(int index, uint32_t value) {
+inline void WidgetBase::set_rows_heights(int index, float value) {
   _impl_.rows_heights_.Set(index, value);
   // @@protoc_insertion_point(field_set:ui_serialization.WidgetBase.rows_heights)
 }
-inline void WidgetBase::_internal_add_rows_heights(uint32_t value) {
+inline void WidgetBase::_internal_add_rows_heights(float value) {
   _impl_.rows_heights_.Add(value);
 }
-inline void WidgetBase::add_rows_heights(uint32_t value) {
+inline void WidgetBase::add_rows_heights(float value) {
   _internal_add_rows_heights(value);
   // @@protoc_insertion_point(field_add:ui_serialization.WidgetBase.rows_heights)
 }
-inline const ::PROTOBUF_NAMESPACE_ID::RepeatedField< uint32_t >&
+inline const ::PROTOBUF_NAMESPACE_ID::RepeatedField< float >&
 WidgetBase::_internal_rows_heights() const {
   return _impl_.rows_heights_;
 }
-inline const ::PROTOBUF_NAMESPACE_ID::RepeatedField< uint32_t >&
+inline const ::PROTOBUF_NAMESPACE_ID::RepeatedField< float >&
 WidgetBase::rows_heights() const {
   // @@protoc_insertion_point(field_list:ui_serialization.WidgetBase.rows_heights)
   return _internal_rows_heights();
 }
-inline ::PROTOBUF_NAMESPACE_ID::RepeatedField< uint32_t >*
+inline ::PROTOBUF_NAMESPACE_ID::RepeatedField< float >*
 WidgetBase::_internal_mutable_rows_heights() {
   return &_impl_.rows_heights_;
 }
-inline ::PROTOBUF_NAMESPACE_ID::RepeatedField< uint32_t >*
+inline ::PROTOBUF_NAMESPACE_ID::RepeatedField< float >*
 WidgetBase::mutable_rows_heights() {
   // @@protoc_insertion_point(field_mutable_list:ui_serialization.WidgetBase.rows_heights)
   return _internal_mutable_rows_heights();

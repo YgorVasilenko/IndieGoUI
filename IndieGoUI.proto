@@ -65,7 +65,7 @@ message WidgetBase {
 
     // on load when elements added to new row
     // it's size will be adjusted
-    repeated uint32 rows_heights = 12;
+    repeated float rows_heights = 12;
 
     // on load skinned element will call useSkinImage
     repeated SkinnedProperty skinned_props = 13;
