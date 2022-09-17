@@ -435,7 +435,7 @@ void textToString(std::string & str) {
 //
 //-------------------------------------------------------
 
-void UI_element::callUIfunction() {
+void UI_element::callUIfunction(float x, float y, float widget_w, float widget_h) {
     /*if (custom_style)
         nk_style_from_table(ctx, (struct nk_color*)style.elements);*/
 
@@ -445,6 +445,18 @@ void UI_element::callUIfunction() {
             &backend_loaded_fonts[font][font_size]->handle
         );
     }
+    // prepare space for element
+    nk_layout_space_push(
+        ctx, 
+        nk_rect(
+            x,
+            y,
+            widget_w * width,
+            widget_h * height
+        )
+    );
+    
+    nk_layout_row_dynamic(ctx, widget_h * height, 1);
 
     std::string full_name;
     nk_bool nk_val;
@@ -880,29 +892,42 @@ IndieGo::UI::region<float> WIDGET::getImgCrop(IndieGo::UI::IMAGE_SKIN_ELEMENT el
     return images[ skinned_style.props[elt].first ][ skinned_style.props[elt].second ].second;
 }
 
+// TODO : calculate elements count in row
+// so far - 64 == max
 void WIDGET::allocateRow(unsigned int cols, float min_height, bool in_pixels) {
     float height = in_pixels ? min_height : screen_size.h * screen_region.h * min_height;
-    nk_layout_row_dynamic(
+    nk_layout_space_begin(
         ctx, 
-        // first get size of widget in pixels, then get size of row
+        NK_STATIC, 
         height,
-        cols
+        64
     );
+    // float height = in_pixels ? min_height : screen_size.h * screen_region.h * min_height;
+    // nk_layout_row_dynamic(
+    //     ctx, 
+    //     // first get size of widget in pixels, then get size of row
+    //     height,
+    //     cols
+    // );
 }
 
-void WIDGET::allocateEmptySpace(unsigned int fill_count){
-    nk_spacing(ctx, fill_count);
+void WIDGET::endRow() {
+    nk_layout_space_end(ctx);
 }
 
-void WIDGET::allocateGroupStart(elements_group & g, float min_height){
-    g.unfolded = nk_tree_push(ctx, NK_TREE_TAB, g.name.c_str(), NK_MINIMIZED);
-    if (g.unfolded)
-        nk_layout_row_dynamic(ctx, min_height, g.row_items_count);
-}
+// void WIDGET::allocateEmptySpace(unsigned int fill_count){
+//     nk_spacing(ctx, fill_count);
+// }
 
-void WIDGET::allocateGroupEnd(){
-    nk_tree_pop(ctx);
-}
+// void WIDGET::allocateGroupStart(elements_group & g, float min_height){
+//     g.unfolded = nk_tree_push(ctx, NK_TREE_TAB, g.name.c_str(), NK_MINIMIZED);
+//     if (g.unfolded)
+//         nk_layout_row_dynamic(ctx, min_height, g.row_items_count);
+// }
+
+// void WIDGET::allocateGroupEnd(){
+//     nk_tree_pop(ctx);
+// }
 
 #define NK_GLFW_GL3_MOUSE_GRABBING
 

@@ -25,3 +25,11 @@ cmake --build build
 ```
 build\Debug\UI_map_OpenGL.exe
 ```
+
+## execution cycle:
+for each widget:
+    for each row:
+        allocateRow()
+        for each cell:
+            for each element:
+                callUIfunction()

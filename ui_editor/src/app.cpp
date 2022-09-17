@@ -120,6 +120,23 @@ void useSkin(T & item, std::string winID) {
     );
 }
 
+// load_items.first -> resources path
+// load_items.second -> project name
+std::pair<std::string, std::string> getResourcesPath() {
+    char * p = getenv("PROJECT_DIR");
+    std::string path = "";
+    std::string project_name = "";
+    if (p) {
+        path = p;
+        project_name = fs::path( path ).filename().string();
+        path += "/current_scene";
+    } else {
+        path = getenv("INDIEGO_HOME");
+    }
+    return std::pair<std::string, std::string>(path, project_name);
+}
+
+
 int main() {
 
   	glfwInit();
@@ -209,10 +226,13 @@ int main() {
             WIDGET& w = GUI.getWidget( widgets_list.getSelected(), winID );
             if ( UIMap["add image"]._data.b ) {
                 UI_ELEMENT_TYPE t = UI_IMAGE;
-                std::string img_path = *getPaths().begin();
-                unsigned int texID = load_image(img_path.c_str());
-                addElement(widgets_list.getSelected(), winID, *UIMap["new element name"]._data.strPtr, t, !UIMap["to same row"]._data.b);
-                UIMap[*UIMap["new element name"]._data.strPtr].initImage(texID, img_path);
+                std::list<std::string> paths = getPaths();
+                if (paths.size() > 0) {
+                    std::string img_path = *paths.begin();
+                    unsigned int texID = load_image(img_path.c_str());
+                    addElement(widgets_list.getSelected(), winID, *UIMap["new element name"]._data.strPtr, t, !UIMap["to same row"]._data.b);
+                    UIMap[*UIMap["new element name"]._data.strPtr].initImage(texID, img_path);
+                }
             }
             if (UIMap["add text"]._data.b) {
                 UI_ELEMENT_TYPE t = UI_STRING_TEXT;
@@ -265,9 +285,10 @@ int main() {
         }
 
         if (UIMap["save widgets"]._data.b) {
-            std::string IndieGo_home = getenv("INDIEGO_HOME");
-            std::string project_name = fs::path( getenv("PROJECT_DIR") ).filename().string();
-            GUI.serialize(winID, IndieGo_home + "/ui_" + project_name + ".indg", { "UI creator", "style editor" });
+            // std::string IndieGo_home = getenv("INDIEGO_HOME");
+            // std::string project_name = fs::path( getenv("PROJECT_DIR") ).filename().string();
+            std::pair<std::string, std::string> save_items = getResourcesPath();
+            GUI.serialize(winID, save_items.first + "/ui_" + save_items.second + ".indg", { "UI creator", "style editor" });
         }
 
         if (UIMap["load widgets"]._data.b) {

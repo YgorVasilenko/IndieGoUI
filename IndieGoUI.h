@@ -201,6 +201,7 @@ namespace IndieGo {
 			UI_STRING_TEXT,
 			UI_BUTTON,
 			UI_BUTTON_SWITCH,
+			UI_EMPTY,
 			UI_ITEMS_LIST,
 			UI_COLOR_PICKER,
 			UI_IMAGE,
@@ -244,7 +245,8 @@ namespace IndieGo {
 			std::string label = "";
 			bool color_picker_unwrapped = false;
 
-			float min_height = 23.f;
+			float height = 0.1f; // % from widget's height
+			float width = 1.f; // % from widget's width
 
 			// special properties, that can be called "common"
 			float border = 1.f; 
@@ -267,7 +269,7 @@ namespace IndieGo {
 			unsigned char layout_row = 0;
 			unsigned char layout_col = 0;
 			// default implementation could be overrided
-			virtual void callUIfunction();
+			virtual void callUIfunction(float x, float y, float widget_w, float widget_h);
 
 			// this is for image elements
 			virtual void initImage(unsigned int texID, std::string path = "");
@@ -282,11 +284,22 @@ namespace IndieGo {
 				IMAGE_SKIN_ELEMENT elt
 			);
 		};
+		
+		struct row_cell {
+			// each cell may contain 1 or more elements
+			std::vector<std::string> elements;
+			std::string & operator[](unsigned int idx) {
+				return elements[idx];
+			}
+		};
+
 		struct grid_row {
-			std::vector<std::string> cells;
-			// float min_height = 0.023f;
+			std::vector<row_cell> cells;
 			float min_height = 23.f;
 			bool in_pixels = true;
+			row_cell & operator[](unsigned int idx) {
+				return cells[idx];
+			}
 		};
 
 
@@ -298,32 +311,37 @@ namespace IndieGo {
 			std::string start;
 			std::string end;
 
-			bool isElementInGroup(const std::string & element, const std::vector<grid_row> & layout_grid){
-				// look for group start, group end, and element
-				bool groupStarted = false, groupEnded = false, element_found = false;
-				for (auto row : layout_grid){
-					for (auto elt : row.cells) {
-						if (!groupStarted && elt == start){
-							groupStarted = true;
-						}
-                		if (!groupEnded && elt == end){
-                    		groupEnded = true;
-                		}
+			// bool isElementInGroup(const std::string & element, const std::vector<grid_row> & layout_grid){
+			// 	// look for group start, group end, and element
+			// 	bool groupStarted = false, groupEnded = false, element_found = false;
+			// 	for (auto row : layout_grid){
+			// 		for (auto elt : row.cells) {
+			// 			if (!groupStarted && elt == start) {
+			// 				groupStarted = true;
+			// 			}
+            //     		if (!groupEnded && elt == end) {
+            //         		groupEnded = true;
+            //     		}
 
-	    				if (element == elt) {
-		    				if( !groupStarted )
-			    				return false;
-				    		else if (!groupEnded)
-					    		return true;
-                    		else
-					    		return false;
-                		}
-					}
-				}
-        		return false;
-			}
+	    	// 			if (element == elt) {
+		    // 				if( !groupStarted )
+			//     				return false;
+			// 	    		else if (!groupEnded)
+			// 		    		return true;
+            //         		else
+			// 		    		return false;
+            //     		}
+			// 		}
+			// 	}
+        	// 	return false;
+			// }
 		};
 
+		enum ELT_PUSH_OPT {
+			to_new_row, // push element to completely new row (grid_rows + 1)
+			to_new_col, // push element to last existing row, but new column (grid_rows.back().cells + 1) 
+			to_new_subcol // push element to existing row and existing col, but subdivide it top-down (grid_rows.back().cells.elements + 1) 
+		};
 		// defines memory items, that will be used by UI_elements_map
 		struct WIDGET_BASE {
 			// widgets provide place on screen to display ui elements
@@ -359,110 +377,139 @@ namespace IndieGo {
 			std::vector<elements_group> elements_groups;
 
 			// True, if element successfully added to folding group
-			bool addElementToGroup(const std::string & elt_name, const std::string & group_name){
-				std::vector<elements_group>::iterator target_group = find_if(
-					elements_groups.begin(),
-					elements_groups.end(),
-					[&group_name](elements_group & g){
-						return group_name == g.name;
-					}
-				);
-				if (target_group == elements_groups.end()){
-					// simply create new group
-					elements_group new_group;
-					new_group.name = group_name;
-					new_group.start = elt_name;
-					new_group.end = elt_name;
-					new_group.row_items_count = 1;
-					elements_groups.push_back(new_group);
-					return true;
-				} else {
-					// Important note - elements in group should go consecutively in layout
-					// make shure, that when adding element to existing group, it's located right after current group.end in layout
-					int elt_idx = 0, grp_idx = 0;
-					for (auto row : layout_grid){
-						elt_idx = 0;
-						for (auto elt : row.cells){
-							if (elt == target_group->end){
-								if ( ( elt_idx + 1 ) < row.cells.size()){
-									if ( row.cells[elt_idx + 1] == elt_name){
-										target_group->end = elt_name;
-										target_group->row_items_count++;
-										return true;
-									} else {
-										// next element after group's end is not target_element,
-										// therefore group can't be extended to target_element
-										return false;
-									}
-								} else {
-									// check first element of next group - if it's target_element,
-									// then we can extend group to include it
-									if ((grp_idx + 1) < layout_grid.size()){
-										if ( layout_grid[grp_idx + 1].cells.size() > 0 && layout_grid[grp_idx + 1].cells[0] == elt_name){
-											target_group->end = elt_name;
-											target_group->row_items_count++;
-											return true;
-										} else {
-											return false;
-										}
-									} else {
-										return false;
-									}
-								}
-							}
-							elt_idx++;
-						}
-					}
-					return false;
-				}
-
+			bool addElementToGroup(const std::string & elt_name, const std::string & group_name) {
+				// std::vector<elements_group>::iterator target_group = find_if(
+				// 	elements_groups.begin(),
+				// 	elements_groups.end(),
+				// 	[&group_name](elements_group & g){
+				// 		return group_name == g.name;
+				// 	}
+				// );
+				// if (target_group == elements_groups.end()){
+				// 	// simply create new group
+				// 	elements_group new_group;
+				// 	new_group.name = group_name;
+				// 	new_group.start = elt_name;
+				// 	new_group.end = elt_name;
+				// 	new_group.row_items_count = 1;
+				// 	elements_groups.push_back(new_group);
+				// 	return true;
+				// } else {
+				// 	// Important note - elements in group should go consecutively in layout
+				// 	// make shure, that when adding element to existing group, it's located right after current group.end in layout
+				// 	int elt_idx = 0, grp_idx = 0;
+				// 	for (auto row : layout_grid){
+				// 		elt_idx = 0;
+				// 		for (auto elt : row.cells){
+				// 			if (elt == target_group->end){
+				// 				if ( ( elt_idx + 1 ) < row.cells.size()){
+				// 					if ( row.cells[elt_idx + 1] == elt_name){
+				// 						target_group->end = elt_name;
+				// 						target_group->row_items_count++;
+				// 						return true;
+				// 					} else {
+				// 						// next element after group's end is not target_element,
+				// 						// therefore group can't be extended to target_element
+				// 						return false;
+				// 					}
+				// 				} else {
+				// 					// check first element of next group - if it's target_element,
+				// 					// then we can extend group to include it
+				// 					if ((grp_idx + 1) < layout_grid.size()){
+				// 						if ( layout_grid[grp_idx + 1].cells.size() > 0 && layout_grid[grp_idx + 1].cells[0] == elt_name){
+				// 							target_group->end = elt_name;
+				// 							target_group->row_items_count++;
+				// 							return true;
+				// 						} else {
+				// 							return false;
+				// 						}
+				// 					} else {
+				// 						return false;
+				// 					}
+				// 				}
+				// 			}
+				// 			elt_idx++;
+				// 		}
+				// 	}
+				// 	return false;
+				// }
 			};
 
 			// returns position on layout, that element was eventually added to
-			std::pair<int, int> addElement(const std::string & elt_name, int row = -1, int col = -1, bool insert_row = false, bool overwrite_col = true, float min_height = 23.f) {
+			std::pair<int, int> addElement(
+				const std::string & elt_name, 
+				ELT_PUSH_OPT push_opt = to_new_row
+				// int row = -1, 
+				// int col = -1, 
+				// int col_sub = -1, // subdivision columns
+				// bool insert_row = false, 
+				// bool overwrite_col = true, 
+				// float min_height = 23.f
+			) {
 				// Guard against widgets elements doubling
 				if (std::find(widget_elements.begin(), widget_elements.end(), elt_name) != widget_elements.end()){
 					std::cout << "[ERROR] addElement: element '" << elt_name << "' already exists in widget " << name << std::endl;
 					return std::pair<int, int>(-1, -1);
 				}
 				widget_elements.push_back(elt_name);
-				grid_row new_row;
-				if (row > -1){
-					// make shure there is enough rows
-					if( row >= layout_grid.size() ) {
-						layout_grid.resize(layout_grid.size() + row + 1);
-					} else if (insert_row){
-						// if layout_row points to existing row, we should insert new row
-						layout_grid.insert(
-							layout_grid.begin() + row, new_row
-						);
-					}
-					std::vector<std::string> & elt_row = layout_grid[row].cells;
-					if (col > -1){
-						// make shure there is enough cols
-						if( col >= elt_row.size() ) {
-							elt_row.resize(elt_row.size() + col + 1);
-						} else if (!overwrite_col) {
-							// if layout_row points to existing row, we should insert new row
-							elt_row.insert(
-								elt_row.begin() + col, "no_element"
-							);
-						}
-						elt_row[col] = elt_name;
-						return std::pair<int, int>(row, col);
-					} else {
-						elt_row.push_back(elt_name);
-						return std::pair<int, int>(row, elt_row.size() - 1);
-					}
-				} else {
-					// by default widget gets it's element into fisrt available slot, starting from
-					// top left corner, going to down right
-					if (layout_grid.size() == 0)
-						layout_grid.push_back(new_row);
-					std::vector<std::string> & elt_row = layout_grid.back().cells;
-					elt_row.push_back(elt_name);
-					return std::pair<int, int>(elt_row.size() - 1, 0);
+				
+				if (push_opt == to_new_row) {
+					layout_grid.push_back(grid_row());
+					layout_grid.back().cells.push_back(row_cell());
+					layout_grid.back().cells.back().elements.push_back(elt_name);
 				}
+
+				if (push_opt == to_new_col) {
+					if (layout_grid.size() == 0)
+						layout_grid.push_back(grid_row());
+					layout_grid.back().cells.push_back(row_cell());
+					layout_grid.back().cells.back().elements.push_back(elt_name);
+				}
+
+				if (push_opt == to_new_subcol) {
+					if (layout_grid.size() == 0)
+						layout_grid.push_back(grid_row());
+					if (layout_grid.back().cells.size() == 0)
+						layout_grid.back().cells.push_back(row_cell());
+					layout_grid.back().cells.back().elements.push_back(elt_name);
+				}
+				// grid_row new_row;
+				// if (row > -1) {
+				// 	// make shure there is enough rows
+				// 	if( row >= layout_grid.size() ) {
+				// 		layout_grid.resize(layout_grid.size() + row + 1);
+				// 	} else if (insert_row) {
+				// 		// if layout_row points to existing row, we should insert new row
+				// 		layout_grid.insert(
+				// 			layout_grid.begin() + row, new_row
+				// 		);
+				// 	}
+				// 	std::vector<row_cell> & elt_row = layout_grid[row].cells;
+				// 	if (col > -1) {
+				// 		// make shure there is enough cols
+				// 		if( col >= elt_row.size() ) {
+				// 			elt_row.resize(elt_row.size() + col + 1);
+				// 		} else if (!overwrite_col) {
+				// 			// if layout_row points to existing row, we should insert new row
+				// 			elt_row.insert(
+				// 				elt_row.begin() + col, "no_element"
+				// 			);
+				// 		}
+				// 		elt_row[col].elements.push_back(elt_name);
+				// 		return std::pair<int, int>(row, col);
+				// 	} else {
+				// 		elt_row.cells.elements.back().push_back(elt_name);
+				// 		return std::pair<int, int>(row, elt_row.size() - 1);
+				// 	}
+				// } else {
+				// 	// by default widget gets it's element into fisrt available slot, starting from
+				// 	// top left corner, going to down right
+				// 	if (layout_grid.size() == 0)
+				// 		layout_grid.push_back(new_row);
+				// 	std::vector<std::string> & elt_row = layout_grid.back().cells;
+				// 	elt_row.push_back(elt_name);
+				// 	return std::pair<int, int>(elt_row.size() - 1, 0);
+				// }
 			}
 		};
 
@@ -479,11 +526,12 @@ namespace IndieGo {
 				const std::string & elt_name,
 				UI_ELEMENT_TYPE type,
 				WIDGET_BASE * widRef = NULL,
-				int layout_row = -1,
-				int layout_col = -1,
-				bool insert_row = false,
-				bool overwrite_col = true
-			){
+				ELT_PUSH_OPT push_opt = to_new_row
+				// int layout_row = -1,
+				// int layout_col = -1,
+				// bool insert_row = false,
+				// bool overwrite_col = true
+			) {
 				if (elements.find(elt_name) != elements.end()) {
 					std::cout << "[ERROR] addElement: element '" << elt_name << "' already exists!" << std::endl;
 					return;
@@ -491,7 +539,7 @@ namespace IndieGo {
 
 				std::pair<int, int> elt_pos(-1, -1);
 				if (widRef){
-					elt_pos = widRef->addElement(elt_name, layout_row, layout_col, insert_row, overwrite_col);
+					elt_pos = widRef->addElement(elt_name, push_opt);
 				} else {
 					std::cout << "[WARNING] addElement: element '" << elt_name << "' added to UIMap, but no widget will display it! Make shure to add it to *some* widget.widget_elements later!" << std::endl;
 				}
@@ -503,8 +551,8 @@ namespace IndieGo {
 				} else if (element.type == UI_ITEMS_LIST) {
 					element._data.usgPtr = new ui_string_group;
 				} else if (element.type == UI_COLOR_PICKER){
-					element.min_height = 0.185f;
-				} else if (element.type == UI_BUTTON || element.type == UI_BOOL){
+					element.height = 0.185f;
+				} else if (element.type == UI_BUTTON || element.type == UI_BOOL) {
 					// default all boolean switches to false
 					element._data.b = false;
 				} else if (element.type == UI_FLOAT){
@@ -560,9 +608,10 @@ namespace IndieGo {
 			// provide implementation with actual drawing calls
 			virtual void callImmediateBackend(UI_elements_map & UIMap);
 			virtual void allocateRow(unsigned int cols, float min_height, bool in_pixels);
-			virtual void allocateEmptySpace(unsigned int fill_count = 1);
-			virtual void allocateGroupStart(elements_group & group, float min_height);
-			virtual void allocateGroupEnd();
+			virtual void endRow();
+			// virtual void allocateEmptySpace(unsigned int fill_count = 1);
+			// virtual void allocateGroupStart(elements_group & group, float min_height);
+			// virtual void allocateGroupEnd();
 
 			virtual void useSkinImage(
 				unsigned int texID,
@@ -593,41 +642,59 @@ namespace IndieGo {
 			void callWidgetUI(UI_elements_map & UIMap) {
 				bool curr_group_folded = false;
 				std::vector<elements_group>::iterator curr_group;
-				for (auto row : layout_grid){
+				for (auto row : layout_grid) {
 					if (row.cells.size() == 0) continue;
-					std::string & first_elt = row.cells[0];
-					// check, if first element in row starts group - in such case don't allocate row
-					curr_group = find_if(elements_groups.begin(), elements_groups.end(), [&first_elt ](elements_group & g){ return g.start == first_elt; });
-					if (curr_group == elements_groups.end()){
-						// TODO : allocate row only for visible elements
-						allocateRow(row.cells.size(), row.min_height, row.in_pixels);
-					}
-					for (auto elt : row.cells){
-						// check, if element starts drawing group
-						curr_group = find_if(elements_groups.begin(), elements_groups.end(), [&elt](elements_group & g){ return g.start == elt; });
-						if (curr_group != elements_groups.end()){
-							allocateGroupStart(*curr_group, row.min_height);
-							curr_group_folded = !curr_group->unfolded;
-						}
-						if (!curr_group_folded) {
-							if (UIMap.elements.find(elt) != UIMap.elements.end() && !UIMap.elements[elt].hidden){
-								UIMap.elements[elt].callUIfunction();
+					allocateRow(row.cells.size(), row.min_height, row.in_pixels);
+					float row_indent = 0.f; // get row indent + for each drawn row top-to-bottom
+					for (auto cell : row.cells) {
+						float cell_indent = 0.f; // get cell indent + for each drawn element left-to-right
+						for (auto elt : cell.elements){
+							if (UIMap.elements.find(elt) != UIMap.elements.end()) {
+								UIMap.elements[elt].callUIfunction(
+									row_indent, 
+									cell_indent, 
+									screen_size.w * screen_region.w, 
+									screen_size.h * screen_region.h
+								);
 							} else {
-								// TODO : seems like very strange behavior. Need to investigate
-								if (UIMap.elements[elt].takeSpaceIfHidden)
-									allocateEmptySpace();
-								if (UIMap.elements[elt].type == UI_COLOR_PICKER)
-									UIMap.elements[elt].color_picker_unwrapped = false;
+								// TODO : print warning / throw error
 							}
 						}
-						// also check, if element ends group
-						curr_group = find_if(elements_groups.begin(), elements_groups.end(), [&elt](elements_group & g){ return g.end == elt; });
-						if (curr_group != elements_groups.end()){
-							if (!curr_group_folded)
-								allocateGroupEnd();
-							curr_group_folded = false;
-						}
 					}
+					endRow();
+					// std::string & first_elt = row.cells[0];
+					// // check, if first element in row starts group - in such case don't allocate row
+					// curr_group = find_if(elements_groups.begin(), elements_groups.end(), [&first_elt ](elements_group & g){ return g.start == first_elt; });
+					// if (curr_group == elements_groups.end()){
+					// 	// TODO : allocate row only for visible elements
+					// 	allocateRow(row.cells.size(), row.min_height, row.in_pixels);
+					// }
+					// for (auto elt : row.cells){
+					// 	// check, if element starts drawing group
+					// 	// curr_group = find_if(elements_groups.begin(), elements_groups.end(), [&elt](elements_group & g){ return g.start == elt; });
+					// 	// if (curr_group != elements_groups.end()){
+					// 	// 	allocateGroupStart(*curr_group, row.min_height);
+					// 	// 	curr_group_folded = !curr_group->unfolded;
+					// 	// }
+					// 	if (!curr_group_folded) {
+					// 		if (UIMap.elements.find(elt) != UIMap.elements.end() && !UIMap.elements[elt].hidden){
+					// 			UIMap.elements[elt].callUIfunction();
+					// 		} else {
+					// 			// TODO : seems like very strange behavior. Need to investigate
+					// 			// if (UIMap.elements[elt].takeSpaceIfHidden)
+					// 			// 	allocateEmptySpace();
+					// 			// if (UIMap.elements[elt].type == UI_COLOR_PICKER)
+					// 			// 	UIMap.elements[elt].color_picker_unwrapped = false;
+					// 		}
+					// 	}
+					// 	// also check, if element ends group
+					// 	// curr_group = find_if(elements_groups.begin(), elements_groups.end(), [&elt](elements_group & g){ return g.end == elt; });
+					// 	// if (curr_group != elements_groups.end()){
+					// 	// 	if (!curr_group_folded)
+					// 	// 		allocateGroupEnd();
+					// 	// 	curr_group_folded = false;
+					// 	// }
+					// }
 				}
 			};
 		};
