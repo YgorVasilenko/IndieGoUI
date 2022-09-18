@@ -575,7 +575,7 @@ void UI_element::callUIfunction(float x, float y, float widget_w, float widget_h
     if (type == UI_IMAGE) {
         // TODO : add skinning
         if (_data.i != -1)
-            nk_image(ctx, images[_data.i].back().first);
+            nk_image(ctx, images[_data.i][cropId].first);
     }
 
     if (type == UI_STRING_LABEL) {
@@ -734,21 +734,30 @@ void UI_element::callUIfunction(float x, float y, float widget_w, float widget_h
     }
 }
 
-extern unsigned int load_image(const char *filename, bool load_skinning_image = false);
+// TODO : make a static method
+// use static map [path] = texID to track loaded images
+// extern unsigned int load_image(const char *filename, bool load_skinning_image = false);
 
-void UI_element::initImage(std::string path, int texID) {
+void UI_element::initImage(unsigned int texID, unsigned int w, unsigned int h, region<float> crop) {
     if (type != UI_IMAGE) {
         // TODO : add error message
         return;
     }
 
-    if (texID == -1 || images.find(texID) == images.end()) {
+    // if (images.find(texID) == images.end()) {
         // load image
-        texID = load_image(path.c_str());
-        Manager::addImage(texID);
-    }
+        // texID = load_image(path.c_str());
+    Manager::addImage(
+        texID,
+        w,
+        h,
+        crop
+    );
+
+    //}
     _data.i = texID;
-    label = path;
+    cropId = images[texID].size() - 1;
+    // label = path;
 }
 
 void UI_element::useSkinImage(
@@ -888,18 +897,36 @@ void WIDGET::callImmediateBackend(UI_elements_map & UIMap){
 }
 
 void Manager::addImage(
-    unsigned int texID
+    unsigned int texID,
+    unsigned short w,
+	unsigned short h,
+	region<float> crop
 ) {
-    region<float> crop;
-    crop.x = 0.f;
-    crop.y = 0.f;
-    crop.w = 0.f;
-    crop.h = 0.f;
-
+    // region<float> crop;
+    // crop.x = 0.f;
+    // crop.y = 0.f;
+    // crop.w = 0.f;
+    // crop.h = 0.f;
 
     images[texID].push_back(
-          std::pair<struct nk_image, region<float>> { nk_image_id(texID), crop }
+          std::pair<struct nk_image, region<float>> { 
+            nk_subimage_id(
+                texID, 
+                w,
+                h, 
+                nk_rect(
+                    crop.x * w, 
+                    crop.y * h, 
+                    crop.w * w, 
+                    crop.h * h
+                )
+            ), 
+            crop 
+            }
     );
+    // images[texID].push_back(
+    //       std::pair<struct nk_image, region<float>> { nk_image_id(texID), crop }
+    // );
 }
 
 void WIDGET::useSkinImage(

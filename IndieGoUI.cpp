@@ -94,8 +94,8 @@ extern unsigned int si_h;
 
 // helper function lo load image through stbi
 // in other engine parts ImageLoader will do that
-unsigned int load_image(const char *filename, bool load_skinning_image = false) {
-    int x, y, n;
+unsigned int load_image(const char *filename, int &x, int &y, int &n, bool load_skinning_image = false) {
+    // int x, y, n;
     unsigned int tex;
     unsigned char *data = stbi_load(filename, &x, &y, &n, 0);
     // if (!data) die("[SDL]: failed to load image: %s", filename);

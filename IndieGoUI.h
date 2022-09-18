@@ -269,7 +269,8 @@ namespace IndieGo {
 			virtual void callUIfunction(float x, float y, float widget_w, float widget_h);
 
 			// this is for image elements
-			virtual void initImage(std::string path, int texID = -1);
+			virtual void initImage(unsigned int texID, unsigned int w, unsigned int h, region<float> crop);
+			unsigned int cropId = 0;
 
 			// this is for various properties, that have option of 
 			// using image texture
@@ -761,7 +762,7 @@ namespace IndieGo {
 			};
 
 			// adds new image to global vector of images. Returns index or recently added image
-			static void addImage(unsigned int texID);
+			static void addImage(unsigned int texID,unsigned short w, unsigned short h, region<float> crop);
 
 			WIDGET & addWidget(WIDGET & new_widget, const std::string & win_name = DEFAULT_WINDOW_NAME) {
 				// can't add widgets for window without map

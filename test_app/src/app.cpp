@@ -58,7 +58,8 @@ unsigned int frames = 0;
 extern unsigned int skinning_image_id;
 extern unsigned int si_w;
 extern unsigned int si_h;
-extern unsigned int load_image(const char *filename, bool load_skinning_image);
+// extern unsigned int load_image(const char *filename, bool load_skinning_image);
+unsigned int load_image(const char *filename, int &x, int &y, int &n, bool load_skinning_image = false);
 
 int main() {
 
@@ -124,7 +125,14 @@ int main() {
     UIMap["test text"].height = 0.2f;
     
     UIMap.addElement("test image 1", UI_IMAGE, &test_widget_h);
-    UIMap["test image 1"].initImage("C:\\Users\\Public\\GobbyIsland\\Sprites\\GoblinSlayer\\World\\leaves_giant.png");
+    int texId, x, y, n;
+    texId = load_image("C:\\Users\\Public\\GobbyIsland\\Sprites\\magic_bar_3_parts.png", x, y, n);
+    region<float> crop;
+    crop.x = 0.f;
+    crop.y = 0.f;
+    crop.w = 0.5f;
+    crop.h = 1.f;
+    UIMap["test image 1"].initImage(texId, x, y, crop);
     test_widget_h.updateRowHeight(test_widget_h.layout_grid.size() - 1, 0.5f);
 
     UIMap.addElement("test button 3", UI_BUTTON, &test_widget_h, to_new_col);
@@ -133,17 +141,19 @@ int main() {
     UIMap["test button 3"].rounding = 10.f;
 
     UIMap.addElement("test image 2", UI_IMAGE, &test_widget_h, to_new_subrow);
-    UIMap["test image 2"].initImage("C:\\Users\\Public\\GobbyIsland\\Sprites\\GoblinSlayer\\World\\leaves_enormous_snow.png");
+    crop.x = 0.5f;
+    crop.y = 0.f;
+    crop.w = 0.5f;
+    crop.h = 1.f;
+    UIMap["test image 2"].initImage(texId, x, y, crop);
     UIMap["test image 2"].height = 0.4f;
-
-    unsigned int skin_tex_id = load_image("C:\\Users\\Public\\GobbyIsland\\Sprites\\magic_bar_3_parts_empty.png", true);
-    region<float> crop;
+    
     crop.x = 0.f;
     crop.y = 0.f;
     crop.w = si_w;
     crop.h = si_h;
     test_widget_h.useSkinImage(
-        skinning_image_id, 
+        texId, 
         si_w, 
         si_h, 
         crop,
