@@ -55,12 +55,6 @@ unsigned int buttons_count = 1;
 double curr_time = 0.0, prev_time = 0.0;
 unsigned int frames = 0;
 
-extern unsigned int skinning_image_id;
-extern unsigned int si_w;
-extern unsigned int si_h;
-// extern unsigned int load_image(const char *filename, bool load_skinning_image);
-unsigned int load_image(const char *filename, int &x, int &y, int &n, bool load_skinning_image = false);
-
 int main() {
 
   	glfwInit();
@@ -91,7 +85,6 @@ int main() {
     test_widget.screen_region.w = 0.3f;
     test_widget.screen_region.x = 0.3f;
     test_widget.screen_region.y = 0.3f;
-
     test_widget.name = "test widget";
 
     GUI.addWidget(test_widget, winID);
@@ -125,14 +118,14 @@ int main() {
     UIMap["test text"].height = 0.2f;
     
     UIMap.addElement("test image 1", UI_IMAGE, &test_widget_h);
-    int texId, x, y, n;
-    texId = load_image("C:\\Users\\Public\\GobbyIsland\\Sprites\\magic_bar_3_parts.png", x, y, n);
+    TexData tex;
+    tex = Manager::load_image("C:\\Users\\Public\\GobbyIsland\\Sprites\\magic_bar_3_parts.png");
     region<float> crop;
     crop.x = 0.f;
     crop.y = 0.f;
     crop.w = 0.5f;
     crop.h = 1.f;
-    UIMap["test image 1"].initImage(texId, x, y, crop);
+    UIMap["test image 1"].initImage(tex.texID, tex.w, tex.h, crop);
     test_widget_h.updateRowHeight(test_widget_h.layout_grid.size() - 1, 0.5f);
 
     UIMap.addElement("test button 3", UI_BUTTON, &test_widget_h, to_new_col);
@@ -145,20 +138,32 @@ int main() {
     crop.y = 0.f;
     crop.w = 0.5f;
     crop.h = 1.f;
-    UIMap["test image 2"].initImage(texId, x, y, crop);
+    UIMap["test image 2"].initImage(tex.texID, tex.w, tex.h, crop);
     UIMap["test image 2"].height = 0.4f;
-    
+
     crop.x = 0.f;
     crop.y = 0.f;
-    crop.w = si_w;
-    crop.h = si_h;
-    test_widget_h.useSkinImage(
-        texId, 
-        si_w, 
-        si_h, 
-        crop,
-        background
-    );
+    crop.w = 1.f;
+    crop.h = 1.f;
+    test_widget_h.useSkinImage( tex.texID, tex.w, tex.h, crop, background );
+
+
+    WIDGET technical_data_widget;
+    technical_data_widget.screen_region.h = 0.1f;
+    technical_data_widget.screen_region.w = 0.1f;
+    technical_data_widget.screen_region.x = 0.f;
+    technical_data_widget.screen_region.y = 0.f;
+    technical_data_widget.name = "data";
+    GUI.addWidget(technical_data_widget, winID);
+    WIDGET & td = GUI.getWidget("data", winID);
+    td.style.elements[UI_COLOR_WINDOW].a = 100;
+
+    UIMap.addElement("FPS counter", UI_STRING_TEXT, &td);
+    unsigned int fps_counter = 0;
+    UIMap["FPS counter"].label = std::to_string(fps_counter);
+    UIMap["FPS counter"].padding.w = 10.f;
+
+    td.updateRowHeight(0, 1.f);
 
 	// set initial time to zero
 	glfwSetTime(0.0);
@@ -179,6 +184,13 @@ int main() {
 
         glfwSwapBuffers(screen);
 	    glfwPollEvents();
+
+        fps_counter++;
+        if (glfwGetTime() >= 1.f) {
+            glfwSetTime(0.0);
+            UIMap["FPS counter"].label = std::to_string(fps_counter);
+            fps_counter = 0;
+        }
     }
     return 0;
 }

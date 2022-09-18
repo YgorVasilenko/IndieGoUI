@@ -15,6 +15,9 @@ using namespace IndieGo::UI;
 
 extern Manager GUI;
 
+// [path] = texData
+std::map<std::string, TexData> loaded_textures;
+
 void WIDGET_BASE::updateRowHeight(unsigned int row, float newHeight) {
 	layout_grid[row].min_height = newHeight;
 	for (auto cell : layout_grid[row].cells) {
@@ -94,17 +97,22 @@ extern unsigned int si_h;
 
 // helper function lo load image through stbi
 // in other engine parts ImageLoader will do that
-unsigned int load_image(const char *filename, int &x, int &y, int &n, bool load_skinning_image = false) {
-    // int x, y, n;
-    unsigned int tex;
-    unsigned char *data = stbi_load(filename, &x, &y, &n, 0);
-    // if (!data) die("[SDL]: failed to load image: %s", filename);
-    if (!data) {
-        std::cout << "[ERROR] failed to load image " << filename << std::endl;
-        return 0;
+TexData Manager::load_image(const std::string & path) {
+    if (loaded_textures.find(path) != loaded_textures.end()) {
+        return loaded_textures[path];
     }
-    glGenTextures(1, &tex);
-    glBindTexture(GL_TEXTURE_2D, tex);
+    // unsigned int tex;
+    TexData& td = loaded_textures[path];
+    unsigned char *data = stbi_load(path.c_str(), &td.w, &td.h, &td.n, 0);
+    
+    if (!data) {
+        std::cout << "[ERROR] failed to load image " << path << std::endl;
+        td.texID = UINT_MAX;
+        return td;
+    }
+
+    glGenTextures(1, &td.texID);
+    glBindTexture(GL_TEXTURE_2D, td.texID);
     // glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_NEAREST);
     // glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR_MIPMAP_NEAREST);
 
@@ -113,24 +121,15 @@ unsigned int load_image(const char *filename, int &x, int &y, int &n, bool load_
     
     glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
     glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
-    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA8, x, y, 0, GL_RGBA, GL_UNSIGNED_BYTE, data);
+    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA8, td.w, td.h, 0, GL_RGBA, GL_UNSIGNED_BYTE, data);
     glGenerateMipmap(GL_TEXTURE_2D);
     stbi_image_free(data);
-    // loadedImages.push_back(tex);
-
-    if (load_skinning_image) {
-        skinning_image_id = tex;
-        si_w = x;
-        si_h = y;
-    }
-    return tex;
+    
+    return td;
 }
 
 
 extern std::string skinning_img_path = "";
-// extern unsigned int skinning_image_id = 0;
-// extern unsigned int si_w = 0;
-// extern unsigned int si_h = 0;
 
 void Manager::serialize(const std::string & winID, const std::string & path, const std::vector<std::string> & skipWidgets) {
 #if !defined NO_SERIALIZATION !defined NO_UI_SERIALIZATION

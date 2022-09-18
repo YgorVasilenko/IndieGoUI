@@ -78,11 +78,6 @@ std::map<std::string, std::map<float, struct nk_font *>> backend_loaded_fonts;
 // texture_iid = vector<sub_images>
 std::map<unsigned int, std::vector<std::pair<struct nk_image, IndieGo::UI::region<float>>>> images;
 
-// data for image, used for skinning
-unsigned int skinning_image_id = 0;
-unsigned int si_w = 0;
-unsigned int si_h = 0;
-
 // Use winID to store window's context. If window destroyed and re-initializes
 // context should be same for respective winID
 std::map<std::string, struct nk_glfw*> glfw_storage;
@@ -734,19 +729,12 @@ void UI_element::callUIfunction(float x, float y, float widget_w, float widget_h
     }
 }
 
-// TODO : make a static method
-// use static map [path] = texID to track loaded images
-// extern unsigned int load_image(const char *filename, bool load_skinning_image = false);
-
 void UI_element::initImage(unsigned int texID, unsigned int w, unsigned int h, region<float> crop) {
     if (type != UI_IMAGE) {
         // TODO : add error message
         return;
     }
 
-    // if (images.find(texID) == images.end()) {
-        // load image
-        // texID = load_image(path.c_str());
     Manager::addImage(
         texID,
         w,
@@ -754,10 +742,8 @@ void UI_element::initImage(unsigned int texID, unsigned int w, unsigned int h, r
         crop
     );
 
-    //}
     _data.i = texID;
     cropId = images[texID].size() - 1;
-    // label = path;
 }
 
 void UI_element::useSkinImage(
@@ -768,7 +754,6 @@ void UI_element::useSkinImage(
 	IMAGE_SKIN_ELEMENT elt
 ) {
     images[texID].push_back(
-        // nk_subimage_id(texID, w,h, nk_rect(crop.x, crop.y, crop.w, crop.h))
         std::pair<struct nk_image, region<float>> { nk_subimage_id(texID, w,h, nk_rect(crop.x, crop.y, crop.w, crop.h)), crop }
     );
     skinned_style.props[elt].first = texID;
@@ -881,10 +866,6 @@ void WIDGET::callImmediateBackend(UI_elements_map & UIMap){
         focused = nk_window_has_focus(ctx);
         hasCursor = nk_window_is_hovered(ctx);
         callWidgetUI(UIMap);
-        // if (backgroundImage) {
-        //     nk_layout_row_dynamic(ctx, (float)screen_region.h, 1);
-        //     nk_image(ctx, images[img_idx]);
-        // }
     }
     if (movable) {
         // update screen_region with current bounds, if those are changed by user
@@ -902,11 +883,6 @@ void Manager::addImage(
 	unsigned short h,
 	region<float> crop
 ) {
-    // region<float> crop;
-    // crop.x = 0.f;
-    // crop.y = 0.f;
-    // crop.w = 0.f;
-    // crop.h = 0.f;
 
     images[texID].push_back(
           std::pair<struct nk_image, region<float>> { 
@@ -924,9 +900,6 @@ void Manager::addImage(
             crop 
             }
     );
-    // images[texID].push_back(
-    //       std::pair<struct nk_image, region<float>> { nk_image_id(texID), crop }
-    // );
 }
 
 void WIDGET::useSkinImage(
@@ -936,9 +909,7 @@ void WIDGET::useSkinImage(
 	region<float> crop,
 	IMAGE_SKIN_ELEMENT elt
 ) {
-    images[texID].push_back(
-          std::pair<struct nk_image, region<float>> { nk_subimage_id(texID, w,h, nk_rect(crop.x, crop.y, crop.w, crop.h)), crop }
-    );
+    Manager::addImage(texID, w, h, crop);
     skinned_style.props[elt].first = texID;
     skinned_style.props[elt].second = images[texID].size() - 1;
 }
@@ -959,13 +930,6 @@ void WIDGET::allocateRow(unsigned int cols, float min_height, bool in_pixels) {
         height,
         64
     );
-    // float height = in_pixels ? min_height : screen_size.h * screen_region.h * min_height;
-    // nk_layout_row_dynamic(
-    //     ctx, 
-    //     // first get size of widget in pixels, then get size of row
-    //     height,
-    //     cols
-    // );
 }
 
 void WIDGET::endRow() {

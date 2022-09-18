@@ -686,6 +686,11 @@ namespace IndieGo {
 			float runtime_set_size;
 		};
 
+		struct TexData {
+			unsigned int texID;
+			int w, h, n;
+		};
+
 		// Main UI's controlling memory struct - contains all possible memory maps and widgets,
 		// adds new ones and removes old, makes calls to Immediate-Mode backends
 		struct Manager {
@@ -763,6 +768,7 @@ namespace IndieGo {
 
 			// adds new image to global vector of images. Returns index or recently added image
 			static void addImage(unsigned int texID,unsigned short w, unsigned short h, region<float> crop);
+			static TexData load_image(const std::string & path);
 
 			WIDGET & addWidget(WIDGET & new_widget, const std::string & win_name = DEFAULT_WINDOW_NAME) {
 				// can't add widgets for window without map
