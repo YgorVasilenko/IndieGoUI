@@ -445,18 +445,19 @@ void UI_element::callUIfunction(float x, float y, float widget_w, float widget_h
             &backend_loaded_fonts[font][font_size]->handle
         );
     }
+
     // prepare space for element
     nk_layout_space_push(
         ctx, 
         nk_rect(
-            x,
-            y,
-            widget_w * width,
-            widget_h * height
+            x + padding.w, // left border
+            y + padding.h,
+            widget_w * width - (padding.w * 2.f), // right border
+            widget_h * height - (padding.h * 2.f)
         )
     );
     
-    nk_layout_row_dynamic(ctx, widget_h * height, 1);
+    // nk_layout_row_dynamic(ctx, widget_h * height, 1);
 
     std::string full_name;
     nk_bool nk_val;
@@ -464,12 +465,13 @@ void UI_element::callUIfunction(float x, float y, float widget_w, float widget_h
     float dbgVal;
     if (type == UI_BOOL) {
         // TODO : add skinning
-        struct nk_key_selector ks;
+        /*struct nk_key_selector ks;
         if (hovered_by_keys) {
             ks.focused = true;
-        }
+        }*/
         nk_val = _data.b;
-        nk_checkbox_label(ctx, label.c_str(), &nk_val, &ks);
+        //nk_checkbox_label(ctx, label.c_str(), &nk_val, &ks);
+        nk_checkbox_label(ctx, label.c_str(), &nk_val);
         _data.b = nk_val;
         return;
     }
@@ -510,11 +512,12 @@ void UI_element::callUIfunction(float x, float y, float widget_w, float widget_h
         ctx->style.button.rounding = rounding;
         ctx->style.button.padding = nk_vec2(padding.h, padding.w);
 
-        struct nk_key_selector ks;
+        /*struct nk_key_selector ks;
         if (hovered_by_keys) {
             ks.focused = true;
-        }
-        if (nk_button_label(ctx, label.c_str(), &ks))
+        }*/
+        //if (nk_button_label(ctx, label.c_str(), &ks))
+        if (nk_button_label(ctx, label.c_str()))
             _data.b = true;
         else
             _data.b = false;
@@ -684,8 +687,8 @@ void UI_element::callUIfunction(float x, float y, float widget_w, float widget_h
         } else if (uiGroupRef.selectMethod == BUTTON_SELECT) {
             bool useLabels = uiGroupRef.elements.size() == uiGroupRef.element_labels.size();
             int i = 0;
-            struct nk_key_selector ks;
-            ks.focused = true;
+            /*struct nk_key_selector ks;
+            ks.focused = true;*/
             for (auto it = uiGroupRef.elements.begin(); it != uiGroupRef.elements.end(); it++) {
                 if (useLabels) {
                     nk_layout_row_dynamic(ctx, 25, 2);
@@ -707,11 +710,15 @@ void UI_element::callUIfunction(float x, float y, float widget_w, float widget_h
                     ctx->style.button.text_active = nk_rgb(60, 60, 60);
                     if (uiGroupRef.use_selected_string) {
                         nk_button_label(ctx, uiGroupRef.selectedString.c_str());
-                    } else {
-                        nk_button_label(ctx, it->c_str(), uiGroupRef.focused_by_key_element == i ? &ks : 0);
                     }
+                    //} else {
+                    //    //nk_button_label(ctx, it->c_str(), uiGroupRef.focused_by_key_element == i ? &ks : 0);
+                    //    nk_button_label(ctx, it->c_str(), uiGroupRef.focused_by_key_element == i ? &ks : 0);
+                    //}
                     ctx->style.button = button;
-                } else if (nk_button_label(ctx, it->c_str(), uiGroupRef.focused_by_key_element == i ? &ks : 0 )) {
+                //} else if (nk_button_label(ctx, it->c_str(), uiGroupRef.focused_by_key_element == i ? &ks : 0 )) {
+                }
+                else if (nk_button_label(ctx, it->c_str())) {
                     if ( uiGroupRef.selected_element != i )
                         uiGroupRef.selection_switch = true;
                     uiGroupRef.selected_element = i;

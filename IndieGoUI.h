@@ -246,7 +246,7 @@ namespace IndieGo {
 			bool color_picker_unwrapped = false;
 
 			float height = 0.1f; // % from widget's height
-			float width = 1.f; // % from widget's width
+			float width = 0.98f; // % from widget's width
 
 			// special properties, that can be called "common"
 			float border = 1.f; 
@@ -265,9 +265,6 @@ namespace IndieGo {
 			image_props skinned_style;
 			virtual region<float> getImgCrop(IMAGE_SKIN_ELEMENT elt);
 
-			bool custom_style = true;
-			unsigned char layout_row = 0;
-			unsigned char layout_col = 0;
 			// default implementation could be overrided
 			virtual void callUIfunction(float x, float y, float widget_w, float widget_h);
 
@@ -288,6 +285,7 @@ namespace IndieGo {
 		struct row_cell {
 			// each cell may contain 1 or more elements
 			std::vector<std::string> elements;
+			float min_width = 1.f;
 			std::string & operator[](unsigned int idx) {
 				return elements[idx];
 			}
@@ -340,9 +338,11 @@ namespace IndieGo {
 		enum ELT_PUSH_OPT {
 			to_new_row, // push element to completely new row (grid_rows + 1)
 			to_new_col, // push element to last existing row, but new column (grid_rows.back().cells + 1) 
-			to_new_subcol // push element to existing row and existing col, but subdivide it top-down (grid_rows.back().cells.elements + 1) 
+			to_new_subrow // push element to existing row and existing col, but subdivide latter top-down (grid_rows.back().cells.elements + 1) 
 		};
 		// defines memory items, that will be used by UI_elements_map
+		struct UI_elements_map;
+
 		struct WIDGET_BASE {
 			// widgets provide place on screen to display ui elements
 			std::vector<std::string> widget_elements;
@@ -353,8 +353,8 @@ namespace IndieGo {
 			// maintained by backend
 			unsigned int img_idx = 0;
 
-			float row_size = 25.f,
-				col_size = -1.f; // -1 == auto-scale
+			//float row_size = 25.f,
+			//	col_size = -1.f; // -1 == auto-scale
 
 			// font is switched in runtime
 			float font_height = 0.023f;
@@ -375,6 +375,16 @@ namespace IndieGo {
 			//  2  |   |          |
 			std::vector<grid_row> layout_grid;
 			std::vector<elements_group> elements_groups;
+
+			UI_elements_map* uiMapPtr = NULL;
+			void updateRowHeight(unsigned int row, float newHeight);// {
+			// 	layout_grid[row].min_height = newHeight;
+			// 	for (auto cell : layout_grid[row].cells) {
+			// 		for (auto elt : cell.elements) {
+			// 			(*uiMapPtr).elements[elt].height = newHeight / cell.elements.size();
+			// 		}
+			// 	}
+			// }
 
 			// True, if element successfully added to folding group
 			bool addElementToGroup(const std::string & elt_name, const std::string & group_name) {
@@ -439,12 +449,6 @@ namespace IndieGo {
 			std::pair<int, int> addElement(
 				const std::string & elt_name, 
 				ELT_PUSH_OPT push_opt = to_new_row
-				// int row = -1, 
-				// int col = -1, 
-				// int col_sub = -1, // subdivision columns
-				// bool insert_row = false, 
-				// bool overwrite_col = true, 
-				// float min_height = 23.f
 			) {
 				// Guard against widgets elements doubling
 				if (std::find(widget_elements.begin(), widget_elements.end(), elt_name) != widget_elements.end()){
@@ -466,50 +470,13 @@ namespace IndieGo {
 					layout_grid.back().cells.back().elements.push_back(elt_name);
 				}
 
-				if (push_opt == to_new_subcol) {
+				if (push_opt == to_new_subrow) {
 					if (layout_grid.size() == 0)
 						layout_grid.push_back(grid_row());
 					if (layout_grid.back().cells.size() == 0)
 						layout_grid.back().cells.push_back(row_cell());
 					layout_grid.back().cells.back().elements.push_back(elt_name);
 				}
-				// grid_row new_row;
-				// if (row > -1) {
-				// 	// make shure there is enough rows
-				// 	if( row >= layout_grid.size() ) {
-				// 		layout_grid.resize(layout_grid.size() + row + 1);
-				// 	} else if (insert_row) {
-				// 		// if layout_row points to existing row, we should insert new row
-				// 		layout_grid.insert(
-				// 			layout_grid.begin() + row, new_row
-				// 		);
-				// 	}
-				// 	std::vector<row_cell> & elt_row = layout_grid[row].cells;
-				// 	if (col > -1) {
-				// 		// make shure there is enough cols
-				// 		if( col >= elt_row.size() ) {
-				// 			elt_row.resize(elt_row.size() + col + 1);
-				// 		} else if (!overwrite_col) {
-				// 			// if layout_row points to existing row, we should insert new row
-				// 			elt_row.insert(
-				// 				elt_row.begin() + col, "no_element"
-				// 			);
-				// 		}
-				// 		elt_row[col].elements.push_back(elt_name);
-				// 		return std::pair<int, int>(row, col);
-				// 	} else {
-				// 		elt_row.cells.elements.back().push_back(elt_name);
-				// 		return std::pair<int, int>(row, elt_row.size() - 1);
-				// 	}
-				// } else {
-				// 	// by default widget gets it's element into fisrt available slot, starting from
-				// 	// top left corner, going to down right
-				// 	if (layout_grid.size() == 0)
-				// 		layout_grid.push_back(new_row);
-				// 	std::vector<std::string> & elt_row = layout_grid.back().cells;
-				// 	elt_row.push_back(elt_name);
-				// 	return std::pair<int, int>(elt_row.size() - 1, 0);
-				// }
 			}
 		};
 
@@ -526,11 +493,10 @@ namespace IndieGo {
 				const std::string & elt_name,
 				UI_ELEMENT_TYPE type,
 				WIDGET_BASE * widRef = NULL,
-				ELT_PUSH_OPT push_opt = to_new_row
-				// int layout_row = -1,
-				// int layout_col = -1,
-				// bool insert_row = false,
-				// bool overwrite_col = true
+				ELT_PUSH_OPT push_opt = to_new_row,
+				
+				// addition to new col will assign width to elements like so : 1 / cols.size()
+				bool autowidth = true
 			) {
 				if (elements.find(elt_name) != elements.end()) {
 					std::cout << "[ERROR] addElement: element '" << elt_name << "' already exists!" << std::endl;
@@ -566,11 +532,16 @@ namespace IndieGo {
 				}
 			
 				elements[elt_name] = element;
-				if (elt_pos.first != -1)
-					elements[elt_name].layout_row = elt_pos.first;
 
-				if (elt_pos.second != -1)
-					elements[elt_name].layout_col = elt_pos.first;
+				if (autowidth) {
+					// for (auto cell = layout_grid.back().cells.begin(); cell != layout_grid.back().cells.end(); cell++) {
+					for (auto cell = widRef->layout_grid.back().cells.begin(); cell != widRef->layout_grid.back().cells.end(); cell++) {
+						cell->min_width = (0.98f) / (float)(widRef->layout_grid.back().cells.size());
+						for (auto elt : cell->elements) {
+							elements[elt].width = (0.98f) / (float)(widRef->layout_grid.back().cells.size());
+						}
+					}
+				}
 
 			};
 
@@ -642,25 +613,30 @@ namespace IndieGo {
 			void callWidgetUI(UI_elements_map & UIMap) {
 				bool curr_group_folded = false;
 				std::vector<elements_group>::iterator curr_group;
+				float cell_indent = 0.f; // get cell indent + for each drawn row top-to-bottom
 				for (auto row : layout_grid) {
 					if (row.cells.size() == 0) continue;
+					// make sure min_height 
 					allocateRow(row.cells.size(), row.min_height, row.in_pixels);
-					float row_indent = 0.f; // get row indent + for each drawn row top-to-bottom
+					float row_indent = 0.f; // get row indent + for each drawn element left-to-right
 					for (auto cell : row.cells) {
-						float cell_indent = 0.f; // get cell indent + for each drawn element left-to-right
+						float subcell_indent = 0.f; // get subcell indent for each drawn element in same cell top-to-bottom
 						for (auto elt : cell.elements){
 							if (UIMap.elements.find(elt) != UIMap.elements.end()) {
 								UIMap.elements[elt].callUIfunction(
-									row_indent, 
-									cell_indent, 
+									row_indent,
+									cell_indent + subcell_indent,
 									screen_size.w * screen_region.w, 
 									screen_size.h * screen_region.h
 								);
+								subcell_indent += UIMap.elements[elt].height * screen_size.h * screen_region.h;
 							} else {
 								// TODO : print warning / throw error
 							}
 						}
+						row_indent += cell.min_width * screen_size.w * screen_region.w;
 					}
+					cell_indent += row.min_height * screen_size.h * screen_region.h;
 					endRow();
 					// std::string & first_elt = row.cells[0];
 					// // check, if first element in row starts group - in such case don't allocate row
@@ -807,6 +783,7 @@ namespace IndieGo {
 					);
 				}
 				widgets[win_name][new_widget.name] = new_widget;
+				widgets[win_name][new_widget.name].uiMapPtr = &UIMaps[win_name];
 				return widgets[win_name][new_widget.name];
 			}
 

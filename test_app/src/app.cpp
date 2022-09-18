@@ -86,19 +86,35 @@ int main() {
     test_widget.screen_region.w = 0.3f;
     test_widget.screen_region.x = 0.3f;
     test_widget.screen_region.y = 0.3f;
-    test_widget.title = false;
-    test_widget.movable = false;
+
     test_widget.name = "test widget";
 
     GUI.addWidget(test_widget, winID);
     WIDGET & test_widget_h = GUI.getWidget("test widget", winID);
-    test_widget_h.title = false;
-    test_widget_h.movable = false;
+
     test_widget_h.minimizable = false;
     UI_elements_map & UIMap = GUI.UIMaps[winID];
     
-    UIMap.addElement("test button", UI_BUTTON, &test_widget_h);
-    UIMap["test button"].label = "TEST BUTTON";
+    UIMap.addElement("group", UI_ITEMS_LIST, &test_widget_h);
+    test_widget_h.updateRowHeight(test_widget_h.layout_grid.size() - 1, 0.5f);
+    
+    UIMap.addElement("test button 1", UI_BUTTON, &test_widget_h, to_new_col);
+    UIMap["test button 1"].label = "TEST BUTTON";
+    UIMap["test button 1"].height = 0.1f;
+    UIMap["test button 1"].padding.h = 5.f;
+    UIMap["test button 1"].padding.w = 10.f;
+    UIMap["test button 1"].border = 1.f;
+
+    UIMap.addElement("test button 2", UI_BUTTON, &test_widget_h, to_new_subrow);
+    UIMap["test button 2"].label = "TEST BUTTON";
+    UIMap["test button 2"].height = 0.1f;
+    UIMap["test button 2"].padding.h = 5.f;
+    UIMap["test button 2"].padding.w = 10.f;
+
+    UIMap.addElement("test button 3", UI_BUTTON, &test_widget_h);
+    UIMap["test button 3"].label = "TEST BUTTON";
+    UIMap["test button 3"].height = 0.1f;
+    UIMap["test button 3"].rounding = 10.f;
 
 	// set initial time to zero
 	glfwSetTime(0.0);

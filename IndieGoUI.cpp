@@ -9,69 +9,78 @@ using namespace IndieGo::UI;
 
 extern Manager GUI;
 
-void createNewWidget(
-    std::string newWidName, 
-    region<float> screen_region,
-    bool bordered,
-    bool titled,
-    bool minimizable,
-    bool scalable,
-    bool movable,
-    const std::string & winID
-) {
-    WIDGET newWidget;
-
-    // initialize new widget
-    newWidget.screen_region = screen_region;
-    newWidget.name = newWidName;
-
-    newWidget.border = bordered;
-    newWidget.title = titled;
-    newWidget.minimizable = minimizable;
-    newWidget.scalable = scalable;
-    newWidget.movable = movable;
-
-    WIDGET & widget = GUI.addWidget(newWidget, winID);
+void WIDGET_BASE::updateRowHeight(unsigned int row, float newHeight) {
+	layout_grid[row].min_height = newHeight;
+	for (auto cell : layout_grid[row].cells) {
+		for (auto elt : cell.elements) {
+			(*uiMapPtr).elements[elt].height = newHeight / cell.elements.size();
+		}
+	}
 }
 
-void useBackgroundImage(std::string widID, std::string winID, unsigned int texID) {
-   /* WIDGET & w = GUI.getWidget(widID, winID);
-    w.img_idx = GUI.addImage(texID);
-    w.backgroundImage = true;*/
-}
+// void createNewWidget(
+//     std::string newWidName, 
+//     region<float> screen_region,
+//     bool bordered,
+//     bool titled,
+//     bool minimizable,
+//     bool scalable,
+//     bool movable,
+//     const std::string & winID
+// ) {
+//     WIDGET newWidget;
 
-void addElement(
-    std::string widID, 
-    std::string winID, 
-    std::string elt_name, 
-    UI_ELEMENT_TYPE type,
-    bool add_on_new_row
-) {
-    if (elt_name.size() == 0)
-        return;
+//     // initialize new widget
+//     newWidget.screen_region = screen_region;
+//     newWidget.name = newWidName;
 
-    // get widget
-    WIDGET& w = GUI.getWidget( widID, winID );
+//     newWidget.border = bordered;
+//     newWidget.title = titled;
+//     newWidget.minimizable = minimizable;
+//     newWidget.scalable = scalable;
+//     newWidget.movable = movable;
 
-    // check if such element already exists, in which case don't add it
-    if (std::find(w.widget_elements.begin(), w.widget_elements.end(), elt_name) != w.widget_elements.end())
-        // TODO : add error message
-        return;
+//     WIDGET & widget = GUI.addWidget(newWidget, winID);
+// }
 
-    // figure row to add element on
-    int row = w.layout_grid.size() - 1;
-    if (add_on_new_row || row == -1)
-        row++;
+// void useBackgroundImage(std::string widID, std::string winID, unsigned int texID) {
+//    /* WIDGET & w = GUI.getWidget(widID, winID);
+//     w.img_idx = GUI.addImage(texID);
+//     w.backgroundImage = true;*/
+// }
+
+// void addElement(
+//     std::string widID, 
+//     std::string winID, 
+//     std::string elt_name, 
+//     UI_ELEMENT_TYPE type,
+//     bool add_on_new_row
+// ) {
+//     if (elt_name.size() == 0)
+//         return;
+
+//     // get widget
+//     WIDGET& w = GUI.getWidget( widID, winID );
+
+//     // check if such element already exists, in which case don't add it
+//     if (std::find(w.widget_elements.begin(), w.widget_elements.end(), elt_name) != w.widget_elements.end())
+//         // TODO : add error message
+//         return;
+
+//     // figure row to add element on
+//     int row = w.layout_grid.size() - 1;
+//     if (add_on_new_row || row == -1)
+//         row++;
     
-    // get UIMap
-    UI_elements_map & UIMap = GUI.UIMaps[winID];
-    // add element to widget
-    UIMap.addElement(elt_name, type, &w, row);
+//     // get UIMap
+//     UI_elements_map & UIMap = GUI.UIMaps[winID];
+//     // add element to widget
+//     UIMap.addElement(elt_name, type, &w, row);
 
-    // TODO : process special cases
-    w.layout_grid[row].in_pixels = false;
-    w.layout_grid[row].min_height = 0.25f;
-}
+//     // TODO : process special cases
+//     w.layout_grid[row].in_pixels = false;
+//     w.layout_grid[row].min_height = 0.25f;
+// }
 
 extern std::string skinning_img_path = "";
 extern unsigned int skinning_image_id = 0;
