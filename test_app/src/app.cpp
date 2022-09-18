@@ -55,6 +55,10 @@ unsigned int buttons_count = 1;
 double curr_time = 0.0, prev_time = 0.0;
 unsigned int frames = 0;
 
+extern unsigned int skinning_image_id;
+extern unsigned int si_w;
+extern unsigned int si_h;
+extern unsigned int load_image(const char *filename, bool load_skinning_image);
 
 int main() {
 
@@ -93,6 +97,8 @@ int main() {
     WIDGET & test_widget_h = GUI.getWidget("test widget", winID);
 
     test_widget_h.minimizable = false;
+    test_widget_h.title = false;
+    test_widget_h.movable = false;
     UI_elements_map & UIMap = GUI.UIMaps[winID];
     
     UIMap.addElement("group", UI_ITEMS_LIST, &test_widget_h);
@@ -101,6 +107,8 @@ int main() {
     UIMap.addElement("test button 1", UI_BUTTON, &test_widget_h, to_new_col);
     UIMap["test button 1"].label = "TEST BUTTON";
     UIMap["test button 1"].height = 0.1f;
+    
+    // TODO : set padding and border as % from widget
     UIMap["test button 1"].padding.h = 5.f;
     UIMap["test button 1"].padding.w = 10.f;
     UIMap["test button 1"].border = 1.f;
@@ -111,10 +119,36 @@ int main() {
     UIMap["test button 2"].padding.h = 5.f;
     UIMap["test button 2"].padding.w = 10.f;
 
-    UIMap.addElement("test button 3", UI_BUTTON, &test_widget_h);
+    UIMap.addElement("test text", UI_STRING_TEXT, &test_widget_h, to_new_subrow);
+    UIMap["test text"].label = "This is some text to test layout. This text should be long enough to get wrapped! Also cell height should be sufficient to display it fully.";
+    UIMap["test text"].height = 0.2f;
+    
+    UIMap.addElement("test image 1", UI_IMAGE, &test_widget_h);
+    UIMap["test image 1"].initImage("C:\\Users\\Public\\GobbyIsland\\Sprites\\GoblinSlayer\\World\\leaves_giant.png");
+    test_widget_h.updateRowHeight(test_widget_h.layout_grid.size() - 1, 0.5f);
+
+    UIMap.addElement("test button 3", UI_BUTTON, &test_widget_h, to_new_col);
     UIMap["test button 3"].label = "TEST BUTTON";
     UIMap["test button 3"].height = 0.1f;
     UIMap["test button 3"].rounding = 10.f;
+
+    UIMap.addElement("test image 2", UI_IMAGE, &test_widget_h, to_new_subrow);
+    UIMap["test image 2"].initImage("C:\\Users\\Public\\GobbyIsland\\Sprites\\GoblinSlayer\\World\\leaves_enormous_snow.png");
+    UIMap["test image 2"].height = 0.4f;
+
+    unsigned int skin_tex_id = load_image("C:\\Users\\Public\\GobbyIsland\\Sprites\\magic_bar_3_parts_empty.png", true);
+    region<float> crop;
+    crop.x = 0.f;
+    crop.y = 0.f;
+    crop.w = si_w;
+    crop.h = si_h;
+    test_widget_h.useSkinImage(
+        skinning_image_id, 
+        si_w, 
+        si_h, 
+        crop,
+        background
+    );
 
 	// set initial time to zero
 	glfwSetTime(0.0);

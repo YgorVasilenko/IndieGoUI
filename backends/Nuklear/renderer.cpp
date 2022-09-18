@@ -78,6 +78,11 @@ std::map<std::string, std::map<float, struct nk_font *>> backend_loaded_fonts;
 // texture_iid = vector<sub_images>
 std::map<unsigned int, std::vector<std::pair<struct nk_image, IndieGo::UI::region<float>>>> images;
 
+// data for image, used for skinning
+unsigned int skinning_image_id = 0;
+unsigned int si_w = 0;
+unsigned int si_h = 0;
+
 // Use winID to store window's context. If window destroyed and re-initializes
 // context should be same for respective winID
 std::map<std::string, struct nk_glfw*> glfw_storage;
@@ -729,13 +734,18 @@ void UI_element::callUIfunction(float x, float y, float widget_w, float widget_h
     }
 }
 
-void UI_element::initImage(unsigned int texID, std::string path) {
+extern unsigned int load_image(const char *filename, bool load_skinning_image = false);
+
+void UI_element::initImage(std::string path, int texID) {
     if (type != UI_IMAGE) {
         // TODO : add error message
         return;
     }
-    if (images.find(texID) == images.end()) {
-        // images[texID].push_back(nk_image_id((int)texID));
+
+    if (texID == -1 || images.find(texID) == images.end()) {
+        // load image
+        texID = load_image(path.c_str());
+        Manager::addImage(texID);
     }
     _data.i = texID;
     label = path;
@@ -877,6 +887,21 @@ void WIDGET::callImmediateBackend(UI_elements_map & UIMap){
     nk_end(ctx);
 }
 
+void Manager::addImage(
+    unsigned int texID
+) {
+    region<float> crop;
+    crop.x = 0.f;
+    crop.y = 0.f;
+    crop.w = 0.f;
+    crop.h = 0.f;
+
+
+    images[texID].push_back(
+          std::pair<struct nk_image, region<float>> { nk_image_id(texID), crop }
+    );
+}
+
 void WIDGET::useSkinImage(
 	unsigned int texID,
 	unsigned short w,
@@ -885,9 +910,7 @@ void WIDGET::useSkinImage(
 	IMAGE_SKIN_ELEMENT elt
 ) {
     images[texID].push_back(
-        // std::make_pair<struct nk_image, region<float>>(
           std::pair<struct nk_image, region<float>> { nk_subimage_id(texID, w,h, nk_rect(crop.x, crop.y, crop.w, crop.h)), crop }
-       //  )
     );
     skinned_style.props[elt].first = texID;
     skinned_style.props[elt].second = images[texID].size() - 1;

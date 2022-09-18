@@ -269,7 +269,7 @@ namespace IndieGo {
 			virtual void callUIfunction(float x, float y, float widget_w, float widget_h);
 
 			// this is for image elements
-			virtual void initImage(unsigned int texID, std::string path = "");
+			virtual void initImage(std::string path, int texID = -1);
 
 			// this is for various properties, that have option of 
 			// using image texture
@@ -750,7 +750,7 @@ namespace IndieGo {
 			void char_input(void * window, unsigned int codepoint);
 			void key_input(void * window, unsigned int codepoint, bool pressed = false);
 
-			void initNewMap(const std::string & win_name){
+			void initNewMap(const std::string & win_name) {
 				UI_elements_map map;
 				if ( UIMaps.find(win_name) != UIMaps.end() ){
 					UIMaps.erase(
@@ -761,7 +761,7 @@ namespace IndieGo {
 			};
 
 			// adds new image to global vector of images. Returns index or recently added image
-			// unsigned int addImage(unsigned int texID);
+			static void addImage(unsigned int texID);
 
 			WIDGET & addWidget(WIDGET & new_widget, const std::string & win_name = DEFAULT_WINDOW_NAME) {
 				// can't add widgets for window without map

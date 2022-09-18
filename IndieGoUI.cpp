@@ -1,6 +1,12 @@
 // various functions for working with ui
 #include <IndieGoUI.h>
 
+#include <glad/glad.h>
+#include <GLFW/glfw3.h>
+
+#define STB_IMAGE_IMPLEMENTATION
+#include "stb_image.h"
+
 #if !defined NO_SERIALIZATION !defined NO_UI_SERIALIZATION
 #include <IndieGoUI.pb.h>
 #endif
@@ -82,10 +88,49 @@ void WIDGET_BASE::updateRowHeight(unsigned int row, float newHeight) {
 //     w.layout_grid[row].min_height = 0.25f;
 // }
 
+extern unsigned int skinning_image_id;
+extern unsigned int si_w;
+extern unsigned int si_h;
+
+// helper function lo load image through stbi
+// in other engine parts ImageLoader will do that
+unsigned int load_image(const char *filename, bool load_skinning_image = false) {
+    int x, y, n;
+    unsigned int tex;
+    unsigned char *data = stbi_load(filename, &x, &y, &n, 0);
+    // if (!data) die("[SDL]: failed to load image: %s", filename);
+    if (!data) {
+        std::cout << "[ERROR] failed to load image " << filename << std::endl;
+        return 0;
+    }
+    glGenTextures(1, &tex);
+    glBindTexture(GL_TEXTURE_2D, tex);
+    // glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_NEAREST);
+    // glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR_MIPMAP_NEAREST);
+
+    glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+    glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+    
+    glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+    glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA8, x, y, 0, GL_RGBA, GL_UNSIGNED_BYTE, data);
+    glGenerateMipmap(GL_TEXTURE_2D);
+    stbi_image_free(data);
+    // loadedImages.push_back(tex);
+
+    if (load_skinning_image) {
+        skinning_image_id = tex;
+        si_w = x;
+        si_h = y;
+    }
+    return tex;
+}
+
+
 extern std::string skinning_img_path = "";
-extern unsigned int skinning_image_id = 0;
-extern unsigned int si_w = 0;
-extern unsigned int si_h = 0;
+// extern unsigned int skinning_image_id = 0;
+// extern unsigned int si_w = 0;
+// extern unsigned int si_h = 0;
 
 void Manager::serialize(const std::string & winID, const std::string & path, const std::vector<std::string> & skipWidgets) {
 #if !defined NO_SERIALIZATION !defined NO_UI_SERIALIZATION
