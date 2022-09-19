@@ -56,6 +56,7 @@ target_compile_definitions(
     WIDTH=1920
     HEIGHT=1080
     NO_SERIALIZATION=1
+    UI_FLT_VAL_SCALE=100
 )
 
 set(CMAKE_CXX_FLAGS_DEBUG " /std:c++17 /DEBUG /Zi")

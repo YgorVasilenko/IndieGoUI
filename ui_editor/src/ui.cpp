@@ -11,56 +11,79 @@ using namespace IndieGo::UI;
 
 extern Manager GUI;
 
+
+void updateUIFromLayout(
+    std::string widID, 
+    std::string winID,
+    bool upd_row = false,
+    bool upd_col = false
+) {
+    WIDGET & w = GUI.getWidget(widID, winID);
+    UI_elements_map & UIMap = GUI.UIMaps[winID];
+    ui_string_group & rows_list = *UIMap["rows list"]._data.usgPtr;
+    ui_string_group & cols_list = *UIMap["cols list"]._data.usgPtr;
+
+    if (upd_row) {
+        UIMap["row height"]._data.f = w.layout_grid[ rows_list.selected_element ].min_height * UI_FLT_VAL_SCALE;
+
+        if (upd_col) {
+            UIMap["col width"]._data.f = w.layout_grid[ rows_list.selected_element ].cells[ cols_list.selected_element ].min_width * UI_FLT_VAL_SCALE;
+        }
+    }
+}
+
+void updateLayoutFromUI(
+    std::string widID, 
+    std::string winID,
+    bool upd_row = false,
+    bool upd_col = false
+) {
+    WIDGET & w = GUI.getWidget(widID, winID);
+    UI_elements_map & UIMap = GUI.UIMaps[winID];
+    ui_string_group & rows_list = *UIMap["rows list"]._data.usgPtr;
+    ui_string_group & cols_list = *UIMap["cols list"]._data.usgPtr;
+
+    if (upd_row) {
+        w.updateRowHeight(rows_list.selected_element, UIMap["row height"]._data.f / UI_FLT_VAL_SCALE);
+
+        if (upd_col) {
+            w.updateColWidth(rows_list.selected_element, cols_list.selected_element, UIMap["col width"]._data.f / UI_FLT_VAL_SCALE);
+        }
+    }
+}
+
 void updateElementFromUI(
     std::string elementName, 
-    std::string winID, 
-    bool do_styling
+    std::string winID
 ) {
     UI_elements_map & UIMap = GUI.UIMaps[winID];
     UI_element & e = UIMap[elementName];
 
-    // if (do_styling) {
-    //     e.border = UIMap["border size"]._data.f;
-    //     e.padding.w = UIMap["padding x"]._data.f;
-    //     e.padding.h = UIMap["padding y"]._data.f;
-    //     e.rounding = UIMap["rounding"]._data.f;
+    e.border = UIMap["element border"]._data.f / UI_FLT_VAL_SCALE;
+    e.padding.w = UIMap["element pad x"]._data.f / UI_FLT_VAL_SCALE;
+    e.padding.h = UIMap["element pad y"]._data.f / UI_FLT_VAL_SCALE;
+    e.rounding = UIMap["element rounding"]._data.f / UI_FLT_VAL_SCALE;
+    e.width = UIMap["element width"]._data.f / UI_FLT_VAL_SCALE;
+    e.height = UIMap["element height"]._data.f / UI_FLT_VAL_SCALE;
 
-    //     if (UIMap["use font"]._data.b) {
-    //         ui_string_group& available_fonts_list = *UIMap["available fonts"]._data.usgPtr;
-    //         ui_string_group& font_sizes_list = *UIMap["font sizes"]._data.usgPtr;
-
-    //         if (available_fonts_list.selected_element != -1 && font_sizes_list.selected_element != -1) {
-    //             e.font = available_fonts_list.getSelected();
-    //             e.font_size = std::stof(font_sizes_list.getSelected());
-    //         }
-    //     }
-    // }
-
-    // if (e.type == UI_STRING_TEXT) {
-    //     // modify text in selected text element
-    //     e.label = *UIMap["selected text"]._data.strPtr;
-    // }
+    e.label = *UIMap["elt label"]._data.strPtr;
 }
 
 void updateUIFromElement(
     std::string elementName, 
-    std::string winID, 
-    bool do_styling
+    std::string winID
 ) {
     UI_elements_map & UIMap = GUI.UIMaps[winID];
     UI_element & e = UIMap[elementName];
 
-    // if (do_styling) {
-    //     UIMap["border size"]._data.f = e.border;
-    //     UIMap["padding x"]._data.f = e.padding.w;
-    //     UIMap["padding y"]._data.f = e.padding.h;
-    //     UIMap["rounding"]._data.f = e.rounding;
-    // }
+    UIMap["element border"]._data.f = e.border * UI_FLT_VAL_SCALE;
+    UIMap["element pad x"]._data.f = e.padding.w * UI_FLT_VAL_SCALE;
+    UIMap["element pad y"]._data.f = e.padding.h * UI_FLT_VAL_SCALE;
+    UIMap["element rounding"]._data.f = e.rounding * UI_FLT_VAL_SCALE;
+    UIMap["element width"]._data.f = e.width * UI_FLT_VAL_SCALE;
+    UIMap["element height"]._data.f = e.height * UI_FLT_VAL_SCALE;
 
-    // if (e.type == UI_STRING_TEXT) {
-    //     // modify text in selected text element
-    //     *UIMap["selected text"]._data.strPtr = e.label;
-    // }
+    *UIMap["elt label"]._data.strPtr = e.label;
 }
 
 void updateWidgetFromUI(
@@ -222,6 +245,12 @@ void processAddOptions(std::string winID) {
     if (UIMap["add text"]._data.b) {
         UI_ELEMENT_TYPE t = UI_STRING_TEXT;
         addElement(widgets_list.getSelected(), winID, new_element_name, t);
+        UIMap[new_element_name].label = new_element_name;
+    }
+    if (UIMap["add label"]._data.b) {
+        UI_ELEMENT_TYPE t = UI_STRING_LABEL;
+        addElement(widgets_list.getSelected(), winID, new_element_name, t);
+        UIMap[new_element_name].label = new_element_name;
     }
     if (UIMap["add progress"]._data.b) {
         UI_ELEMENT_TYPE t = UI_PROGRESS;
@@ -231,9 +260,18 @@ void processAddOptions(std::string winID) {
     if (UIMap["add button"]._data.b) {
         UI_ELEMENT_TYPE t = UI_BUTTON;
         addElement(widgets_list.getSelected(), winID, new_element_name, t);
-        // UIMap[new_element_name].modifyable_progress_bar = true; // hard-code for now
         UIMap[new_element_name].label = new_element_name;
     }
+    if (UIMap["add checkbox"]._data.b) {
+        UI_ELEMENT_TYPE t = UI_BOOL;
+        addElement(widgets_list.getSelected(), winID, new_element_name, t);
+        UIMap[new_element_name].label = new_element_name;
+    }
+    // TODO : 
+    // add items list, 
+    // string input field, 
+    // int, uint, float, 
+    // empty space
 };
 
 void checkUIValues(std::string winID) {

@@ -448,10 +448,10 @@ void UI_element::callUIfunction(float x, float y, float space_w, float space_h) 
     nk_layout_space_push(
         ctx, 
         nk_rect(
-            x + padding.w, // left border
-            y + padding.h,
-            space_w * width - (padding.w * 2.f), // right border
-            space_h * height - (padding.h * 2.f)
+            x + space_w * width * padding.w, // left border
+            y + space_h * height * padding.h,
+            space_w * width - (space_w * width * padding.w * 2.f), // right border
+            space_h * height - (space_h * height * padding.h * 2.f)
         )
     );
 

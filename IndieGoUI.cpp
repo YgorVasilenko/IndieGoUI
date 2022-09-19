@@ -19,11 +19,25 @@ extern Manager GUI;
 std::map<std::string, TexData> loaded_textures;
 
 void WIDGET_BASE::updateRowHeight(unsigned int row, float newHeight) {
+    if (!uiMapPtr) 
+        // TODO : print warning
+        return;
 	layout_grid[row].min_height = newHeight;
 	for (auto cell : layout_grid[row].cells) {
 		for (auto elt : cell.elements) {
 			(*uiMapPtr).elements[elt].height = newHeight / cell.elements.size();
 		}
+	}
+}
+
+void WIDGET_BASE::updateColWidth(unsigned int row, unsigned int col, float newWidth) {
+    if (!uiMapPtr) 
+        // TODO : print warning
+        return;
+        
+    layout_grid[row].cells[col].min_width = newWidth;
+	for (auto elt : layout_grid[row].cells[col].elements) {
+		(*uiMapPtr).elements[elt].width = newWidth;
 	}
 }
 

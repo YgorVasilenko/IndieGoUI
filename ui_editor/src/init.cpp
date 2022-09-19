@@ -132,11 +132,11 @@ void initWidgets() {
     UIMap.addElement("cols list", UI_ITEMS_LIST, &e_widget, to_new_col);
     UIMap["cols list"].label = "cols list";
 
-    UIMap.addElement("subrows list", UI_ITEMS_LIST, &e_widget, to_new_col);
-    UIMap["subrows list"].label = "subrows list";
+    // UIMap.addElement("subrows list", UI_ITEMS_LIST, &e_widget, to_new_col);
+    // UIMap["subrows list"].label = "subrows list";
 
     UIMap.addElement("new element name label", UI_STRING_LABEL, &e_widget, to_new_col);
-    UIMap["new element name label"].label = "new element name label";
+    UIMap["new element name label"].label = "new element name:";
 
     UIMap.addElement("new element name", UI_STRING_INPUT, &e_widget, to_new_subrow);
     UIMap["new element name"].label = "new element name";
@@ -191,17 +191,26 @@ void initWidgets() {
 
     UIMap.addElement("push opt", UI_BUTTON, &e_widget, to_new_subrow);
     UIMap["push opt"].label = "push: to new row";
-       
-    UIMap.addElement("selected widget", UI_STRING_LABEL, &e_widget, to_new_col);
+
+    UIMap.addElement("elt label label", UI_STRING_LABEL, &e_widget, to_new_col);
+    UIMap["elt label label"].label = "label:";
+
+    UIMap.addElement("selected widget", UI_STRING_TEXT, &e_widget, to_new_subrow);
     UIMap["selected widget"].label = "selected widget:";
 
     UIMap.addElement("back to widgets", UI_BUTTON, &e_widget, to_new_subrow);
-    e_widget.layout_grid.back().cells[2].min_width = 0.44f;
     UIMap["back to widgets"].label = "back to widgets";
-    UIMap["back to widgets"].height = 0.3f;
-    UIMap["back to widgets"].width = 0.44f;
-    UIMap["back to widgets"].padding.h = 30.f;
-    UIMap["back to widgets"].padding.w = 30.f;
+
+    UIMap.addElement("elt label", UI_STRING_INPUT, &e_widget, to_new_col);
+
+    e_widget.layout_grid.back().cells[2].min_width = 0.22f;
+    UIMap["elt label"].width = 0.2f;
+    UIMap["elt label"].height = 0.15f;
+    UIMap["elt label"].padding.h = 0.1f;
+    // UIMap["back to widgets"].height = 0.3f;
+    // UIMap["back to widgets"].width = 0.44f;
+    // UIMap["back to widgets"].padding.h = 30.f;
+    // UIMap["back to widgets"].padding.w = 30.f;
 
     // TODO : make "updateCellWidth()" method
     e_widget.layout_grid.back().cells[0].min_width = 0.28f;

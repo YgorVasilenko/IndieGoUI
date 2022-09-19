@@ -76,8 +76,12 @@ extern void updateUIFromWidget(std::string widID, std::string winID, bool do_sty
 extern void switchUIscreens(std::string winID);
 
 // element style <-> UI update functions
-extern void updateElementFromUI(std::string elementName, std::string winID, bool do_styling);
-void updateUIFromElement(std::string elementName, std::string winID, bool do_styling);
+extern void updateElementFromUI(std::string elementName, std::string winID);
+void updateUIFromElement(std::string elementName, std::string winID);
+
+// layout <-> UI update functions
+extern void updateUIFromLayout(std::string widID, std::string winID, bool upd_row = false, bool upd_col = false);
+extern void updateLayoutFromUI(std::string widID, std::string winID, bool upd_row = false, bool upd_col = false);
 
 extern void useBackgroundImage(std::string widID, std::string winID, unsigned int texID);
 extern unsigned int load_image(const char *filename, bool load_skinning_image = false);
@@ -170,8 +174,9 @@ int main() {
 
     // listst of data
     ui_string_group & widgets_list = *UIMap["widgets list"]._data.usgPtr;
-    // ui_string_group & elements_list = *UIMap["elements list"]._data.usgPtr;
-    // ui_string_group & rows_list = *UIMap["widget rows"]._data.usgPtr;
+    ui_string_group & elements_list = *UIMap["elements list"]._data.usgPtr;
+    ui_string_group & rows_list = *UIMap["rows list"]._data.usgPtr;
+    ui_string_group & cols_list = *UIMap["cols list"]._data.usgPtr;
     // ui_string_group & skinning_props_list = *UIMap["skinning property"]._data.usgPtr;
     // ui_string_group & style_elements_list = *UIMap["style elements list"]._data.usgPtr;
     // ui_string_group& available_fonts_list = *UIMap["available fonts"]._data.usgPtr;
@@ -185,19 +190,27 @@ int main() {
 	glfwSetTime(0.0);
 
     int prev_selected_widget = -1;
-    // int prev_selected_element = -1;
+    int prev_selected_element = -1;
     // int prev_selected_style_element = -1;
-    // int prev_selected_row = -1;
+    int prev_selected_row = -1;
+    int prev_selected_col = -1;
     // int prev_selected_font_size = -1;
     int width, height;
     while (!glfwWindowShouldClose(screen)) {
         glClearColor(0.2f, 0.3f, 0.3f, 1.0f);
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT | GL_STENCIL_BUFFER_BIT);
 
-        // elements_list.elements.clear();
-        // rows_list.elements.clear();
-        // prev_selected_element = elements_list.selected_element;
-        // prev_selected_row = rows_list.selected_element;
+        prev_selected_element = elements_list.selected_element;
+        elements_list.elements.clear();
+        elements_list.unselect();
+
+        prev_selected_row = rows_list.selected_element;
+        rows_list.elements.clear();
+        rows_list.unselect();
+
+        prev_selected_col = cols_list.selected_element;
+        cols_list.elements.clear();
+        cols_list.unselect();
 
         // if (UIMap["load skin image"]._data.b) {
         //     std::string skinning_img_path = *getPaths().begin();
@@ -289,6 +302,7 @@ int main() {
         }
 
         if (!elements.hidden) {
+            // Widget's elements editng stuff
             if (UIMap["push opt"]._data.b) {
                 if (push_opt == to_new_row) {
                     push_opt = to_new_col;
@@ -302,6 +316,39 @@ int main() {
                 }
             }
             processAddOptions(winID);
+            WIDGET& w = GUI.getWidget( widgets_list.getSelected(), winID );
+
+            // Udate displayed elements list for widget
+            for (auto element : w.widget_elements) {
+                elements_list.elements.push_back(element);
+            }
+            elements_list.selected_element = prev_selected_element;
+            if (elements_list.selected_element != -1) {
+                updateUIFromElement(
+                    elements_list.getSelected(),
+                    winID
+                );
+            }
+
+            // update rows and cols lists
+            for (int i = 0; i < w.layout_grid.size(); i++) {
+                rows_list.elements.push_back(std::to_string(i));
+            }
+            rows_list.selected_element = prev_selected_row;
+            if (rows_list.selected_element != -1) {
+                // cols list depends on selected element from rows list
+                for (int i = 0; i < w.layout_grid[ rows_list.selected_element ].cells.size(); i++) {
+                    cols_list.elements.push_back(std::to_string(i));
+                }
+                cols_list.selected_element = prev_selected_col;
+            }
+
+            updateUIFromLayout(
+                widgets_list.getSelected(), 
+                winID,
+                rows_list.selected_element != -1,
+                cols_list.selected_element != -1
+            );
         }
         // if (UIMap["style edit mode"]._data.b) {
         //     if (style_edit_mode == widget_edit) {
@@ -410,14 +457,21 @@ int main() {
                 }
             }
         }
-        // if (elements_list.selected_element != -1 && prev_selected_element == elements_list.selected_element) {
-        //     updateElementFromUI(
-        //         elements_list.getSelected(),
-        //         winID,
-        //         style_edit_mode == element_edit
-        //     );
-        // }
 
+        if (!elements.hidden) {
+            if (elements_list.selected_element != -1 && prev_selected_element == elements_list.selected_element) {
+                updateElementFromUI(
+                    elements_list.getSelected(),
+                    winID
+                );
+            }
+            updateLayoutFromUI(
+                widgets_list.getSelected(), 
+                winID,
+                rows_list.selected_element != -1 && prev_selected_row == rows_list.selected_element,
+                cols_list.selected_element != -1 && prev_selected_col == cols_list.selected_element
+            );
+        }
         glfwSwapBuffers(screen);
 	    glfwPollEvents();
     }

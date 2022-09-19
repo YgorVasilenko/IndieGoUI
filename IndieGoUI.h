@@ -251,7 +251,7 @@ namespace IndieGo {
 			// special properties, that can be called "common"
 			float border = 1.f; 
 			float rounding = 1.f;
-			region_size<float> padding = { 1.f, 1.f };
+			region_size<float> padding = { 0.01f, 0.01f };
 
 			float font_height = 0.023f;
 			std::string font = "None";
@@ -363,7 +363,7 @@ namespace IndieGo {
 			float font_size = 16.f;
 
 			float border_size = 1.f; 
-			region_size<float> padding = { 1.f, 1.f };
+			region_size<float> padding = { 0.01f, 0.01f };
 			region_size<float> spacing = { 1.f, 1.f };
 
 			// 	layout_grid :
@@ -378,7 +378,9 @@ namespace IndieGo {
 			std::vector<elements_group> elements_groups;
 
 			UI_elements_map* uiMapPtr = NULL;
-			void updateRowHeight(unsigned int row, float newHeight);// {
+			void updateRowHeight(unsigned int row, float newHeight);
+			void updateColWidth(unsigned int row, unsigned int col, float newWidth);
+			// {
 			// 	layout_grid[row].min_height = newHeight;
 			// 	for (auto cell : layout_grid[row].cells) {
 			// 		for (auto elt : cell.elements) {
