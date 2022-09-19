@@ -2,10 +2,10 @@
 #include <glad/glad.h>
 #include <GLFW/glfw3.h>
 
-#define STB_IMAGE_IMPLEMENTATION
-#include "stb_image.h"
+// #define STB_IMAGE_IMPLEMENTATION
+// #include "stb_image.h"
 #include <vector>
-
+#include <list>
 
 using namespace IndieGo::UI;
 
@@ -19,27 +19,27 @@ void updateElementFromUI(
     UI_elements_map & UIMap = GUI.UIMaps[winID];
     UI_element & e = UIMap[elementName];
 
-    if (do_styling) {
-        e.border = UIMap["border size"]._data.f;
-        e.padding.w = UIMap["padding x"]._data.f;
-        e.padding.h = UIMap["padding y"]._data.f;
-        e.rounding = UIMap["rounding"]._data.f;
+    // if (do_styling) {
+    //     e.border = UIMap["border size"]._data.f;
+    //     e.padding.w = UIMap["padding x"]._data.f;
+    //     e.padding.h = UIMap["padding y"]._data.f;
+    //     e.rounding = UIMap["rounding"]._data.f;
 
-        if (UIMap["use font"]._data.b) {
-            ui_string_group& available_fonts_list = *UIMap["available fonts"]._data.usgPtr;
-            ui_string_group& font_sizes_list = *UIMap["font sizes"]._data.usgPtr;
+    //     if (UIMap["use font"]._data.b) {
+    //         ui_string_group& available_fonts_list = *UIMap["available fonts"]._data.usgPtr;
+    //         ui_string_group& font_sizes_list = *UIMap["font sizes"]._data.usgPtr;
 
-            if (available_fonts_list.selected_element != -1 && font_sizes_list.selected_element != -1) {
-                e.font = available_fonts_list.getSelected();
-                e.font_size = std::stof(font_sizes_list.getSelected());
-            }
-        }
-    }
+    //         if (available_fonts_list.selected_element != -1 && font_sizes_list.selected_element != -1) {
+    //             e.font = available_fonts_list.getSelected();
+    //             e.font_size = std::stof(font_sizes_list.getSelected());
+    //         }
+    //     }
+    // }
 
-    if (e.type == UI_STRING_TEXT) {
-        // modify text in selected text element
-        e.label = *UIMap["selected text"]._data.strPtr;
-    }
+    // if (e.type == UI_STRING_TEXT) {
+    //     // modify text in selected text element
+    //     e.label = *UIMap["selected text"]._data.strPtr;
+    // }
 }
 
 void updateUIFromElement(
@@ -50,17 +50,17 @@ void updateUIFromElement(
     UI_elements_map & UIMap = GUI.UIMaps[winID];
     UI_element & e = UIMap[elementName];
 
-    if (do_styling) {
-        UIMap["border size"]._data.f = e.border;
-        UIMap["padding x"]._data.f = e.padding.w;
-        UIMap["padding y"]._data.f = e.padding.h;
-        UIMap["rounding"]._data.f = e.rounding;
-    }
+    // if (do_styling) {
+    //     UIMap["border size"]._data.f = e.border;
+    //     UIMap["padding x"]._data.f = e.padding.w;
+    //     UIMap["padding y"]._data.f = e.padding.h;
+    //     UIMap["rounding"]._data.f = e.rounding;
+    // }
 
-    if (e.type == UI_STRING_TEXT) {
-        // modify text in selected text element
-        *UIMap["selected text"]._data.strPtr = e.label;
-    }
+    // if (e.type == UI_STRING_TEXT) {
+    //     // modify text in selected text element
+    //     *UIMap["selected text"]._data.strPtr = e.label;
+    // }
 }
 
 void updateWidgetFromUI(
@@ -73,9 +73,9 @@ void updateWidgetFromUI(
     WIDGET & w = GUI.getWidget(widID, winID);
     UI_elements_map & UIMap = GUI.UIMaps[winID];
 
-    if (layout_row != -1) {
-        w.layout_grid[layout_row].min_height = UIMap["row height"]._data.f;
-    }
+    // if (layout_row != -1) {
+    //     w.layout_grid[layout_row].min_height = UIMap["row height"]._data.f;
+    // }
 
     // location
     w.screen_region.x = UIMap["location x"]._data.f / 100.f;
@@ -92,30 +92,58 @@ void updateWidgetFromUI(
     w.scalable = UIMap["scalable"]._data.b;
     w.movable = UIMap["movable"]._data.b;
 
-    if (do_styling) {
-        // "general" elements update
-        w.border_size = UIMap["border size"]._data.f;
-        w.padding.w = UIMap["padding x"]._data.f;
-        w.padding.h = UIMap["padding y"]._data.f;
-        w.spacing.w = UIMap["spacing x"]._data.f;
-        w.spacing.h = UIMap["spacing y"]._data.f;
-        
-        if (UIMap["use font"]._data.b) {
-            ui_string_group& available_fonts_list = *UIMap["available fonts"]._data.usgPtr;
-            ui_string_group& font_sizes_list = *UIMap["font sizes"]._data.usgPtr;
+    w.border_size = UIMap["widget border"]._data.f;
 
-            if (available_fonts_list.selected_element != -1 && font_sizes_list.selected_element != -1) {
-                w.font = available_fonts_list.getSelected();
-                w.font_size = std::stof(font_sizes_list.getSelected());
-            }
+    // if (do_styling) {
+    //     // "general" elements update
+    //     w.border_size = UIMap["border size"]._data.f;
+    //     w.padding.w = UIMap["padding x"]._data.f;
+    //     w.padding.h = UIMap["padding y"]._data.f;
+    //     w.spacing.w = UIMap["spacing x"]._data.f;
+    //     w.spacing.h = UIMap["spacing y"]._data.f;
+        
+    //     if (UIMap["use font"]._data.b) {
+    //         ui_string_group& available_fonts_list = *UIMap["available fonts"]._data.usgPtr;
+    //         ui_string_group& font_sizes_list = *UIMap["font sizes"]._data.usgPtr;
+
+    //         if (available_fonts_list.selected_element != -1 && font_sizes_list.selected_element != -1) {
+    //             w.font = available_fonts_list.getSelected();
+    //             w.font_size = std::stof(font_sizes_list.getSelected());
+    //         }
+    //     }
+    // }
+
+    // if (styling_element != -1) {
+    //     w.style.elements[styling_element].r = UIMap["Red property color"]._data.ui;
+    //     w.style.elements[styling_element].g = UIMap["Green property color"]._data.ui;
+    //     w.style.elements[styling_element].b = UIMap["Blue property color"]._data.ui;
+    //     w.style.elements[styling_element].a = UIMap["Alpha property color"]._data.ui;
+    // }
+}
+
+void switchUIscreens(std::string winID) {
+    WIDGET & widgets = GUI.getWidget("UI creator", winID);
+    WIDGET & elements = GUI.getWidget("Edit elements", winID);
+    UI_elements_map & UIMap = GUI.UIMaps[winID];
+    ui_string_group & widgets_list = *UIMap["widgets list"]._data.usgPtr;
+
+    if (!widgets.hidden) { // if "main widgets" visible
+        if (widgets_list.selected_element != -1 && UIMap["edit widget elements"]._data.b) {
+            widgets.hidden = true;
+            elements.hidden = false;
+            elements.screen_region = widgets.screen_region;
+            UIMap["edit widget elements"]._data.b = false;
+            UIMap["selected widget"].label = "selected widget: " + widgets_list.getSelected();
         }
     }
-
-    if (styling_element != -1) {
-        w.style.elements[styling_element].r = UIMap["Red property color"]._data.ui;
-        w.style.elements[styling_element].g = UIMap["Green property color"]._data.ui;
-        w.style.elements[styling_element].b = UIMap["Blue property color"]._data.ui;
-        w.style.elements[styling_element].a = UIMap["Alpha property color"]._data.ui;
+    
+    if (!elements.hidden) {
+        if (UIMap["back to widgets"]._data.b) {
+            widgets.hidden = false;
+            elements.hidden = true;
+            widgets.screen_region = elements.screen_region;
+            UIMap["back to widgets"]._data.b = false;
+        }
     }
 }
 
@@ -129,9 +157,9 @@ void updateUIFromWidget(
     WIDGET & w = GUI.getWidget(widID, winID);
     UI_elements_map & UIMap = GUI.UIMaps[winID];
 
-    if (layout_row != -1) {
-        UIMap["row height"]._data.f = w.layout_grid[layout_row].min_height;
-    }
+    // if (layout_row != -1) {
+    //     UIMap["row height"]._data.f = w.layout_grid[layout_row].min_height;
+    // }
 
     // location
     UIMap["location x"]._data.f = w.screen_region.x * 100.f;
@@ -148,21 +176,65 @@ void updateUIFromWidget(
     UIMap["scalable"]._data.b = w.scalable;
     UIMap["movable"]._data.b = w.movable;
 
-    if (do_styling) {
-        if (styling_element != -1) {
-            UIMap["Red property color"]._data.ui = w.style.elements[styling_element].r;
-            UIMap["Green property color"]._data.ui = w.style.elements[styling_element].g;
-            UIMap["Blue property color"]._data.ui = w.style.elements[styling_element].b;
-            UIMap["Alpha property color"]._data.ui = w.style.elements[styling_element].a;
-        }
+    UIMap["widget border"]._data.f = w.border_size;
+    // if (do_styling) {
+    //     if (styling_element != -1) {
+    //         UIMap["Red property color"]._data.ui = w.style.elements[styling_element].r;
+    //         UIMap["Green property color"]._data.ui = w.style.elements[styling_element].g;
+    //         UIMap["Blue property color"]._data.ui = w.style.elements[styling_element].b;
+    //         UIMap["Alpha property color"]._data.ui = w.style.elements[styling_element].a;
+    //     }
 
-        UIMap["border size"]._data.f = w.border_size;
-        UIMap["padding x"]._data.f = w.padding.w;
-        UIMap["padding y"]._data.f = w.padding.h;
-        UIMap["spacing x"]._data.f = w.spacing.w;
-        UIMap["spacing y"]._data.f = w.spacing.h;
-    }
+    //     UIMap["border size"]._data.f = w.border_size;
+    //     UIMap["padding x"]._data.f = w.padding.w;
+    //     UIMap["padding y"]._data.f = w.padding.h;
+    //     UIMap["spacing x"]._data.f = w.spacing.w;
+    //     UIMap["spacing y"]._data.f = w.spacing.h;
+    // }
 }
+
+extern void addElement(
+    std::string widID, 
+    std::string winID, 
+    std::string elt_name, 
+    UI_ELEMENT_TYPE type
+);
+extern std::list<std::string> getPaths();
+
+void processAddOptions(std::string winID) {
+    UI_elements_map & UIMap = GUI.UIMaps[winID];
+    ui_string_group & widgets_list = *UIMap["widgets list"]._data.usgPtr;
+    
+    std::string new_element_name = *UIMap["new element name"]._data.strPtr;
+    if (new_element_name.size() == 0) return;
+
+    if ( UIMap["add image"]._data.b ) {
+        UI_ELEMENT_TYPE t = UI_IMAGE;
+        std::list<std::string> paths = getPaths();
+        if (paths.size() > 0) {
+            std::string img_path = *paths.begin();
+            TexData td = Manager::load_image(img_path.c_str());
+            addElement(widgets_list.getSelected(), winID, new_element_name, t);
+            region<float> crop = { 0.f, 0.f, 1.f, 1.f };
+            UIMap[new_element_name].initImage(td.texID, td.w, td.h, crop);
+        }
+    }
+    if (UIMap["add text"]._data.b) {
+        UI_ELEMENT_TYPE t = UI_STRING_TEXT;
+        addElement(widgets_list.getSelected(), winID, new_element_name, t);
+    }
+    if (UIMap["add progress"]._data.b) {
+        UI_ELEMENT_TYPE t = UI_PROGRESS;
+        addElement(widgets_list.getSelected(), winID, new_element_name, t);
+        UIMap[new_element_name].modifyable_progress_bar = true; // hard-code for now
+    }
+    if (UIMap["add button"]._data.b) {
+        UI_ELEMENT_TYPE t = UI_BUTTON;
+        addElement(widgets_list.getSelected(), winID, new_element_name, t);
+        // UIMap[new_element_name].modifyable_progress_bar = true; // hard-code for now
+        UIMap[new_element_name].label = new_element_name;
+    }
+};
 
 void checkUIValues(std::string winID) {
     UI_elements_map& UIMap = GUI.UIMaps[winID];
@@ -192,55 +264,55 @@ void checkUIValues(std::string winID) {
         UIMap["size y"]._data.f = 0.f;
 
 
-    if (UIMap["Red property color"]._data.ui > 255)
-        UIMap["Red property color"]._data.ui = 255;
+    // if (UIMap["Red property color"]._data.ui > 255)
+    //     UIMap["Red property color"]._data.ui = 255;
 
-    if (UIMap["Green property color"]._data.ui > 255)
-        UIMap["Green property color"]._data.ui = 255;
+    // if (UIMap["Green property color"]._data.ui > 255)
+    //     UIMap["Green property color"]._data.ui = 255;
     
 
-    if (UIMap["Blue property color"]._data.ui > 255)
-        UIMap["Blue property color"]._data.ui = 255;
+    // if (UIMap["Blue property color"]._data.ui > 255)
+    //     UIMap["Blue property color"]._data.ui = 255;
     
-    if (UIMap["Alpha property color"]._data.ui > 255)
-        UIMap["Alpha property color"]._data.ui = 255;
+    // if (UIMap["Alpha property color"]._data.ui > 255)
+    //     UIMap["Alpha property color"]._data.ui = 255;
 }
 
-std::vector<unsigned int> loadedImages;
+// std::vector<unsigned int> loadedImages;
 
-extern unsigned int skinning_image_id;
-extern unsigned int si_w;
-extern unsigned int si_h;
+// extern unsigned int skinning_image_id;
+// extern unsigned int si_w;
+// extern unsigned int si_h;
 
 // helper function lo load image through stbi
 // in other engine parts ImageLoader will do that
-unsigned int load_image(const char *filename, bool load_skinning_image = false) {
-    int x,y,n;
-    unsigned int tex;
-    unsigned char *data = stbi_load(filename, &x, &y, &n, 0);
-    // if (!data) die("[SDL]: failed to load image: %s", filename);
-    if (!data) {
-        std::cout << "[ERROR] failed to load image " << filename << std::endl;
-        return 0;
-    }
-    glGenTextures(1, &tex);
-    glBindTexture(GL_TEXTURE_2D, tex);
-    glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_NEAREST);
-    glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR_MIPMAP_NEAREST);
-    glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
-    glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
-    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA8, x, y, 0, GL_RGBA, GL_UNSIGNED_BYTE, data);
-    glGenerateMipmap(GL_TEXTURE_2D);
-    stbi_image_free(data);
-    loadedImages.push_back(tex);
+// unsigned int load_image(const char *filename, bool load_skinning_image = false) {
+//     int x,y,n;
+//     unsigned int tex;
+//     unsigned char *data = stbi_load(filename, &x, &y, &n, 0);
+//     // if (!data) die("[SDL]: failed to load image: %s", filename);
+//     if (!data) {
+//         std::cout << "[ERROR] failed to load image " << filename << std::endl;
+//         return 0;
+//     }
+//     glGenTextures(1, &tex);
+//     glBindTexture(GL_TEXTURE_2D, tex);
+//     glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_NEAREST);
+//     glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR_MIPMAP_NEAREST);
+//     glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+//     glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+//     glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA8, x, y, 0, GL_RGBA, GL_UNSIGNED_BYTE, data);
+//     glGenerateMipmap(GL_TEXTURE_2D);
+//     stbi_image_free(data);
+//     loadedImages.push_back(tex);
 
-    if (load_skinning_image) {
-        skinning_image_id = tex;
-        si_w = x;
-        si_h = y;
-    }
-    return tex;
-}
+//     if (load_skinning_image) {
+//         skinning_image_id = tex;
+//         si_w = x;
+//         si_h = y;
+//     }
+//     return tex;
+// }
 
 std::string getColorPropName(COLOR_ELEMENTS prop) {
     if (prop == UI_COLOR_TEXT) return "TEXT";

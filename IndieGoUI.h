@@ -294,8 +294,8 @@ namespace IndieGo {
 
 		struct grid_row {
 			std::vector<row_cell> cells;
-			float min_height = 23.f;
-			bool in_pixels = true;
+			float min_height = 0.1f;
+			bool in_pixels = false;
 			row_cell & operator[](unsigned int idx) {
 				return cells[idx];
 			}
@@ -614,7 +614,7 @@ namespace IndieGo {
 			void callWidgetUI(UI_elements_map & UIMap) {
 				bool curr_group_folded = false;
 				std::vector<elements_group>::iterator curr_group;
-				float cell_indent = 0.f; // get cell indent + for each drawn row top-to-bottom
+				// float cell_indent = 0.f; // get cell indent + for each drawn row top-to-bottom
 				for (auto row : layout_grid) {
 					if (row.cells.size() == 0) continue;
 					// make sure min_height 
@@ -623,10 +623,10 @@ namespace IndieGo {
 					for (auto cell : row.cells) {
 						float subcell_indent = 0.f; // get subcell indent for each drawn element in same cell top-to-bottom
 						for (auto elt : cell.elements){
-							if (UIMap.elements.find(elt) != UIMap.elements.end()) {
+							if (UIMap.elements.find(elt) != UIMap.elements.end() && !UIMap.elements[elt].hidden) {
 								UIMap.elements[elt].callUIfunction(
 									row_indent,
-									cell_indent + subcell_indent,
+									subcell_indent,//cell_indent + subcell_indent,
 									screen_size.w * screen_region.w, 
 									screen_size.h * screen_region.h
 								);
@@ -637,7 +637,7 @@ namespace IndieGo {
 						}
 						row_indent += cell.min_width * screen_size.w * screen_region.w;
 					}
-					cell_indent += row.min_height * screen_size.h * screen_region.h;
+					// cell_indent += row.min_height * screen_size.h * screen_region.h;
 					endRow();
 					// std::string & first_elt = row.cells[0];
 					// // check, if first element in row starts group - in such case don't allocate row

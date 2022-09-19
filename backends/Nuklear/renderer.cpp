@@ -435,9 +435,7 @@ void textToString(std::string & str) {
 //
 //-------------------------------------------------------
 
-void UI_element::callUIfunction(float x, float y, float widget_w, float widget_h) {
-    /*if (custom_style)
-        nk_style_from_table(ctx, (struct nk_color*)style.elements);*/
+void UI_element::callUIfunction(float x, float y, float space_w, float space_h) {
 
     if (font != "None") {
         nk_style_set_font(
@@ -452,12 +450,10 @@ void UI_element::callUIfunction(float x, float y, float widget_w, float widget_h
         nk_rect(
             x + padding.w, // left border
             y + padding.h,
-            widget_w * width - (padding.w * 2.f), // right border
-            widget_h * height - (padding.h * 2.f)
+            space_w * width - (padding.w * 2.f), // right border
+            space_h * height - (padding.h * 2.f)
         )
     );
-    
-    // nk_layout_row_dynamic(ctx, widget_h * height, 1);
 
     std::string full_name;
     nk_bool nk_val;
@@ -510,7 +506,7 @@ void UI_element::callUIfunction(float x, float y, float widget_w, float widget_h
         // TODO : add skinning
         ctx->style.button.border = border;
         ctx->style.button.rounding = rounding;
-        ctx->style.button.padding = nk_vec2(padding.h, padding.w);
+        // ctx->style.button.padding = nk_vec2(padding.h, padding.w);
 
         /*struct nk_key_selector ks;
         if (hovered_by_keys) {
@@ -525,6 +521,10 @@ void UI_element::callUIfunction(float x, float y, float widget_w, float widget_h
         if (selected_by_keys)
             _data.b = true;
         return;
+    }
+
+    if (type == UI_EMPTY) {
+        nk_spacing(ctx, 1);
     }
 
     if (type == UI_BUTTON_SWITCH) {
@@ -1086,12 +1086,9 @@ void Manager::loadFont(std::string path, const std::string & winID, float font_s
     std::string project_dir = "";
     if (pd) {
         project_dir = pd;
-        //if (path.find(project_dir) != std::string::npos)
         loaded_fonts[fs::path(path).stem().string()].path = path.substr(
             project_dir.size(), path.size()
         );
-        /*else
-            loaded_fonts[fs::path(path).stem().string()].path = path;*/
     } else {
         loaded_fonts[ fs::path(path).stem().string() ].path = path;
     }
@@ -1108,7 +1105,6 @@ void Manager::loadFont(std::string path, const std::string & winID, float font_s
 
     nk_glfw3_device_upload_atlas(glfw_storage[winID], image, w, h);
     nk_font_atlas_end(&atlas, nk_handle_id((int)glfw_storage[winID]->ogl.font_tex), &glfw_storage[winID]->ogl.null);
-    // nk_init_default(&glfw_storage[winID]->ctx, &backend_loaded_fonts[font_name][font_size]->handle);
     if (main_font == "None") {
         main_font = font_name;
         main_font_size = font_size;
