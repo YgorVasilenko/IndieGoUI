@@ -21,7 +21,6 @@ void initWidgets() {
     
     // control elements to create ui
     UI_elements_map & UIMap = GUI.UIMaps[winID];
-    // unsigned int current_line = 0;
 
     UIMap.addElement("widgets list", UI_ITEMS_LIST, &c_widget);
     UIMap["widgets list"].label = "widgets list";
@@ -54,9 +53,8 @@ void initWidgets() {
     // switch to edit widget's elements
     UIMap.addElement("edit widget elements", UI_BUTTON, &c_widget, to_new_subrow);
     UIMap["edit widget elements"].label = "edit widget elements";
-    // UIMap["edit widget elements"].hidden = true;
-    UIMap.addElement("fonts skins and styling", UI_BUTTON, &c_widget, to_new_subrow);
-    UIMap["fonts skins and styling"].label = "fonts, skins and styling";
+    UIMap.addElement("skins and styling", UI_BUTTON, &c_widget, to_new_subrow);
+    UIMap["skins and styling"].label = "skins and styling";
 
     UIMap.addElement("new widget name", UI_STRING_INPUT, &c_widget, to_new_col);
     UIMap.addElement("space fill", UI_EMPTY, &c_widget, to_new_subrow);
@@ -93,8 +91,8 @@ void initWidgets() {
     UIMap["add new widget"].height = 0.07f;
     UIMap["edit widget elements"].width = 0.48f;
     UIMap["edit widget elements"].height = 0.07f;
-    UIMap["fonts skins and styling"].width = 0.48f;
-    UIMap["fonts skins and styling"].height = 0.07f;
+    UIMap["skins and styling"].width = 0.48f;
+    UIMap["skins and styling"].height = 0.07f;
 
     // third column and it's elements
     c_widget.layout_grid[0].cells[2].min_width = 0.2f;
@@ -127,20 +125,14 @@ void initWidgets() {
     UIMap["elements list"].label = "elements list";    
 
     UIMap.addElement("rows list", UI_ITEMS_LIST, &e_widget, to_new_col);
-    UIMap["rows list"].label = "rows list";
+    UIMap["rows list"].label = "rows";
 
     UIMap.addElement("cols list", UI_ITEMS_LIST, &e_widget, to_new_col);
-    UIMap["cols list"].label = "cols list";
-
-    // UIMap.addElement("subrows list", UI_ITEMS_LIST, &e_widget, to_new_col);
-    // UIMap["subrows list"].label = "subrows list";
+    UIMap["cols list"].label = "cols";
 
     UIMap.addElement("new element name label", UI_STRING_LABEL, &e_widget, to_new_col);
     UIMap["new element name label"].label = "new element name:";
-
-    UIMap.addElement("new element name", UI_STRING_INPUT, &e_widget, to_new_subrow);
-    UIMap["new element name"].label = "new element name";
-
+    
     UIMap.addElement("add button", UI_BUTTON, &e_widget, to_new_subrow);
     UIMap["add button"].label = "add button";
 
@@ -150,6 +142,15 @@ void initWidgets() {
     UIMap.addElement("add checkbox", UI_BUTTON, &e_widget, to_new_subrow);
     UIMap["add checkbox"].label = "add checkbox";
 
+    UIMap.addElement("add input", UI_BUTTON, &e_widget, to_new_subrow);
+    UIMap["add input"].label = "add input";
+
+    UIMap.addElement("add int", UI_BUTTON, &e_widget, to_new_subrow);
+    UIMap["add int"].label = "add int";
+
+    UIMap.addElement("new element name", UI_STRING_INPUT, &e_widget, to_new_col);
+    UIMap["new element name"].label = "new element name";
+
     UIMap.addElement("add image", UI_BUTTON, &e_widget, to_new_subrow);
     UIMap["add image"].label = "add image";
 
@@ -158,7 +159,19 @@ void initWidgets() {
 
     UIMap.addElement("add text", UI_BUTTON, &e_widget, to_new_subrow);
     UIMap["add text"].label = "add text";
+    
+    UIMap.addElement("add empty", UI_BUTTON, &e_widget, to_new_subrow);
+    UIMap["add empty"].label = "add empty";
+
+    UIMap.addElement("add float", UI_BUTTON, &e_widget, to_new_subrow);
+    UIMap["add float"].label = "add float";
+
     e_widget.updateRowHeight(e_widget.layout_grid.size() - 1, 0.5f);
+
+    e_widget.updateColWidth(e_widget.layout_grid.size() - 1, 1, 0.1f);
+    e_widget.updateColWidth(e_widget.layout_grid.size() - 1, 2, 0.1f);
+    e_widget.updateColWidth(e_widget.layout_grid.size() - 1, 3, 0.29f);
+    e_widget.updateColWidth(e_widget.layout_grid.size() - 1, 4, 0.29f);
 
     // width and height of specific element
     UIMap.addElement("element width", UI_FLOAT, &e_widget);
@@ -203,16 +216,16 @@ void initWidgets() {
 
     UIMap.addElement("elt label", UI_STRING_INPUT, &e_widget, to_new_col);
 
+    UIMap.addElement("skins", UI_BUTTON, &e_widget, to_new_subrow);
+    UIMap["skins"].label = "skins";
+
     e_widget.layout_grid.back().cells[2].min_width = 0.22f;
     UIMap["elt label"].width = 0.2f;
-    UIMap["elt label"].height = 0.15f;
-    UIMap["elt label"].padding.h = 0.1f;
-    // UIMap["back to widgets"].height = 0.3f;
-    // UIMap["back to widgets"].width = 0.44f;
-    // UIMap["back to widgets"].padding.h = 30.f;
-    // UIMap["back to widgets"].padding.w = 30.f;
+    UIMap["elt label"].height = 0.09f;
 
-    // TODO : make "updateCellWidth()" method
+    UIMap["skins"].width = 0.2f;
+    UIMap["skins"].height = 0.09f;
+
     e_widget.layout_grid.back().cells[0].min_width = 0.28f;
     UIMap["elements list"].height = 0.5f;
     UIMap["element width"].height = 0.06f;
@@ -242,183 +255,172 @@ void initWidgets() {
     UIMap["push opt"].width = 0.28f;
     UIMap["push opt"].height = 0.06f;
 
-    // UIMap["rows list"].height = 0.5f;
-    // UIMap["cols list"].height = 0.5f;
-    // UIMap["subrows list"].height = 0.5f;
-    UIMap["new element name"].height = 0.09f;
+    WIDGET widgets_style;
+    widgets_style.screen_region.x = (float)(WIDTH / 4) / ((float)WIDTH);
+    widgets_style.screen_region.y = ((float)HEIGHT / 4) / ((float)HEIGHT);
+    widgets_style.screen_region.w = 0.3f;
+    widgets_style.screen_region.h = 0.3f;
+    widgets_style.name = "Widgets style";
 
-    // UIMap.addElement("save widgets", UI_BUTTON, &c_widget, current_line);
-    // UIMap["save widgets"].label = "save widgets";
-    // UIMap.addElement("load widgets", UI_BUTTON, &c_widget, current_line++);
-    // UIMap["load widgets"].label = "load widgets";
+    WIDGET & ws_widget = GUI.addWidget(widgets_style, winID);
+    ws_widget.hidden = true;
 
-    // // Row with lists
-    // // ---------------------------------------------------------------------
-    // UIMap.addElement("skinning property", UI_ITEMS_LIST, &c_widget, current_line++);
-    // UIMap["skinning property"].label = "skinning property";
-    // c_widget.layout_grid[current_line - 1].min_height = 150.f;
-    // // ---------------------------------------------------------------------
+    // skinning:
+    // load skin image, skinning elements list, crop settings, apply skin
+    UIMap.addElement("w load skin image", UI_BUTTON, &ws_widget);
+    UIMap["w load skin image"].label = "load skin image";
 
-    // UIMap.addElement("hide widget", UI_BOOL, &c_widget, current_line);
-    // UIMap["hide widget"].label = "hide widget";
+    UIMap.addElement("w skin image path", UI_STRING_TEXT, &ws_widget, to_new_subrow);
+    UIMap["w skin image path"].label = "skin image path: None";
 
-    // UIMap.addElement("new element name label", UI_STRING_LABEL, &c_widget, current_line);
-    // UIMap["new element name label"].label = "new element name:";
+    UIMap.addElement("w crop x", UI_FLOAT, &ws_widget, to_new_subrow);
+    UIMap["w crop x"].label = "crop x";
+    UIMap.addElement("w crop y", UI_FLOAT, &ws_widget, to_new_subrow);
+    UIMap["w crop y"].label = "crop y";
+    UIMap.addElement("w crop w", UI_FLOAT, &ws_widget, to_new_subrow);
+    UIMap["w crop w"].label = "crop w";
+    UIMap.addElement("w crop h", UI_FLOAT, &ws_widget, to_new_subrow);
+    UIMap["w crop h"].label = "crop h";
 
-    // UIMap.addElement("new element name", UI_STRING_INPUT, &c_widget, current_line);
-    // UIMap["new element name"].label = "new element name";
+    UIMap.addElement("w apply skin", UI_BUTTON, &ws_widget, to_new_subrow);
+    UIMap["w apply skin"].label = "apply skin";
 
-    // UIMap.addElement("row height", UI_FLOAT, &c_widget, current_line++);
-    // UIMap["row height"].label = "row height";
+    UIMap.addElement("w skinning properties", UI_ITEMS_LIST, &ws_widget, to_new_col);
+    UIMap["w skinning properties"].label = "skinning properties";
 
-    // UIMap.addElement("add image", UI_BUTTON, &c_widget, current_line);
-    // UIMap["add image"].label = "add image";
-
-    // UIMap.addElement("add text", UI_BUTTON, &c_widget, current_line);
-    // UIMap["add text"].label = "add text";
-
-    // UIMap.addElement("add button", UI_BUTTON, &c_widget, current_line);
-    // UIMap["add button"].label = "add button";
-
-    // UIMap.addElement("add slider", UI_BUTTON, &c_widget, current_line);
-    // UIMap["add slider"].label = "add slider";
-
-    // UIMap.addElement("add items list", UI_BUTTON, &c_widget, current_line);
-    // UIMap["add items list"].label = "add items list";
-
-    // UIMap.addElement("to same row", UI_BOOL, &c_widget, current_line++);
-    // UIMap["to same row"].label = "to same row";
-    // UIMap["to same row"]._data.b = true;
-
-    // // text editor field
-    // UIMap.addElement("selected text label", UI_STRING_LABEL, &c_widget, current_line);
-    // UIMap["selected text label"].label = "edit selected text:";
-
-    // UIMap.addElement("selected text", UI_STRING_INPUT, &c_widget, current_line++);
-
-    // // skinning fields:
-    // UIMap.addElement("loaded skin image label", UI_STRING_LABEL, &c_widget, current_line);
-    // UIMap["loaded skin image label"].label = "loaded skin image:";
-
-    // UIMap.addElement("loaded skin image", UI_STRING_LABEL, &c_widget, current_line);
-    // UIMap["loaded skin image"].label = "No image";
-
-    // UIMap.addElement("load skin image", UI_BUTTON, &c_widget, current_line);
-    // UIMap["load skin image"].label = "load skin image";
-
-    // UIMap.addElement("add skin", UI_BUTTON, &c_widget, current_line++);
-    // UIMap["add skin"].label = "add skin";
-
-    // UIMap.addElement("img x", UI_FLOAT, &c_widget, current_line);
-    // UIMap["img x"].label = "img x";
-    // UIMap["img x"]._data.f = 0.f;
-    // UIMap.addElement("img y", UI_FLOAT, &c_widget, current_line);
-    // UIMap["img y"].label = "img y";
-    // UIMap["img y"]._data.f = 0.f;
-    // UIMap.addElement("img size x", UI_FLOAT, &c_widget, current_line);
-    // UIMap["img size x"].label = "img size x";
-    // UIMap["img size x"]._data.f = 100.f;
-    // UIMap.addElement("img size y", UI_FLOAT, &c_widget, current_line++);
-    // UIMap["img size y"].label = "img size y";
-    // UIMap["img size y"]._data.f = 100.f;
+    ui_string_group & w_skinning_props_list = *UIMap["w skinning properties"]._data.usgPtr;
+    for (int i = background; i != hover_active; i++) {
+        w_skinning_props_list.elements.push_back(
+            getSkinPropName((IMAGE_SKIN_ELEMENT)i)
+        );
+    }
+    ws_widget.updateRowHeight(0, 0.4f);
     
-    // // border and rounding
-    // UIMap.addElement("border size", UI_FLOAT, &c_widget, current_line);
-    // UIMap["border size"].label = "border size";
-    // UIMap["border size"]._data.f = 1.f; // TODO : check it's non-zero
+    // styling:
+    // elements list for style update, rgba values
+    UIMap.addElement("styling elements", UI_ITEMS_LIST, &ws_widget);
+    UIMap["styling elements"].label = "styling elements";
 
-    // UIMap.addElement("rounding", UI_FLOAT, &c_widget, current_line);
-    // UIMap["rounding"].label = "rounding";
-    // UIMap["rounding"]._data.f = 1.f; // TODO : check it's non-zero
+    ui_string_group & style_elements_list = *UIMap["styling elements"]._data.usgPtr;
 
-    // // padding 
-    // UIMap.addElement("padding x", UI_FLOAT, &c_widget, current_line);
-    // UIMap["padding x"].label = "padding x";
-    // UIMap["padding x"]._data.f = 1.f; // TODO : check it's non-zero
+    for (int i = UI_COLOR_TEXT; i != UI_COLOR_TAB_HEADER; i++) {
+        style_elements_list.elements.push_back(
+            getColorPropName((COLOR_ELEMENTS)i)
+        );
+    }
 
-    // UIMap.addElement("padding y", UI_FLOAT, &c_widget, current_line++);
-    // UIMap["padding y"].label = "padding y";
-    // UIMap["padding y"]._data.f = 1.f; // TODO : check it's non-zero
-
-    // // widget's spacing
-    // UIMap.addElement("spacing x", UI_FLOAT, &c_widget, current_line);
-    // UIMap["spacing x"].label = "spacing x";
-    // UIMap["spacing x"]._data.f = 1.f; // TODO : check it's non-zero
-
-    // UIMap.addElement("spacing y", UI_FLOAT, &c_widget, current_line++);
-    // UIMap["spacing y"].label = "spacing y";
-    // UIMap["spacing y"]._data.f = 1.f; // TODO : check it's non-zero
-
-    // // font loading elements
-    // // "load font" button
-    // UIMap.addElement("load font", UI_BUTTON, &c_widget, current_line);
-    // UIMap["load font"].label = "load font";
-
-    // // use selected font for currently selected element/widget
-    // UIMap.addElement("use font", UI_BUTTON, &c_widget, current_line);
-    // UIMap["use font"].label = "use font";
-
-    // // font, currently used by element
-    // UIMap.addElement("current font", UI_STRING_LABEL, &c_widget, current_line);
-    // UIMap["current font"].label = "current font";
-
-    // // "native" size of font (one, that it was loaded with)
-    // UIMap.addElement("load font size", UI_FLOAT, &c_widget, current_line);
-    // UIMap["load font size"].label = "load size";
-    // UIMap["load font size"]._data.f = 16.f;
-
-    // // displayed size of font, setted programmaticaly. Loses quality on bigger values
-    // UIMap.addElement("programmed font size", UI_FLOAT, &c_widget, current_line++);
-    // UIMap["programmed font size"].label = "programmed size";
-
-    // // list of all available fonts
-    // UIMap.addElement("available fonts", UI_ITEMS_LIST, &c_widget, current_line);
-    // UIMap["available fonts"].label = "available fonts";
-
-    // UIMap.addElement("font sizes", UI_ITEMS_LIST, &c_widget, current_line++);
-    // UIMap["font sizes"].label = "font sizes";
-    // c_widget.layout_grid[current_line - 1].min_height = 150.f;
-
-    // ui_string_group & skinning_props_list = *UIMap["skinning property"]._data.usgPtr;
-    // for (int i = background; i != hover_active; i++) {
-    //     skinning_props_list.elements.push_back(
-    //         getSkinPropName((IMAGE_SKIN_ELEMENT)i)
-    //     );
-    // }
-
-    // Styling widget
-    // initialize styling widget
-    // styling_widget.screen_region.x = 0.82f;
-    // styling_widget.screen_region.y = 0.05f;
-    // styling_widget.screen_region.w = 0.18f;
-    // styling_widget.screen_region.h = 0.83f;
-    // styling_widget.name = "style editor";
-    // current_line = 0;
-
-    // WIDGET & s_widget = GUI.addWidget(styling_widget, winID);
-
-    // UIMap.addElement("style edit mode", UI_BUTTON, &s_widget, current_line++);
-    // UIMap["style edit mode"].label = "edit mode: widget";
-
-    // UIMap.addElement("style elements list", UI_ITEMS_LIST, &s_widget, current_line++);
-    // UIMap["style elements list"].label = "edit element styling";
-    // UIMap["style elements list"].text_align = LEFT;
+    UIMap.addElement("red", UI_UINT, &ws_widget, to_new_col);
+    UIMap["red"].label = "red";
+    UIMap.addElement("green", UI_UINT, &ws_widget, to_new_subrow);
+    UIMap["green"].label = "green";
+    UIMap.addElement("blue", UI_UINT, &ws_widget, to_new_subrow);
+    UIMap["blue"].label = "blue";
+    UIMap.addElement("alpha", UI_UINT, &ws_widget, to_new_subrow);
+    UIMap["alpha"].label = "alpha";
     
-    // s_widget.layout_grid[current_line - 1].min_height = 693.f;
-    // ui_string_group & style_elements_list = *UIMap["style elements list"]._data.usgPtr;
+    UIMap.addElement("to widgets from style", UI_BUTTON, &ws_widget, to_new_subrow);
+    UIMap["to widgets from style"].label = "back to widgets";
 
-    // for (int i = UI_COLOR_TEXT; i != UI_COLOR_TAB_HEADER; i++) {
-    //     style_elements_list.elements.push_back(
-    //         getColorPropName((COLOR_ELEMENTS)i)
-    //     );
-    // }
+    ws_widget.updateRowHeight(1, 0.4f);
+
+    UIMap["red"].height = 0.05f;
+    UIMap["green"].height = 0.05f;
+    UIMap["blue"].height = 0.05f;
+    UIMap["alpha"].height = 0.05f;
+    UIMap["to widgets from style"].height = 0.05f;
     
-    // UIMap.addElement("Red property color", UI_UINT, &s_widget, current_line++);
-    // UIMap["Red property color"].label = "Red";
-    // UIMap.addElement("Green property color", UI_UINT, &s_widget, current_line++);
-    // UIMap["Green property color"].label = "Green";
-    // UIMap.addElement("Blue property color", UI_UINT, &s_widget, current_line++);
-    // UIMap["Blue property color"].label = "Blue";
-    // UIMap.addElement("Alpha property color", UI_UINT, &s_widget, current_line++);
-    // UIMap["Alpha property color"].label = "Alpha";
+    WIDGET elements_style;
+    elements_style.screen_region.x = (float)(WIDTH / 4) / ((float)WIDTH);
+    elements_style.screen_region.y = ((float)HEIGHT / 4) / ((float)HEIGHT);
+    elements_style.screen_region.w = 0.3f;
+    elements_style.screen_region.h = 0.3f;
+    elements_style.name = "Elements style";
+
+    WIDGET & es_widget = GUI.addWidget(elements_style, winID);
+    es_widget.hidden = true;
+
+    // skinning:
+    // load skin image, skinning elements list, crop settings, apply skin
+    UIMap.addElement("e load skin image", UI_BUTTON, &es_widget);
+    UIMap["e load skin image"].label = "load skin image";
+
+    UIMap.addElement("e skin image path", UI_STRING_TEXT, &es_widget, to_new_subrow);
+    UIMap["e skin image path"].label = "skin image path: None";
+
+    UIMap.addElement("e crop x", UI_FLOAT, &es_widget, to_new_subrow);
+    UIMap["e crop x"].label = "crop x";
+    UIMap.addElement("e crop y", UI_FLOAT, &es_widget, to_new_subrow);
+    UIMap["e crop y"].label = "crop y";
+    UIMap.addElement("e crop w", UI_FLOAT, &es_widget, to_new_subrow);
+    UIMap["e crop w"].label = "crop w";
+    UIMap.addElement("e crop h", UI_FLOAT, &es_widget, to_new_subrow);
+    UIMap["e crop h"].label = "crop h";
+
+    UIMap.addElement("e apply skin", UI_BUTTON, &es_widget, to_new_subrow);
+    UIMap["e apply skin"].label = "apply skin";
+    
+    UIMap.addElement("to elements from style", UI_BUTTON, &es_widget, to_new_subrow);
+    UIMap["to elements from style"].label = "back to elements";
+
+    UIMap.addElement("e selected element", UI_STRING_LABEL, &es_widget, to_new_subrow);
+    UIMap["e selected element"].label = "selected element: None";
+
+    UIMap.addElement("e skinning properties", UI_ITEMS_LIST, &es_widget, to_new_col);
+    UIMap["e skinning properties"].label = "skinning properties";
+    ui_string_group & e_skinning_props_list = *UIMap["e skinning properties"]._data.usgPtr;
+    for (int i = background; i != hover_active; i++) {
+        e_skinning_props_list.elements.push_back(
+            getSkinPropName((IMAGE_SKIN_ELEMENT)i)
+        );
+    }
+
+    es_widget.updateRowHeight(0, 0.8f);
+
+    // custom sizes for elements
+    UIMap["e load skin image"].height = 0.05f;
+    UIMap["e skin image path"].height = 0.15f;
+    UIMap["e crop x"].height = 0.05f;
+    UIMap["e crop y"].height = 0.05f;
+    UIMap["e crop w"].height = 0.05f;
+    UIMap["e crop h"].height = 0.05f;
+
+    UIMap["e apply skin"].height = 0.05f;
+    UIMap["to elements from style"].height = 0.05f;
+    UIMap["e selected element"].height = 0.15f;
+
+    WIDGET fonts;
+    fonts.screen_region.x = 0.7f;
+    fonts.screen_region.y = 0.f;
+    fonts.screen_region.w = 0.2f;
+    fonts.screen_region.h = 0.2f;
+    fonts.name = "Fonts";
+
+    WIDGET & fonts_widget = GUI.addWidget(fonts, winID);
+    // Fonts:
+    // load button, fonts list, sizes per font list, size on load spec
+    UIMap.addElement("load font", UI_BUTTON, &fonts_widget);
+    UIMap["load font"].label = "load font";
+    
+    UIMap.addElement("load size", UI_FLOAT, &fonts_widget, to_new_subrow);
+    UIMap["load size"].label = "load size";
+    
+    UIMap.addElement("selected for font update", UI_STRING_TEXT, &fonts_widget, to_new_subrow);
+    UIMap["selected for font update"].label = "selected: None";
+
+    UIMap.addElement("apply font", UI_BUTTON, &fonts_widget, to_new_subrow);
+    UIMap["apply font"].label = "apply font";
+
+    UIMap.addElement("loaded fonts", UI_ITEMS_LIST, &fonts_widget, to_new_col);
+    UIMap["loaded fonts"].label = "loaded fonts";
+
+    UIMap.addElement("font sizes", UI_ITEMS_LIST, &fonts_widget, to_new_col);
+    UIMap["font sizes"].label = "font sizes";
+    fonts_widget.updateRowHeight(0, 0.8f);
+    fonts_widget.updateColWidth(0, 0, 0.37f);
+    fonts_widget.updateColWidth(0, 1, 0.3f);
+    fonts_widget.updateColWidth(0, 2, 0.3f);
+
+    UIMap["load font"].height = 0.1f;
+    UIMap["load size"].height = 0.1f;
+    UIMap["apply font"].height = 0.1f;
 }

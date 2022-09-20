@@ -90,8 +90,7 @@ void updateWidgetFromUI(
     std::string widID, 
     std::string winID, 
     bool do_styling,
-    int styling_element,
-    int layout_row
+    int styling_element
 ) {
     WIDGET & w = GUI.getWidget(widID, winID);
     UI_elements_map & UIMap = GUI.UIMaps[winID];
@@ -118,13 +117,6 @@ void updateWidgetFromUI(
     w.border_size = UIMap["widget border"]._data.f;
 
     // if (do_styling) {
-    //     // "general" elements update
-    //     w.border_size = UIMap["border size"]._data.f;
-    //     w.padding.w = UIMap["padding x"]._data.f;
-    //     w.padding.h = UIMap["padding y"]._data.f;
-    //     w.spacing.w = UIMap["spacing x"]._data.f;
-    //     w.spacing.h = UIMap["spacing y"]._data.f;
-        
     //     if (UIMap["use font"]._data.b) {
     //         ui_string_group& available_fonts_list = *UIMap["available fonts"]._data.usgPtr;
     //         ui_string_group& font_sizes_list = *UIMap["font sizes"]._data.usgPtr;
@@ -146,17 +138,27 @@ void updateWidgetFromUI(
 
 void switchUIscreens(std::string winID) {
     WIDGET & widgets = GUI.getWidget("UI creator", winID);
+    WIDGET & widgets_style = GUI.getWidget("Widgets style", winID);
+
     WIDGET & elements = GUI.getWidget("Edit elements", winID);
+    WIDGET & elements_style = GUI.getWidget("Elements style", winID);
     UI_elements_map & UIMap = GUI.UIMaps[winID];
     ui_string_group & widgets_list = *UIMap["widgets list"]._data.usgPtr;
 
     if (!widgets.hidden) { // if "main widgets" visible
-        if (widgets_list.selected_element != -1 && UIMap["edit widget elements"]._data.b) {
-            widgets.hidden = true;
-            elements.hidden = false;
-            elements.screen_region = widgets.screen_region;
-            UIMap["edit widget elements"]._data.b = false;
-            UIMap["selected widget"].label = "selected widget: " + widgets_list.getSelected();
+        if (widgets_list.selected_element != -1) {
+            if(UIMap["edit widget elements"]._data.b) {
+                widgets.hidden = true;
+                elements.hidden = false;
+                elements.screen_region = widgets.screen_region;
+                UIMap["edit widget elements"]._data.b = false;
+                UIMap["selected widget"].label = "selected widget: " + widgets_list.getSelected();
+            } else if (UIMap["skins and styling"]._data.b) {
+                widgets.hidden = true;
+                widgets_style.hidden = false;
+                widgets_style.screen_region = widgets.screen_region;
+                UIMap["skins and styling"]._data.b = false;
+            }
         }
     }
     
@@ -166,6 +168,11 @@ void switchUIscreens(std::string winID) {
             elements.hidden = true;
             widgets.screen_region = elements.screen_region;
             UIMap["back to widgets"]._data.b = false;
+        } else if (UIMap["skins"]._data.b) {
+            elements.hidden = true;
+            elements_style.hidden = false;
+            elements_style.screen_region = elements.screen_region;
+            UIMap["skins"]._data.b = false;
         }
     }
 }
@@ -174,15 +181,10 @@ void updateUIFromWidget(
     std::string widID, 
     std::string winID, 
     bool do_styling,
-    int styling_element,
-    int layout_row
+    int styling_element
 ) {
     WIDGET & w = GUI.getWidget(widID, winID);
     UI_elements_map & UIMap = GUI.UIMaps[winID];
-
-    // if (layout_row != -1) {
-    //     UIMap["row height"]._data.f = w.layout_grid[layout_row].min_height;
-    // }
 
     // location
     UIMap["location x"]._data.f = w.screen_region.x * 100.f;
@@ -207,12 +209,6 @@ void updateUIFromWidget(
     //         UIMap["Blue property color"]._data.ui = w.style.elements[styling_element].b;
     //         UIMap["Alpha property color"]._data.ui = w.style.elements[styling_element].a;
     //     }
-
-    //     UIMap["border size"]._data.f = w.border_size;
-    //     UIMap["padding x"]._data.f = w.padding.w;
-    //     UIMap["padding y"]._data.f = w.padding.h;
-    //     UIMap["spacing x"]._data.f = w.spacing.w;
-    //     UIMap["spacing y"]._data.f = w.spacing.h;
     // }
 }
 

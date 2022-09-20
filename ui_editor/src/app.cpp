@@ -70,8 +70,8 @@ extern void createNewWidget(
 extern void checkUIValues(std::string winID);
 
 // widgest style <-> UI update functions
-extern void updateWidgetFromUI(std::string widID, std::string winID, bool do_styling, int styling_element, int layout_row);
-extern void updateUIFromWidget(std::string widID, std::string winID, bool do_styling, int styling_element, int layout_row);
+extern void updateWidgetFromUI(std::string widID, std::string winID, bool do_styling, int styling_element);
+extern void updateUIFromWidget(std::string widID, std::string winID, bool do_styling, int styling_element);
 
 extern void switchUIscreens(std::string winID);
 
@@ -245,56 +245,12 @@ int main() {
                 }
             }
             if (widgets_list.selected_element != -1) {
-                // UIMap["edit widget elements"].hidden = false;
-                // WIDGET& w = GUI.getWidget( widgets_list.getSelected(), winID );
-                //     if ( UIMap["add image"]._data.b ) {
-                //         UI_ELEMENT_TYPE t = UI_IMAGE;
-                //         std::list<std::string> paths = getPaths();
-                //         if (paths.size() > 0) {
-                //             std::string img_path = *paths.begin();
-                //             unsigned int texID = load_image(img_path.c_str());
-                //             addElement(widgets_list.getSelected(), winID, *UIMap["new element name"]._data.strPtr, t, !UIMap["to same row"]._data.b);
-                //             UIMap[*UIMap["new element name"]._data.strPtr].initImage(texID, img_path);
-                //         }
-                //     }
-                //     if (UIMap["add text"]._data.b) {
-                //         UI_ELEMENT_TYPE t = UI_STRING_TEXT;
-                //         addElement(widgets_list.getSelected(), winID, *UIMap["new element name"]._data.strPtr, t, !UIMap["to same row"]._data.b);
-                //     }
-                //     if (UIMap["add slider"]._data.b) {
-                //         UI_ELEMENT_TYPE t = UI_PROGRESS;
-                //         addElement(widgets_list.getSelected(), winID, *UIMap["new element name"]._data.strPtr, t, !UIMap["to same row"]._data.b);
-                //         UIMap[*UIMap["new element name"]._data.strPtr].modifyable_progress_bar = true; // hard-code for now
-                //     }
-
-                //     for (auto element : w.widget_elements) {
-                //         elements_list.elements.push_back(element);
-                //     }
-                //     if (prev_selected_element < elements_list.elements.size()) {
-                //         elements_list.selected_element = prev_selected_element;
-                //     }
-                //     if (elements_list.selected_element != -1) {
-                //         updateUIFromElement(
-                //             elements_list.getSelected(),
-                //             winID,
-                //             style_edit_mode == element_edit
-                //         );
-                //     }
-
-                //     for (int i = 0; i < w.layout_grid.size(); i++) {
-                //         rows_list.elements.push_back(std::to_string(i));
-                //     }
-                //     if (prev_selected_row < rows_list.elements.size()) {
-                //         rows_list.selected_element = prev_selected_row;
-                //     }
                 updateUIFromWidget(
                     widgets_list.getSelected(),
                     winID,
                     style_edit_mode == widget_edit,
-                    -1,
                     -1
                     // style_elements_list.selected_element,
-                    // rows_list.selected_element
                 );
             } /*else {
                 UIMap["edit widget elements"].hidden = true;
@@ -439,21 +395,9 @@ int main() {
                         widgets_list.getSelected(), 
                         winID, 
                         style_edit_mode == widget_edit, 
-                        -1,
                         -1
                         // style_elements_list.selected_element == prev_selected_style_element ? style_elements_list.selected_element : -1,
-                        // rows_list.selected_element == prev_selected_row ? rows_list.selected_element : -1
                     );
-                    // WIDGET& w = GUI.getWidget(widgets_list.getSelected(), winID);
-                    // if (skinning_props_list.selected_element != -1) {
-                    //     if (UIMap["add skin"]._data.b) {
-                    //         if (style_edit_mode == widget_edit) {
-                    //             useSkin(w, winID);
-                    //         } else {
-                    //             useSkin(UIMap[elements_list.getSelected()], winID);
-                    //         }
-                    //     }
-                    // }
                 }
             }
         }
