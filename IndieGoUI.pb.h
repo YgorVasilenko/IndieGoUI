@@ -51,6 +51,9 @@ extern ElementDefaultTypeInternal _Element_default_instance_;
 class Font;
 struct FontDefaultTypeInternal;
 extern FontDefaultTypeInternal _Font_default_instance_;
+class LayoutRow;
+struct LayoutRowDefaultTypeInternal;
+extern LayoutRowDefaultTypeInternal _LayoutRow_default_instance_;
 class SerializedUI;
 struct SerializedUIDefaultTypeInternal;
 extern SerializedUIDefaultTypeInternal _SerializedUI_default_instance_;
@@ -79,6 +82,7 @@ extern region_sizeDefaultTypeInternal _region_size_default_instance_;
 PROTOBUF_NAMESPACE_OPEN
 template<> ::ui_serialization::Element* Arena::CreateMaybeMessage<::ui_serialization::Element>(Arena*);
 template<> ::ui_serialization::Font* Arena::CreateMaybeMessage<::ui_serialization::Font>(Arena*);
+template<> ::ui_serialization::LayoutRow* Arena::CreateMaybeMessage<::ui_serialization::LayoutRow>(Arena*);
 template<> ::ui_serialization::SerializedUI* Arena::CreateMaybeMessage<::ui_serialization::SerializedUI>(Arena*);
 template<> ::ui_serialization::SkinImage* Arena::CreateMaybeMessage<::ui_serialization::SkinImage>(Arena*);
 template<> ::ui_serialization::SkinnedProperty* Arena::CreateMaybeMessage<::ui_serialization::SkinnedProperty>(Arena*);
@@ -1118,6 +1122,178 @@ class SkinnedProperty final :
 };
 // -------------------------------------------------------------------
 
+class LayoutRow final :
+    public ::PROTOBUF_NAMESPACE_ID::Message /* @@protoc_insertion_point(class_definition:ui_serialization.LayoutRow) */ {
+ public:
+  inline LayoutRow() : LayoutRow(nullptr) {}
+  ~LayoutRow() override;
+  explicit PROTOBUF_CONSTEXPR LayoutRow(::PROTOBUF_NAMESPACE_ID::internal::ConstantInitialized);
+
+  LayoutRow(const LayoutRow& from);
+  LayoutRow(LayoutRow&& from) noexcept
+    : LayoutRow() {
+    *this = ::std::move(from);
+  }
+
+  inline LayoutRow& operator=(const LayoutRow& from) {
+    CopyFrom(from);
+    return *this;
+  }
+  inline LayoutRow& operator=(LayoutRow&& from) noexcept {
+    if (this == &from) return *this;
+    if (GetOwningArena() == from.GetOwningArena()
+  #ifdef PROTOBUF_FORCE_COPY_IN_MOVE
+        && GetOwningArena() != nullptr
+  #endif  // !PROTOBUF_FORCE_COPY_IN_MOVE
+    ) {
+      InternalSwap(&from);
+    } else {
+      CopyFrom(from);
+    }
+    return *this;
+  }
+
+  static const ::PROTOBUF_NAMESPACE_ID::Descriptor* descriptor() {
+    return GetDescriptor();
+  }
+  static const ::PROTOBUF_NAMESPACE_ID::Descriptor* GetDescriptor() {
+    return default_instance().GetMetadata().descriptor;
+  }
+  static const ::PROTOBUF_NAMESPACE_ID::Reflection* GetReflection() {
+    return default_instance().GetMetadata().reflection;
+  }
+  static const LayoutRow& default_instance() {
+    return *internal_default_instance();
+  }
+  static inline const LayoutRow* internal_default_instance() {
+    return reinterpret_cast<const LayoutRow*>(
+               &_LayoutRow_default_instance_);
+  }
+  static constexpr int kIndexInFileMessages =
+    6;
+
+  friend void swap(LayoutRow& a, LayoutRow& b) {
+    a.Swap(&b);
+  }
+  inline void Swap(LayoutRow* other) {
+    if (other == this) return;
+  #ifdef PROTOBUF_FORCE_COPY_IN_SWAP
+    if (GetOwningArena() != nullptr &&
+        GetOwningArena() == other->GetOwningArena()) {
+   #else  // PROTOBUF_FORCE_COPY_IN_SWAP
+    if (GetOwningArena() == other->GetOwningArena()) {
+  #endif  // !PROTOBUF_FORCE_COPY_IN_SWAP
+      InternalSwap(other);
+    } else {
+      ::PROTOBUF_NAMESPACE_ID::internal::GenericSwap(this, other);
+    }
+  }
+  void UnsafeArenaSwap(LayoutRow* other) {
+    if (other == this) return;
+    GOOGLE_DCHECK(GetOwningArena() == other->GetOwningArena());
+    InternalSwap(other);
+  }
+
+  // implements Message ----------------------------------------------
+
+  LayoutRow* New(::PROTOBUF_NAMESPACE_ID::Arena* arena = nullptr) const final {
+    return CreateMaybeMessage<LayoutRow>(arena);
+  }
+  using ::PROTOBUF_NAMESPACE_ID::Message::CopyFrom;
+  void CopyFrom(const LayoutRow& from);
+  using ::PROTOBUF_NAMESPACE_ID::Message::MergeFrom;
+  void MergeFrom( const LayoutRow& from) {
+    LayoutRow::MergeImpl(*this, from);
+  }
+  private:
+  static void MergeImpl(::PROTOBUF_NAMESPACE_ID::Message& to_msg, const ::PROTOBUF_NAMESPACE_ID::Message& from_msg);
+  public:
+  PROTOBUF_ATTRIBUTE_REINITIALIZES void Clear() final;
+  bool IsInitialized() const final;
+
+  size_t ByteSizeLong() const final;
+  const char* _InternalParse(const char* ptr, ::PROTOBUF_NAMESPACE_ID::internal::ParseContext* ctx) final;
+  uint8_t* _InternalSerialize(
+      uint8_t* target, ::PROTOBUF_NAMESPACE_ID::io::EpsCopyOutputStream* stream) const final;
+  int GetCachedSize() const final { return _impl_._cached_size_.Get(); }
+
+  private:
+  void SharedCtor(::PROTOBUF_NAMESPACE_ID::Arena* arena, bool is_message_owned);
+  void SharedDtor();
+  void SetCachedSize(int size) const final;
+  void InternalSwap(LayoutRow* other);
+
+  private:
+  friend class ::PROTOBUF_NAMESPACE_ID::internal::AnyMetadata;
+  static ::PROTOBUF_NAMESPACE_ID::StringPiece FullMessageName() {
+    return "ui_serialization.LayoutRow";
+  }
+  protected:
+  explicit LayoutRow(::PROTOBUF_NAMESPACE_ID::Arena* arena,
+                       bool is_message_owned = false);
+  public:
+
+  static const ClassData _class_data_;
+  const ::PROTOBUF_NAMESPACE_ID::Message::ClassData*GetClassData() const final;
+
+  ::PROTOBUF_NAMESPACE_ID::Metadata GetMetadata() const final;
+
+  // nested types ----------------------------------------------------
+
+  // accessors -------------------------------------------------------
+
+  enum : int {
+    kColsWidthsFieldNumber = 2,
+    kHeightFieldNumber = 1,
+  };
+  // repeated float cols_widths = 2;
+  int cols_widths_size() const;
+  private:
+  int _internal_cols_widths_size() const;
+  public:
+  void clear_cols_widths();
+  private:
+  float _internal_cols_widths(int index) const;
+  const ::PROTOBUF_NAMESPACE_ID::RepeatedField< float >&
+      _internal_cols_widths() const;
+  void _internal_add_cols_widths(float value);
+  ::PROTOBUF_NAMESPACE_ID::RepeatedField< float >*
+      _internal_mutable_cols_widths();
+  public:
+  float cols_widths(int index) const;
+  void set_cols_widths(int index, float value);
+  void add_cols_widths(float value);
+  const ::PROTOBUF_NAMESPACE_ID::RepeatedField< float >&
+      cols_widths() const;
+  ::PROTOBUF_NAMESPACE_ID::RepeatedField< float >*
+      mutable_cols_widths();
+
+  // float height = 1;
+  void clear_height();
+  float height() const;
+  void set_height(float value);
+  private:
+  float _internal_height() const;
+  void _internal_set_height(float value);
+  public:
+
+  // @@protoc_insertion_point(class_scope:ui_serialization.LayoutRow)
+ private:
+  class _Internal;
+
+  template <typename T> friend class ::PROTOBUF_NAMESPACE_ID::Arena::InternalHelper;
+  typedef void InternalArenaConstructable_;
+  typedef void DestructorSkippable_;
+  struct Impl_ {
+    ::PROTOBUF_NAMESPACE_ID::RepeatedField< float > cols_widths_;
+    float height_;
+    mutable ::PROTOBUF_NAMESPACE_ID::internal::CachedSize _cached_size_;
+  };
+  union { Impl_ _impl_; };
+  friend struct ::TableStruct_IndieGoUI_2eproto;
+};
+// -------------------------------------------------------------------
+
 class WidgetBase final :
     public ::PROTOBUF_NAMESPACE_ID::Message /* @@protoc_insertion_point(class_definition:ui_serialization.WidgetBase) */ {
  public:
@@ -1166,7 +1342,7 @@ class WidgetBase final :
                &_WidgetBase_default_instance_);
   }
   static constexpr int kIndexInFileMessages =
-    6;
+    7;
 
   friend void swap(WidgetBase& a, WidgetBase& b) {
     a.Swap(&b);
@@ -1239,7 +1415,7 @@ class WidgetBase final :
   // accessors -------------------------------------------------------
 
   enum : int {
-    kRowsHeightsFieldNumber = 12,
+    kRowsFieldNumber = 12,
     kSkinnedPropsFieldNumber = 13,
     kStyledPropsFieldNumber = 14,
     kNameFieldNumber = 1,
@@ -1254,27 +1430,23 @@ class WidgetBase final :
     kMovableFieldNumber = 7,
     kBorderSizeFieldNumber = 9,
   };
-  // repeated float rows_heights = 12;
-  int rows_heights_size() const;
+  // repeated .ui_serialization.LayoutRow rows = 12;
+  int rows_size() const;
   private:
-  int _internal_rows_heights_size() const;
+  int _internal_rows_size() const;
   public:
-  void clear_rows_heights();
+  void clear_rows();
+  ::ui_serialization::LayoutRow* mutable_rows(int index);
+  ::PROTOBUF_NAMESPACE_ID::RepeatedPtrField< ::ui_serialization::LayoutRow >*
+      mutable_rows();
   private:
-  float _internal_rows_heights(int index) const;
-  const ::PROTOBUF_NAMESPACE_ID::RepeatedField< float >&
-      _internal_rows_heights() const;
-  void _internal_add_rows_heights(float value);
-  ::PROTOBUF_NAMESPACE_ID::RepeatedField< float >*
-      _internal_mutable_rows_heights();
+  const ::ui_serialization::LayoutRow& _internal_rows(int index) const;
+  ::ui_serialization::LayoutRow* _internal_add_rows();
   public:
-  float rows_heights(int index) const;
-  void set_rows_heights(int index, float value);
-  void add_rows_heights(float value);
-  const ::PROTOBUF_NAMESPACE_ID::RepeatedField< float >&
-      rows_heights() const;
-  ::PROTOBUF_NAMESPACE_ID::RepeatedField< float >*
-      mutable_rows_heights();
+  const ::ui_serialization::LayoutRow& rows(int index) const;
+  ::ui_serialization::LayoutRow* add_rows();
+  const ::PROTOBUF_NAMESPACE_ID::RepeatedPtrField< ::ui_serialization::LayoutRow >&
+      rows() const;
 
   // repeated .ui_serialization.SkinnedProperty skinned_props = 13;
   int skinned_props_size() const;
@@ -1460,7 +1632,7 @@ class WidgetBase final :
   typedef void InternalArenaConstructable_;
   typedef void DestructorSkippable_;
   struct Impl_ {
-    ::PROTOBUF_NAMESPACE_ID::RepeatedField< float > rows_heights_;
+    ::PROTOBUF_NAMESPACE_ID::RepeatedPtrField< ::ui_serialization::LayoutRow > rows_;
     ::PROTOBUF_NAMESPACE_ID::RepeatedPtrField< ::ui_serialization::SkinnedProperty > skinned_props_;
     ::PROTOBUF_NAMESPACE_ID::RepeatedPtrField< ::ui_serialization::StyleColor > styled_props_;
     ::PROTOBUF_NAMESPACE_ID::internal::ArenaStringPtr name_;
@@ -1529,7 +1701,7 @@ class Element final :
                &_Element_default_instance_);
   }
   static constexpr int kIndexInFileMessages =
-    7;
+    8;
 
   friend void swap(Element& a, Element& b) {
     a.Swap(&b);
@@ -1610,10 +1782,12 @@ class Element final :
     kFontFieldNumber = 5,
     kPaddingFieldNumber = 8,
     kTypeFieldNumber = 3,
-    kAddOnNewRowFieldNumber = 4,
+    kEltPushOptFieldNumber = 4,
     kBorderFieldNumber = 6,
     kRoundingFieldNumber = 7,
     kTextAlignFieldNumber = 12,
+    kWidthFieldNumber = 13,
+    kHeightFieldNumber = 14,
   };
   // repeated .ui_serialization.SkinnedProperty skinned_props = 9;
   int skinned_props_size() const;
@@ -1738,13 +1912,13 @@ class Element final :
   void _internal_set_type(uint32_t value);
   public:
 
-  // bool add_on_new_row = 4;
-  void clear_add_on_new_row();
-  bool add_on_new_row() const;
-  void set_add_on_new_row(bool value);
+  // uint32 elt_push_opt = 4;
+  void clear_elt_push_opt();
+  uint32_t elt_push_opt() const;
+  void set_elt_push_opt(uint32_t value);
   private:
-  bool _internal_add_on_new_row() const;
-  void _internal_set_add_on_new_row(bool value);
+  uint32_t _internal_elt_push_opt() const;
+  void _internal_set_elt_push_opt(uint32_t value);
   public:
 
   // float border = 6;
@@ -1774,6 +1948,24 @@ class Element final :
   void _internal_set_text_align(uint32_t value);
   public:
 
+  // float width = 13;
+  void clear_width();
+  float width() const;
+  void set_width(float value);
+  private:
+  float _internal_width() const;
+  void _internal_set_width(float value);
+  public:
+
+  // float height = 14;
+  void clear_height();
+  float height() const;
+  void set_height(float value);
+  private:
+  float _internal_height() const;
+  void _internal_set_height(float value);
+  public:
+
   // @@protoc_insertion_point(class_scope:ui_serialization.Element)
  private:
   class _Internal;
@@ -1790,10 +1982,12 @@ class Element final :
     ::ui_serialization::Font* font_;
     ::ui_serialization::region_size* padding_;
     uint32_t type_;
-    bool add_on_new_row_;
+    uint32_t elt_push_opt_;
     float border_;
     float rounding_;
     uint32_t text_align_;
+    float width_;
+    float height_;
     mutable ::PROTOBUF_NAMESPACE_ID::internal::CachedSize _cached_size_;
   };
   union { Impl_ _impl_; };
@@ -1849,7 +2043,7 @@ class Widget final :
                &_Widget_default_instance_);
   }
   static constexpr int kIndexInFileMessages =
-    8;
+    9;
 
   friend void swap(Widget& a, Widget& b) {
     a.Swap(&b);
@@ -2026,7 +2220,7 @@ class SerializedUI final :
                &_SerializedUI_default_instance_);
   }
   static constexpr int kIndexInFileMessages =
-    9;
+    10;
 
   friend void swap(SerializedUI& a, SerializedUI& b) {
     a.Swap(&b);
@@ -2706,6 +2900,77 @@ inline void SkinnedProperty::set_prop_type(uint32_t value) {
 
 // -------------------------------------------------------------------
 
+// LayoutRow
+
+// float height = 1;
+inline void LayoutRow::clear_height() {
+  _impl_.height_ = 0;
+}
+inline float LayoutRow::_internal_height() const {
+  return _impl_.height_;
+}
+inline float LayoutRow::height() const {
+  // @@protoc_insertion_point(field_get:ui_serialization.LayoutRow.height)
+  return _internal_height();
+}
+inline void LayoutRow::_internal_set_height(float value) {
+  
+  _impl_.height_ = value;
+}
+inline void LayoutRow::set_height(float value) {
+  _internal_set_height(value);
+  // @@protoc_insertion_point(field_set:ui_serialization.LayoutRow.height)
+}
+
+// repeated float cols_widths = 2;
+inline int LayoutRow::_internal_cols_widths_size() const {
+  return _impl_.cols_widths_.size();
+}
+inline int LayoutRow::cols_widths_size() const {
+  return _internal_cols_widths_size();
+}
+inline void LayoutRow::clear_cols_widths() {
+  _impl_.cols_widths_.Clear();
+}
+inline float LayoutRow::_internal_cols_widths(int index) const {
+  return _impl_.cols_widths_.Get(index);
+}
+inline float LayoutRow::cols_widths(int index) const {
+  // @@protoc_insertion_point(field_get:ui_serialization.LayoutRow.cols_widths)
+  return _internal_cols_widths(index);
+}
+inline void LayoutRow::set_cols_widths(int index, float value) {
+  _impl_.cols_widths_.Set(index, value);
+  // @@protoc_insertion_point(field_set:ui_serialization.LayoutRow.cols_widths)
+}
+inline void LayoutRow::_internal_add_cols_widths(float value) {
+  _impl_.cols_widths_.Add(value);
+}
+inline void LayoutRow::add_cols_widths(float value) {
+  _internal_add_cols_widths(value);
+  // @@protoc_insertion_point(field_add:ui_serialization.LayoutRow.cols_widths)
+}
+inline const ::PROTOBUF_NAMESPACE_ID::RepeatedField< float >&
+LayoutRow::_internal_cols_widths() const {
+  return _impl_.cols_widths_;
+}
+inline const ::PROTOBUF_NAMESPACE_ID::RepeatedField< float >&
+LayoutRow::cols_widths() const {
+  // @@protoc_insertion_point(field_list:ui_serialization.LayoutRow.cols_widths)
+  return _internal_cols_widths();
+}
+inline ::PROTOBUF_NAMESPACE_ID::RepeatedField< float >*
+LayoutRow::_internal_mutable_cols_widths() {
+  return &_impl_.cols_widths_;
+}
+inline ::PROTOBUF_NAMESPACE_ID::RepeatedField< float >*
+LayoutRow::mutable_cols_widths() {
+  // @@protoc_insertion_point(field_mutable_list:ui_serialization.LayoutRow.cols_widths)
+  return _internal_mutable_cols_widths();
+}
+
+// -------------------------------------------------------------------
+
 // WidgetBase
 
 // string name = 1;
@@ -3238,51 +3503,44 @@ inline void WidgetBase::set_allocated_spacing(::ui_serialization::region_size* s
   // @@protoc_insertion_point(field_set_allocated:ui_serialization.WidgetBase.spacing)
 }
 
-// repeated float rows_heights = 12;
-inline int WidgetBase::_internal_rows_heights_size() const {
-  return _impl_.rows_heights_.size();
+// repeated .ui_serialization.LayoutRow rows = 12;
+inline int WidgetBase::_internal_rows_size() const {
+  return _impl_.rows_.size();
 }
-inline int WidgetBase::rows_heights_size() const {
-  return _internal_rows_heights_size();
+inline int WidgetBase::rows_size() const {
+  return _internal_rows_size();
 }
-inline void WidgetBase::clear_rows_heights() {
-  _impl_.rows_heights_.Clear();
+inline void WidgetBase::clear_rows() {
+  _impl_.rows_.Clear();
 }
-inline float WidgetBase::_internal_rows_heights(int index) const {
-  return _impl_.rows_heights_.Get(index);
+inline ::ui_serialization::LayoutRow* WidgetBase::mutable_rows(int index) {
+  // @@protoc_insertion_point(field_mutable:ui_serialization.WidgetBase.rows)
+  return _impl_.rows_.Mutable(index);
 }
-inline float WidgetBase::rows_heights(int index) const {
-  // @@protoc_insertion_point(field_get:ui_serialization.WidgetBase.rows_heights)
-  return _internal_rows_heights(index);
+inline ::PROTOBUF_NAMESPACE_ID::RepeatedPtrField< ::ui_serialization::LayoutRow >*
+WidgetBase::mutable_rows() {
+  // @@protoc_insertion_point(field_mutable_list:ui_serialization.WidgetBase.rows)
+  return &_impl_.rows_;
 }
-inline void WidgetBase::set_rows_heights(int index, float value) {
-  _impl_.rows_heights_.Set(index, value);
-  // @@protoc_insertion_point(field_set:ui_serialization.WidgetBase.rows_heights)
+inline const ::ui_serialization::LayoutRow& WidgetBase::_internal_rows(int index) const {
+  return _impl_.rows_.Get(index);
 }
-inline void WidgetBase::_internal_add_rows_heights(float value) {
-  _impl_.rows_heights_.Add(value);
+inline const ::ui_serialization::LayoutRow& WidgetBase::rows(int index) const {
+  // @@protoc_insertion_point(field_get:ui_serialization.WidgetBase.rows)
+  return _internal_rows(index);
 }
-inline void WidgetBase::add_rows_heights(float value) {
-  _internal_add_rows_heights(value);
-  // @@protoc_insertion_point(field_add:ui_serialization.WidgetBase.rows_heights)
+inline ::ui_serialization::LayoutRow* WidgetBase::_internal_add_rows() {
+  return _impl_.rows_.Add();
 }
-inline const ::PROTOBUF_NAMESPACE_ID::RepeatedField< float >&
-WidgetBase::_internal_rows_heights() const {
-  return _impl_.rows_heights_;
+inline ::ui_serialization::LayoutRow* WidgetBase::add_rows() {
+  ::ui_serialization::LayoutRow* _add = _internal_add_rows();
+  // @@protoc_insertion_point(field_add:ui_serialization.WidgetBase.rows)
+  return _add;
 }
-inline const ::PROTOBUF_NAMESPACE_ID::RepeatedField< float >&
-WidgetBase::rows_heights() const {
-  // @@protoc_insertion_point(field_list:ui_serialization.WidgetBase.rows_heights)
-  return _internal_rows_heights();
-}
-inline ::PROTOBUF_NAMESPACE_ID::RepeatedField< float >*
-WidgetBase::_internal_mutable_rows_heights() {
-  return &_impl_.rows_heights_;
-}
-inline ::PROTOBUF_NAMESPACE_ID::RepeatedField< float >*
-WidgetBase::mutable_rows_heights() {
-  // @@protoc_insertion_point(field_mutable_list:ui_serialization.WidgetBase.rows_heights)
-  return _internal_mutable_rows_heights();
+inline const ::PROTOBUF_NAMESPACE_ID::RepeatedPtrField< ::ui_serialization::LayoutRow >&
+WidgetBase::rows() const {
+  // @@protoc_insertion_point(field_list:ui_serialization.WidgetBase.rows)
+  return _impl_.rows_;
 }
 
 // repeated .ui_serialization.SkinnedProperty skinned_props = 13;
@@ -3489,24 +3747,24 @@ inline void Element::set_type(uint32_t value) {
   // @@protoc_insertion_point(field_set:ui_serialization.Element.type)
 }
 
-// bool add_on_new_row = 4;
-inline void Element::clear_add_on_new_row() {
-  _impl_.add_on_new_row_ = false;
+// uint32 elt_push_opt = 4;
+inline void Element::clear_elt_push_opt() {
+  _impl_.elt_push_opt_ = 0u;
 }
-inline bool Element::_internal_add_on_new_row() const {
-  return _impl_.add_on_new_row_;
+inline uint32_t Element::_internal_elt_push_opt() const {
+  return _impl_.elt_push_opt_;
 }
-inline bool Element::add_on_new_row() const {
-  // @@protoc_insertion_point(field_get:ui_serialization.Element.add_on_new_row)
-  return _internal_add_on_new_row();
+inline uint32_t Element::elt_push_opt() const {
+  // @@protoc_insertion_point(field_get:ui_serialization.Element.elt_push_opt)
+  return _internal_elt_push_opt();
 }
-inline void Element::_internal_set_add_on_new_row(bool value) {
+inline void Element::_internal_set_elt_push_opt(uint32_t value) {
   
-  _impl_.add_on_new_row_ = value;
+  _impl_.elt_push_opt_ = value;
 }
-inline void Element::set_add_on_new_row(bool value) {
-  _internal_set_add_on_new_row(value);
-  // @@protoc_insertion_point(field_set:ui_serialization.Element.add_on_new_row)
+inline void Element::set_elt_push_opt(uint32_t value) {
+  _internal_set_elt_push_opt(value);
+  // @@protoc_insertion_point(field_set:ui_serialization.Element.elt_push_opt)
 }
 
 // .ui_serialization.Font font = 5;
@@ -3879,6 +4137,46 @@ inline void Element::set_text_align(uint32_t value) {
   // @@protoc_insertion_point(field_set:ui_serialization.Element.text_align)
 }
 
+// float width = 13;
+inline void Element::clear_width() {
+  _impl_.width_ = 0;
+}
+inline float Element::_internal_width() const {
+  return _impl_.width_;
+}
+inline float Element::width() const {
+  // @@protoc_insertion_point(field_get:ui_serialization.Element.width)
+  return _internal_width();
+}
+inline void Element::_internal_set_width(float value) {
+  
+  _impl_.width_ = value;
+}
+inline void Element::set_width(float value) {
+  _internal_set_width(value);
+  // @@protoc_insertion_point(field_set:ui_serialization.Element.width)
+}
+
+// float height = 14;
+inline void Element::clear_height() {
+  _impl_.height_ = 0;
+}
+inline float Element::_internal_height() const {
+  return _impl_.height_;
+}
+inline float Element::height() const {
+  // @@protoc_insertion_point(field_get:ui_serialization.Element.height)
+  return _internal_height();
+}
+inline void Element::_internal_set_height(float value) {
+  
+  _impl_.height_ = value;
+}
+inline void Element::set_height(float value) {
+  _internal_set_height(value);
+  // @@protoc_insertion_point(field_set:ui_serialization.Element.height)
+}
+
 // -------------------------------------------------------------------
 
 // Widget
@@ -4100,6 +4398,8 @@ SerializedUI::widgets() const {
 #ifdef __GNUC__
   #pragma GCC diagnostic pop
 #endif  // __GNUC__
+// -------------------------------------------------------------------
+
 // -------------------------------------------------------------------
 
 // -------------------------------------------------------------------

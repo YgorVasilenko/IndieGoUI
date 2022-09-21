@@ -1,9 +1,3 @@
-// TODO :
-// Fonts 
-// - load fonts by adding to atlas
-// - reload atlas each time new font is loaded
-// extra. split rows and columns
-
 #include <IndieGoUI.h>
 #include <glad/glad.h>
 #include <GLFW/glfw3.h>
@@ -94,12 +88,6 @@ enum STYLE_EDIT_MODE {
 } style_edit_mode;
 
 extern void processAddOptions(std::string winID);
-// extern void addElement(
-//     std::string widID, 
-//     std::string winID, 
-//     std::string elt_name, 
-//     UI_ELEMENT_TYPE type
-// );
 
 extern std::string skinning_img_path;
 extern unsigned int skinning_image_id;
@@ -125,6 +113,14 @@ void useSkin(T & item, std::string winID) {
         (IMAGE_SKIN_ELEMENT)skinning_props_list.selected_element
     );
 }
+
+std::vector<std::string> skip_save_widgets = { 
+    "UI creator", 
+    "Edit elements", 
+    "Widgets style", 
+    "Elements style",
+    "Fonts"
+};
 
 // load_items.first -> resources path
 // load_items.second -> project name
@@ -199,10 +195,13 @@ int main() {
     int prev_selected_col = -1;
     // int prev_selected_font_size = -1;
     int width, height;
+    std::string selected_for_font_update = "None";
+    bool update_widget_font = false;
+
     while (!glfwWindowShouldClose(screen)) {
         glClearColor(0.2f, 0.3f, 0.3f, 1.0f);
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT | GL_STENCIL_BUFFER_BIT);
-           
+
         if (e_skinning_props_list.selected_element != -1 && UIMap["e apply skin"]._data.b) {
             TexData td = Manager::load_image(UIMap["e skin image path"].label);
             UI_element& e = UIMap[elements_list.getSelected()];
@@ -232,42 +231,14 @@ int main() {
         cols_list.elements.clear();
         cols_list.unselect();
 
-         if (UIMap["e load skin image"]._data.b || UIMap["w load skin image"]._data.b) {
-             std::list<std::string> paths = getPaths();
-             if (paths.size() > 0) {
-                 std::string skinning_img_path = *paths.begin();
-                 // TODO : account for PROJECT_DIR variable
-                 TexData skin_tex = Manager::load_image(skinning_img_path.c_str());
-                 // load_image(skinning_img_path.c_str(), true);
-                 UIMap["w skin image path"].label = skinning_img_path;
-                 UIMap["e skin image path"].label = skinning_img_path;
-             }
-         }
-
-        if (!widgets.hidden) {
-            if (UIMap["add new widget"]._data.b) {
-                std::string new_widget_name = *UIMap["new widget name"]._data.strPtr;
-                if (new_widget_name.size() > 0 && widgets_fill.find(new_widget_name) == widgets_fill.end()) {
-                    region<float> new_widget_size_loc;
-                    new_widget_size_loc.w = UIMap["size x"]._data.f / 100.f;
-                    new_widget_size_loc.h = UIMap["size y"]._data.f / 100.f;
-                    new_widget_size_loc.x = UIMap["location x"]._data.f / 100.f;
-                    new_widget_size_loc.y = UIMap["location y"]._data.f / 100.f;
-                    createNewWidget(
-                        new_widget_name,
-                        new_widget_size_loc,
-                        UIMap["bordered"]._data.b,
-                        UIMap["titled"]._data.b,
-                        UIMap["minimizable"]._data.b,
-                        UIMap["scalable"]._data.b,
-                        UIMap["movable"]._data.b,
-                        winID
-                    );
-
-                    // add new widget to list
-                    widgets_list.elements.push_back(new_widget_name);
-                    widgets_fill[new_widget_name] = 0;
-                }
+        if (UIMap["e load skin image"]._data.b || UIMap["w load skin image"]._data.b) {
+            std::list<std::string> paths = getPaths();
+            if (paths.size() > 0) {
+                std::string skinning_img_path = *paths.begin();
+                // TODO : account for PROJECT_DIR variable
+                TexData skin_tex = Manager::load_image(skinning_img_path.c_str());
+                UIMap["w skin image path"].label = skinning_img_path;
+                UIMap["e skin image path"].label = skinning_img_path;
             }
         }
 
@@ -308,6 +279,64 @@ int main() {
 
         }
 
+        if (!widgets.hidden) {
+            elements_list.unselect();
+            if (UIMap["add new widget"]._data.b) {
+                std::string new_widget_name = *UIMap["new widget name"]._data.strPtr;
+                if (new_widget_name.size() > 0 && widgets_fill.find(new_widget_name) == widgets_fill.end()) {
+                    region<float> new_widget_size_loc;
+                    new_widget_size_loc.w = UIMap["size x"]._data.f / 100.f;
+                    new_widget_size_loc.h = UIMap["size y"]._data.f / 100.f;
+                    new_widget_size_loc.x = UIMap["location x"]._data.f / 100.f;
+                    new_widget_size_loc.y = UIMap["location y"]._data.f / 100.f;
+                    createNewWidget(
+                        new_widget_name,
+                        new_widget_size_loc,
+                        UIMap["bordered"]._data.b,
+                        UIMap["titled"]._data.b,
+                        UIMap["minimizable"]._data.b,
+                        UIMap["scalable"]._data.b,
+                        UIMap["movable"]._data.b,
+                        winID
+                    );
+
+                    // add new widget to list
+                    widgets_list.elements.push_back(new_widget_name);
+                    widgets_fill[new_widget_name] = 0;
+                }
+            }
+            if (widgets_list.selected_element != -1) {
+                selected_for_font_update = widgets_list.getSelected();
+                update_widget_font = true;
+            }
+        } else {
+            if (elements_list.selected_element != -1) {
+                selected_for_font_update = elements_list.getSelected();
+                update_widget_font = false;
+            }
+        }
+
+        UIMap["selected for font update"].label = "selected: " + selected_for_font_update;
+        if (UIMap["apply font"]._data.b) {
+            if (selected_for_font_update != "None") {
+                if (update_widget_font) {
+                    WIDGET& w = GUI.getWidget(selected_for_font_update, winID);
+                    w.font = fonts_list.getSelected();
+                    if (font_sizes_list.selected_element != -1)
+                        w.font_size = std::stof(font_sizes_list.getSelected());
+                    else 
+                        w.font_size = std::stof(*font_sizes_list.elements.begin());
+                } else {
+                    UI_element& e = UIMap[selected_for_font_update];
+                    e.font = fonts_list.getSelected();
+                    if (font_sizes_list.selected_element != -1)
+                        e.font_size = std::stof(font_sizes_list.getSelected());
+                    else
+                        e.font_size = std::stof(*font_sizes_list.elements.begin());
+                }
+            }
+        }
+
         if (!elements.hidden) {
             // Widget's elements editng stuff
             if (UIMap["push opt"]._data.b) {
@@ -330,43 +359,31 @@ int main() {
                 cols_list.selected_element != -1
             );
         }
-        // if (UIMap["style edit mode"]._data.b) {
-        //     if (style_edit_mode == widget_edit) {
-        //         UIMap["style edit mode"].label = "edit mode: element";
-        //         style_edit_mode = element_edit;
-        //     } else {
-        //         UIMap["style edit mode"].label = "edit mode: widget";
-        //         style_edit_mode = widget_edit;
-        //     }
-        // }
-
-        // if (UIMap["save widgets"]._data.b) {
-        //     // std::string IndieGo_home = getenv("INDIEGO_HOME");
-        //     // std::string project_name = fs::path( getenv("PROJECT_DIR") ).filename().string();
-        //     std::pair<std::string, std::string> save_items = getResourcesPath();
-        //     GUI.serialize(winID, save_items.first + "/ui_" + save_items.second + ".indg", { "UI creator", "style editor" });
-        // }
-
-        // if (UIMap["load widgets"]._data.b) {
-        //     std::string path = *getPaths().begin();
-        //     GUI.deserialize(winID, path);
-
-        //     // update widgets list
-        //     widgets_list.elements.clear();
-        //     for (auto widget : GUI.widgets[winID]) {
-        //         if (widget.first == "UI creator") continue;
-        //         if (widget.first == "style editor") continue;
-        //         widgets_list.elements.push_back(widget.first);
-        //     }
-        //     available_fonts_list.elements.clear();
-        //     for (auto font : GUI.loaded_fonts) {
-        //         available_fonts_list.elements.push_back(font.first);
-        //     }
-        // }
 
         prev_selected_widget = widgets_list.selected_element;
         prev_selected_style_element = style_elements_list.selected_element;
         
+
+        if (UIMap["save ui"]._data.b) {
+            std::string save_path = getenv("PROJECT_DIR");
+            GUI.serialize(
+                winID,
+                save_path + "/ui_test.indg",
+                skip_save_widgets
+            );
+        }
+
+        if (UIMap["load ui"]._data.b) {
+            std::string load_path = *getPaths().begin();
+            GUI.deserialize(winID, load_path);
+            // TODO : 
+            // - add all loaded widgets to widgets_list
+            // - check skinning save/load
+            // - check fonts save/load
+            // - check styling save/load
+            // - use getResourcesPaths() to get save/load location
+        }
+
         // update screen size each frame before calling immediate backend
         glfwGetWindowSize(screen, &width, &height);
 
@@ -413,23 +430,6 @@ int main() {
                 (IMAGE_SKIN_ELEMENT)w_skinning_props_list.selected_element
             );
         }
-
-        /*if (e_skinning_props_list.selected_element != -1 && UIMap["e apply skin"]._data.b) {
-            TexData td = Manager::load_image(UIMap["e skin image path"].label);
-            UI_element& e = UIMap[elements_list.getSelected()];
-            region<float> crop;
-            crop.x = UIMap["e crop x"]._data.f / UI_FLT_VAL_SCALE;
-            crop.y = UIMap["e crop y"]._data.f / UI_FLT_VAL_SCALE;
-            crop.w = UIMap["e crop w"]._data.f / UI_FLT_VAL_SCALE;
-            crop.h = UIMap["e crop h"]._data.f / UI_FLT_VAL_SCALE;
-            e.useSkinImage(
-                td.texID, 
-                td.w, 
-                td.h, 
-                crop, 
-                (IMAGE_SKIN_ELEMENT)e_skinning_props_list.selected_element
-            );
-        }*/
 
         // prev_selected_font_size = font_sizes_list.selected_element;
         font_sizes_list.elements.clear();

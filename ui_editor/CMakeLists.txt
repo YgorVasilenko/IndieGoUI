@@ -31,7 +31,7 @@ add_executable(
     src/init.cpp
     src/glad.c
     ../IndieGoUI.cpp
-    # ../IndieGoUI.pb.cc
+    ../IndieGoUI.pb.cc
     ${RENDERER_SRC}
 )
 
@@ -48,14 +48,13 @@ target_link_libraries(
     PUBLIC "../lib/glfw3"
 
     # serialization
-    # PUBLIC ${PROTOBUF_LIB}/libprotobufd.lib
+    PUBLIC ${PROTOBUF_LIB}/libprotobufd.lib
 )
 
 target_compile_definitions(
     UI_editor PUBLIC
     WIDTH=1920
     HEIGHT=1080
-    NO_SERIALIZATION=1
     UI_FLT_VAL_SCALE=100
 )
 

@@ -56,6 +56,11 @@ void initWidgets() {
     UIMap.addElement("skins and styling", UI_BUTTON, &c_widget, to_new_subrow);
     UIMap["skins and styling"].label = "skins and styling";
 
+    UIMap.addElement("save ui", UI_BUTTON, &c_widget, to_new_subrow);
+    UIMap["save ui"].label = "save ui";
+    UIMap.addElement("load ui", UI_BUTTON, &c_widget, to_new_subrow);
+    UIMap["load ui"].label = "load ui";
+
     UIMap.addElement("new widget name", UI_STRING_INPUT, &c_widget, to_new_col);
     UIMap.addElement("space fill", UI_EMPTY, &c_widget, to_new_subrow);
 

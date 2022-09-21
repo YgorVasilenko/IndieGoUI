@@ -218,6 +218,12 @@ namespace IndieGo {
 		template<typename T>
 		struct region_size { T w, h; };
 
+		enum ELT_PUSH_OPT {
+			to_new_row, // push element to completely new row (grid_rows + 1)
+			to_new_col, // push element to last existing row, but new column (grid_rows.back().cells + 1) 
+			to_new_subrow // push element to existing row and existing col, but subdivide latter top-down (grid_rows.back().cells.elements + 1) 
+		};
+
 		struct UI_element {
 			union ui_data {
 				bool b;
@@ -240,6 +246,9 @@ namespace IndieGo {
 
 			TEXT_ALIGN text_align = CENTER;
 			UI_ELEMENT_TYPE type;
+
+			// required for serialization
+			ELT_PUSH_OPT push_opt;
 
 			// in case of UI_IMAGE this is used as a path to loaded image
 			std::string label = "";
@@ -336,11 +345,6 @@ namespace IndieGo {
 			// }
 		};
 
-		enum ELT_PUSH_OPT {
-			to_new_row, // push element to completely new row (grid_rows + 1)
-			to_new_col, // push element to last existing row, but new column (grid_rows.back().cells + 1) 
-			to_new_subrow // push element to existing row and existing col, but subdivide latter top-down (grid_rows.back().cells.elements + 1) 
-		};
 		// defines memory items, that will be used by UI_elements_map
 		struct UI_elements_map;
 
@@ -535,7 +539,8 @@ namespace IndieGo {
 				}
 			
 				elements[elt_name] = element;
-
+				elements[elt_name].push_opt = push_opt;
+				
 				if (autowidth) {
 					// for (auto cell = layout_grid.back().cells.begin(); cell != layout_grid.back().cells.end(); cell++) {
 					for (auto cell = widRef->layout_grid.back().cells.begin(); cell != widRef->layout_grid.back().cells.end(); cell++) {

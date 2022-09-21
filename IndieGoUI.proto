@@ -47,6 +47,11 @@ message SkinnedProperty {
     uint32 prop_type = 2;
 }
 
+message LayoutRow {
+    float height = 1;
+    repeated float cols_widths = 2;
+}
+
 message WidgetBase {
     string name = 1;
     region size_loc = 2;
@@ -65,7 +70,7 @@ message WidgetBase {
 
     // on load when elements added to new row
     // it's size will be adjusted
-    repeated float rows_heights = 12;
+    repeated LayoutRow rows = 12;
 
     // on load skinned element will call useSkinImage
     repeated SkinnedProperty skinned_props = 13;
@@ -77,7 +82,7 @@ message Element {
     string name = 1;
     string widget_name = 2;
     uint32 type = 3;
-    bool add_on_new_row = 4;
+    uint32 elt_push_opt = 4;
     Font font = 5;
 
     // different display settings
@@ -91,6 +96,9 @@ message Element {
 
     string label = 11;
     uint32 text_align = 12;
+
+    float width = 13;
+    float height = 14;
     // TODO : add items from UI_ITEMS_LIST
 }
 

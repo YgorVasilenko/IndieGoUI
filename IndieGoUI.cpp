@@ -100,9 +100,9 @@ void addElement(
     w.layout_grid[row].min_height = 0.25f;*/
 }
 
-extern unsigned int skinning_image_id;
-extern unsigned int si_w;
-extern unsigned int si_h;
+// extern unsigned int skinning_image_id;
+// extern unsigned int si_w;
+// extern unsigned int si_h;
 
 // helper function lo load image through stbi
 // in other engine parts ImageLoader will do that
@@ -176,9 +176,13 @@ void Manager::serialize(const std::string & winID, const std::string & path, con
         w->mutable_widget()->mutable_font()->set_name(widget.second.font);
         w->mutable_widget()->mutable_font()->set_size(widget.second.font_size);
 
-        // rows heights
+        // layout sizes
         for (auto g_row : widget.second.layout_grid) {
-            w->mutable_widget()->add_rows_heights(g_row.min_height);
+            ui_serialization::LayoutRow * r = w->mutable_widget()->add_rows();
+            r->set_height(g_row.min_height);
+            for (auto col : g_row.cells) {
+                r->add_cols_widths(col.min_width);
+            }
         }
 
         // skinned props
@@ -231,7 +235,12 @@ void Manager::serialize(const std::string & winID, const std::string & path, con
                     break;
                 }
             }
-            e->set_add_on_new_row(add_to_new_row);
+
+            e->set_elt_push_opt((unsigned int)UIMap[elt_name].push_opt);
+            e->set_width(UIMap[elt_name].width);
+            e->set_height(UIMap[elt_name].height);
+
+            // e->set_add_on_new_row(add_to_new_row);
             // skinned props
             for (auto prop : UIMap[elt_name].skinned_style.props) {
                 if (prop.second.first != -1) {
@@ -329,13 +338,13 @@ void Manager::deserialize(const std::string & winID, const std::string & path) {
             crop_region.w = sp.img().crop().w();
             crop_region.y = sp.img().crop().y();
             crop_region.x = sp.img().crop().x();
-            added_w.useSkinImage(
-                skinning_image_id,
-                si_w,
-                si_h,
-                crop_region,
-                (IMAGE_SKIN_ELEMENT)sp.prop_type()
-            );
+            // added_w.useSkinImage(
+            //     skinning_image_id,
+            //     si_w,
+            //     si_h,
+            //     crop_region,
+            //     (IMAGE_SKIN_ELEMENT)sp.prop_type()
+            // );
         }
 
         // color styled props
@@ -349,12 +358,12 @@ void Manager::deserialize(const std::string & winID, const std::string & path) {
         // add elements to related widget
         for (int j = 0; j < w.elements_size(); j++) {
             const ui_serialization::Element & e = w.elements(j);
+            push_opt = (ELT_PUSH_OPT)e.elt_push_opt();
             addElement(
                 w.widget().name(),
                 winID,
                 e.name(),
-                (UI_ELEMENT_TYPE)e.type(),
-                e.add_on_new_row()
+                (UI_ELEMENT_TYPE)e.type()
             );
             
             UIMap[e.name()].border = e.border();
@@ -378,13 +387,13 @@ void Manager::deserialize(const std::string & winID, const std::string & path) {
                 crop_region.w = sp.img().crop().w();
                 crop_region.y = sp.img().crop().y();
                 crop_region.x = sp.img().crop().x();
-                UIMap[e.name()].useSkinImage(
-                    skinning_image_id,
-                    si_w,
-                    si_h,
-                    crop_region,
-                    (IMAGE_SKIN_ELEMENT)sp.prop_type()
-                );
+                // UIMap[e.name()].useSkinImage(
+                //     skinning_image_id,
+                //     si_w,
+                //     si_h,
+                //     crop_region,
+                //     (IMAGE_SKIN_ELEMENT)sp.prop_type()
+                // );
             }
             // color styled props
             for (int k = 0; k < 28; k++) {
@@ -396,9 +405,20 @@ void Manager::deserialize(const std::string & winID, const std::string & path) {
             }
         }
 
-        // row heights
-        for (int j = 0; j < w.widget().rows_heights_size(); j++) {
-            added_w.layout_grid[j].min_height = w.widget().rows_heights(j);
+        // load layout sizes
+        for (int j = 0; j < w.widget().rows_size(); j++) {
+            const ui_serialization::LayoutRow & r = w.widget().rows(j);
+            added_w.updateRowHeight(j, r.height());
+            for (int k = 0; k < r.cols_widths_size(); k++) {
+                added_w.updateColWidth(j, k, r.cols_widths(k));
+            }
+        }
+
+        // walk over saved elements list again to customize sizes after automated layout update
+        for (int j = 0; j < w.elements_size(); j++) {
+            const ui_serialization::Element & e = w.elements(j);
+            UIMap[e.name()].height = e.height();
+            UIMap[e.name()].width = e.width();
         }
     }
 
