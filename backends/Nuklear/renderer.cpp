@@ -506,7 +506,38 @@ void UI_element::callUIfunction(float x, float y, float space_w, float space_h) 
         // TODO : add skinning
         ctx->style.button.border = border;
         ctx->style.button.rounding = rounding;
-        // ctx->style.button.padding = nk_vec2(padding.h, padding.w);
+        // ctx->style.button.
+        if (skinned_style.props[normal].first != -1) {
+            ctx->style.button.normal = nk_style_item_image(
+                images[skinned_style.props[normal].first][skinned_style.props[normal].second].first
+            );
+        }
+        if (skinned_style.props[hover].first != -1) {
+            ctx->style.button.hover = nk_style_item_image(
+                images[skinned_style.props[hover].first][skinned_style.props[hover].second].first
+            );
+        }
+        if (skinned_style.props[active].first != -1) {
+            ctx->style.button.active = nk_style_item_image(
+                images[skinned_style.props[active].first][skinned_style.props[active].second].first
+            );
+        }
+        /*if (skinned_style.props[cursor_normal].first != -1) {
+            ctx->style.button. = nk_style_item_image(
+                images[skinned_style.props[cursor_normal].first][skinned_style.props[cursor_normal].second].first
+            );
+        }*/
+        /*if (skinned_style.props[cursor_hover].first != -1) {
+            ctx->style.button.c = nk_style_item_image(
+                images[skinned_style.props[cursor_hover].first][skinned_style.props[cursor_hover].second].first
+            );
+        }*/
+        /*if (skinned_style.props[cursor_active].first != -1) {
+            ctx->style.progress.cursor_active = nk_style_item_image(
+                images[skinned_style.props[cursor_active].first][skinned_style.props[cursor_active].second].first
+            );
+        }*/
+
 
         /*struct nk_key_selector ks;
         if (hovered_by_keys) {
@@ -753,11 +784,14 @@ void UI_element::useSkinImage(
 	region<float> crop,
 	IMAGE_SKIN_ELEMENT elt
 ) {
-    images[texID].push_back(
-        std::pair<struct nk_image, region<float>> { nk_subimage_id(texID, w,h, nk_rect(crop.x, crop.y, crop.w, crop.h)), crop }
-    );
+    Manager::addImage(texID, w, h, crop);
     skinned_style.props[elt].first = texID;
     skinned_style.props[elt].second = images[texID].size() - 1;
+    /*images[texID].push_back(
+        std::pair<struct nk_image, region<float>> { nk_subimage_id(texID, w,h, nk_rect(crop.x, crop.y, crop.w, crop.h)), crop }
+    );*/
+    /*skinned_style.props[elt].first = texID;
+    skinned_style.props[elt].second = images[texID].size() - 1;*/
 }
 
 IndieGo::UI::region<float> UI_element::getImgCrop(IndieGo::UI::IMAGE_SKIN_ELEMENT elt) {
@@ -767,7 +801,7 @@ IndieGo::UI::region<float> UI_element::getImgCrop(IndieGo::UI::IMAGE_SKIN_ELEMEN
 }
 
 bool test_img_loaded = false;
-extern unsigned int load_image(const char *filename);
+// extern unsigned int load_image(const char *filename);
 struct nk_image test_i;
 //--------------------------------------------------------
 //

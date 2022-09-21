@@ -177,10 +177,13 @@ int main() {
     ui_string_group & elements_list = *UIMap["elements list"]._data.usgPtr;
     ui_string_group & rows_list = *UIMap["rows list"]._data.usgPtr;
     ui_string_group & cols_list = *UIMap["cols list"]._data.usgPtr;
-    // ui_string_group & skinning_props_list = *UIMap["skinning property"]._data.usgPtr;
-    // ui_string_group & style_elements_list = *UIMap["style elements list"]._data.usgPtr;
-    // ui_string_group& available_fonts_list = *UIMap["available fonts"]._data.usgPtr;
-    // ui_string_group& font_sizes_list = *UIMap["font sizes"]._data.usgPtr;
+    
+    ui_string_group & fonts_list = *UIMap["loaded fonts"]._data.usgPtr;
+    ui_string_group & font_sizes_list = *UIMap["font sizes"]._data.usgPtr;
+
+    ui_string_group & style_elements_list = *UIMap["styling elements"]._data.usgPtr;
+    ui_string_group & w_skinning_props_list = *UIMap["w skinning properties"]._data.usgPtr;
+    ui_string_group & e_skinning_props_list = *UIMap["e skinning properties"]._data.usgPtr;
 
     // control widgets
     WIDGET & widgets = GUI.getWidget("UI creator", winID);
@@ -191,7 +194,7 @@ int main() {
 
     int prev_selected_widget = -1;
     int prev_selected_element = -1;
-    // int prev_selected_style_element = -1;
+    int prev_selected_style_element = -1;
     int prev_selected_row = -1;
     int prev_selected_col = -1;
     // int prev_selected_font_size = -1;
@@ -199,6 +202,23 @@ int main() {
     while (!glfwWindowShouldClose(screen)) {
         glClearColor(0.2f, 0.3f, 0.3f, 1.0f);
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT | GL_STENCIL_BUFFER_BIT);
+           
+        if (e_skinning_props_list.selected_element != -1 && UIMap["e apply skin"]._data.b) {
+            TexData td = Manager::load_image(UIMap["e skin image path"].label);
+            UI_element& e = UIMap[elements_list.getSelected()];
+            region<float> crop;
+            crop.x = UIMap["e crop x"]._data.f / UI_FLT_VAL_SCALE;
+            crop.y = UIMap["e crop y"]._data.f / UI_FLT_VAL_SCALE;
+            crop.w = UIMap["e crop w"]._data.f / UI_FLT_VAL_SCALE;
+            crop.h = UIMap["e crop h"]._data.f / UI_FLT_VAL_SCALE;
+            e.useSkinImage(
+                td.texID,
+                td.w,
+                td.h,
+                crop,
+                (IMAGE_SKIN_ELEMENT)e_skinning_props_list.selected_element
+            );
+        }
 
         prev_selected_element = elements_list.selected_element;
         elements_list.elements.clear();
@@ -212,12 +232,17 @@ int main() {
         cols_list.elements.clear();
         cols_list.unselect();
 
-        // if (UIMap["load skin image"]._data.b) {
-        //     std::string skinning_img_path = *getPaths().begin();
-        //     // TODO : account for PROJECT_DIR variable
-        //     load_image(skinning_img_path.c_str(), true);
-        //     UIMap["loaded skin image"].label = skinning_img_path;
-        // }
+         if (UIMap["e load skin image"]._data.b || UIMap["w load skin image"]._data.b) {
+             std::list<std::string> paths = getPaths();
+             if (paths.size() > 0) {
+                 std::string skinning_img_path = *paths.begin();
+                 // TODO : account for PROJECT_DIR variable
+                 TexData skin_tex = Manager::load_image(skinning_img_path.c_str());
+                 // load_image(skinning_img_path.c_str(), true);
+                 UIMap["w skin image path"].label = skinning_img_path;
+                 UIMap["e skin image path"].label = skinning_img_path;
+             }
+         }
 
         if (!widgets.hidden) {
             if (UIMap["add new widget"]._data.b) {
@@ -244,35 +269,17 @@ int main() {
                     widgets_fill[new_widget_name] = 0;
                 }
             }
-            if (widgets_list.selected_element != -1) {
-                updateUIFromWidget(
-                    widgets_list.getSelected(),
-                    winID,
-                    style_edit_mode == widget_edit,
-                    -1
-                    // style_elements_list.selected_element,
-                );
-            } /*else {
-                UIMap["edit widget elements"].hidden = true;
-            }*/
         }
 
-        if (!elements.hidden) {
-            // Widget's elements editng stuff
-            if (UIMap["push opt"]._data.b) {
-                if (push_opt == to_new_row) {
-                    push_opt = to_new_col;
-                    UIMap["push opt"].label = "push: to new col";
-                } else if (push_opt == to_new_col) {
-                    push_opt = to_new_subrow;
-                    UIMap["push opt"].label = "push: to new subrow";
-                } else if (push_opt == to_new_subrow) {
-                    push_opt = to_new_row;
-                    UIMap["push opt"].label = "push: to new row";
-                }
-            }
-            processAddOptions(winID);
-            WIDGET& w = GUI.getWidget( widgets_list.getSelected(), winID );
+        if (widgets_list.selected_element != -1) {
+            updateUIFromWidget(
+                widgets_list.getSelected(),
+                winID,
+                style_edit_mode == widget_edit,
+                style_elements_list.selected_element
+            );
+
+            WIDGET& w = GUI.getWidget(widgets_list.getSelected(), winID);
 
             // Udate displayed elements list for widget
             for (auto element : w.widget_elements) {
@@ -293,12 +300,29 @@ int main() {
             rows_list.selected_element = prev_selected_row;
             if (rows_list.selected_element != -1) {
                 // cols list depends on selected element from rows list
-                for (int i = 0; i < w.layout_grid[ rows_list.selected_element ].cells.size(); i++) {
+                for (int i = 0; i < w.layout_grid[rows_list.selected_element].cells.size(); i++) {
                     cols_list.elements.push_back(std::to_string(i));
                 }
                 cols_list.selected_element = prev_selected_col;
             }
 
+        }
+
+        if (!elements.hidden) {
+            // Widget's elements editng stuff
+            if (UIMap["push opt"]._data.b) {
+                if (push_opt == to_new_row) {
+                    push_opt = to_new_col;
+                    UIMap["push opt"].label = "push: to new col";
+                } else if (push_opt == to_new_col) {
+                    push_opt = to_new_subrow;
+                    UIMap["push opt"].label = "push: to new subrow";
+                } else if (push_opt == to_new_subrow) {
+                    push_opt = to_new_row;
+                    UIMap["push opt"].label = "push: to new row";
+                }
+            }
+            processAddOptions(winID);
             updateUIFromLayout(
                 widgets_list.getSelected(), 
                 winID,
@@ -341,7 +365,7 @@ int main() {
         // }
 
         prev_selected_widget = widgets_list.selected_element;
-        // prev_selected_style_element = style_elements_list.selected_element;
+        prev_selected_style_element = style_elements_list.selected_element;
         
         // update screen size each frame before calling immediate backend
         glfwGetWindowSize(screen, &width, &height);
@@ -357,48 +381,82 @@ int main() {
         checkUIValues(winID);
         switchUIscreens(winID);
 
-        // if (UIMap["load font"]._data.b) {
-        //     GUI.loadFont(
-        //         *getPaths().begin(), 
-        //         winID, 
-        //         UIMap["load font size"]._data.f
-        //     );
-        //     // update fonts list
-        //     available_fonts_list.elements.clear();
-        //     for (auto font_path : GUI.loaded_fonts) {
-        //         available_fonts_list.elements.push_back( fs::path(font_path.first).stem().string() );
-        //     }
-        // }
+        if (UIMap["load font"]._data.b) {
+            GUI.loadFont(
+                *getPaths().begin(), 
+                winID, 
+                UIMap["load size"]._data.f
+            );
+            // update fonts list
+            fonts_list.elements.clear();
+            for (auto font_path : GUI.loaded_fonts) {
+                fonts_list.elements.push_back( fs::path(font_path.first).stem().string() );
+            }
+        }
+
+        if (w_skinning_props_list.selected_element != -1 && UIMap["w apply skin"]._data.b) {
+            TexData td = Manager::load_image(UIMap["w skin image path"].label);
+            WIDGET & w = GUI.getWidget(
+                widgets_list.getSelected(), 
+                winID
+            );
+            region<float> crop;
+            crop.x = UIMap["w crop x"]._data.f / UI_FLT_VAL_SCALE;
+            crop.y = UIMap["w crop y"]._data.f / UI_FLT_VAL_SCALE;
+            crop.w = UIMap["w crop w"]._data.f / UI_FLT_VAL_SCALE;
+            crop.h = UIMap["w crop h"]._data.f / UI_FLT_VAL_SCALE;
+            w.useSkinImage(
+                td.texID, 
+                td.w, 
+                td.h, 
+                crop, 
+                (IMAGE_SKIN_ELEMENT)w_skinning_props_list.selected_element
+            );
+        }
+
+        /*if (e_skinning_props_list.selected_element != -1 && UIMap["e apply skin"]._data.b) {
+            TexData td = Manager::load_image(UIMap["e skin image path"].label);
+            UI_element& e = UIMap[elements_list.getSelected()];
+            region<float> crop;
+            crop.x = UIMap["e crop x"]._data.f / UI_FLT_VAL_SCALE;
+            crop.y = UIMap["e crop y"]._data.f / UI_FLT_VAL_SCALE;
+            crop.w = UIMap["e crop w"]._data.f / UI_FLT_VAL_SCALE;
+            crop.h = UIMap["e crop h"]._data.f / UI_FLT_VAL_SCALE;
+            e.useSkinImage(
+                td.texID, 
+                td.w, 
+                td.h, 
+                crop, 
+                (IMAGE_SKIN_ELEMENT)e_skinning_props_list.selected_element
+            );
+        }*/
 
         // prev_selected_font_size = font_sizes_list.selected_element;
-        // font_sizes_list.elements.clear();
-        // if (available_fonts_list.selected_element != -1) {
-        //     for (auto size : GUI.loaded_fonts[available_fonts_list.getSelected()].sizes) {
-        //         font_sizes_list.elements.push_back(
-        //             std::to_string(size)
-        //         );
-        //     }
-        //     font_sizes_list.selected_element = prev_selected_font_size;
-        //     // switch global font abd size to selected font and size
-        //     /*GUI.main_font = available_fonts_list.getSelected();
-        //     if (font_sizes_list.selected_element != -1) {
-        //         GUI.main_font_size = std::stof(
-        //             font_sizes_list.getSelected()
-        //         );
-        //     }*/
-        // }
+        font_sizes_list.elements.clear();
+        if (fonts_list.selected_element != -1) {
+            for (auto size : GUI.loaded_fonts[fonts_list.getSelected()].sizes) {
+                font_sizes_list.elements.push_back(
+                    std::to_string(size)
+                );
+            }
+             // font_sizes_list.selected_element = prev_selected_font_size;
+             // switch global font abd size to selected font and size
+             /*GUI.main_font = available_fonts_list.getSelected();
+             if (font_sizes_list.selected_element != -1) {
+                 GUI.main_font_size = std::stof(
+                     font_sizes_list.getSelected()
+                 );
+             }*/
+        }
 
-        if (!widgets.hidden) {
-            if (widgets_list.selected_element != -1) {
-                if (prev_selected_widget == widgets_list.selected_element) {
-                    updateWidgetFromUI(
-                        widgets_list.getSelected(), 
-                        winID, 
-                        style_edit_mode == widget_edit, 
-                        -1
-                        // style_elements_list.selected_element == prev_selected_style_element ? style_elements_list.selected_element : -1,
-                    );
-                }
+        if (widgets_list.selected_element != -1) {
+            if (prev_selected_widget == widgets_list.selected_element) {
+                updateWidgetFromUI(
+                    widgets_list.getSelected(), 
+                    winID, 
+                    style_edit_mode == widget_edit, 
+                    style_elements_list.selected_element == prev_selected_style_element ? style_elements_list.selected_element : -1
+                );
             }
         }
 

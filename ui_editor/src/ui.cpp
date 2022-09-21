@@ -95,10 +95,6 @@ void updateWidgetFromUI(
     WIDGET & w = GUI.getWidget(widID, winID);
     UI_elements_map & UIMap = GUI.UIMaps[winID];
 
-    // if (layout_row != -1) {
-    //     w.layout_grid[layout_row].min_height = UIMap["row height"]._data.f;
-    // }
-
     // location
     w.screen_region.x = UIMap["location x"]._data.f / 100.f;
     w.screen_region.y = UIMap["location y"]._data.f / 100.f;
@@ -128,12 +124,12 @@ void updateWidgetFromUI(
     //     }
     // }
 
-    // if (styling_element != -1) {
-    //     w.style.elements[styling_element].r = UIMap["Red property color"]._data.ui;
-    //     w.style.elements[styling_element].g = UIMap["Green property color"]._data.ui;
-    //     w.style.elements[styling_element].b = UIMap["Blue property color"]._data.ui;
-    //     w.style.elements[styling_element].a = UIMap["Alpha property color"]._data.ui;
-    // }
+    if (styling_element != -1) {
+        w.style.elements[styling_element].r = UIMap["red"]._data.ui;
+        w.style.elements[styling_element].g = UIMap["green"]._data.ui;
+        w.style.elements[styling_element].b = UIMap["blue"]._data.ui;
+        w.style.elements[styling_element].a = UIMap["alpha"]._data.ui;
+    }
 }
 
 void switchUIscreens(std::string winID) {
@@ -144,6 +140,7 @@ void switchUIscreens(std::string winID) {
     WIDGET & elements_style = GUI.getWidget("Elements style", winID);
     UI_elements_map & UIMap = GUI.UIMaps[winID];
     ui_string_group & widgets_list = *UIMap["widgets list"]._data.usgPtr;
+    ui_string_group & elements_list = *UIMap["elements list"]._data.usgPtr;
 
     if (!widgets.hidden) { // if "main widgets" visible
         if (widgets_list.selected_element != -1) {
@@ -158,6 +155,7 @@ void switchUIscreens(std::string winID) {
                 widgets_style.hidden = false;
                 widgets_style.screen_region = widgets.screen_region;
                 UIMap["skins and styling"]._data.b = false;
+                UIMap["style selected widget"].label = "selected widget: " + widgets_list.getSelected();
             }
         }
     }
@@ -168,11 +166,30 @@ void switchUIscreens(std::string winID) {
             elements.hidden = true;
             widgets.screen_region = elements.screen_region;
             UIMap["back to widgets"]._data.b = false;
-        } else if (UIMap["skins"]._data.b) {
+        } else if (UIMap["skins"]._data.b && elements_list.selected_element != -1) {
             elements.hidden = true;
             elements_style.hidden = false;
             elements_style.screen_region = elements.screen_region;
             UIMap["skins"]._data.b = false;
+            UIMap["e selected element"].label = "selected element: " + elements_list.getSelected();
+        }
+    }
+
+    if (!widgets_style.hidden) {
+        if(UIMap["to widgets from style"]._data.b) {
+            widgets.hidden = false;
+            widgets_style.hidden = true;
+            widgets.screen_region = widgets_style.screen_region;
+            UIMap["to widgets from style"]._data.b = false;
+        }
+    }
+
+    if (!elements_style.hidden) {
+        if(UIMap["to elements from style"]._data.b) {
+            elements.hidden = false;
+            elements_style.hidden = true;
+            elements.screen_region = elements_style.screen_region;
+            UIMap["to elements from style"]._data.b = false;
         }
     }
 }
@@ -202,14 +219,13 @@ void updateUIFromWidget(
     UIMap["movable"]._data.b = w.movable;
 
     UIMap["widget border"]._data.f = w.border_size;
-    // if (do_styling) {
-    //     if (styling_element != -1) {
-    //         UIMap["Red property color"]._data.ui = w.style.elements[styling_element].r;
-    //         UIMap["Green property color"]._data.ui = w.style.elements[styling_element].g;
-    //         UIMap["Blue property color"]._data.ui = w.style.elements[styling_element].b;
-    //         UIMap["Alpha property color"]._data.ui = w.style.elements[styling_element].a;
-    //     }
-    // }
+
+    if (styling_element != -1) {
+        UIMap["red"]._data.ui = w.style.elements[styling_element].r;
+        UIMap["green"]._data.ui = w.style.elements[styling_element].g;
+        UIMap["blue"]._data.ui = w.style.elements[styling_element].b;
+        UIMap["alpha"]._data.ui = w.style.elements[styling_element].a;
+    }
 }
 
 extern void addElement(
@@ -297,19 +313,66 @@ void checkUIValues(std::string winID) {
     if (UIMap["size y"]._data.f < 0.f)
         UIMap["size y"]._data.f = 0.f;
 
+    if (UIMap["red"]._data.ui > 255)
+        UIMap["red"]._data.ui = 255;
 
-    // if (UIMap["Red property color"]._data.ui > 255)
-    //     UIMap["Red property color"]._data.ui = 255;
-
-    // if (UIMap["Green property color"]._data.ui > 255)
-    //     UIMap["Green property color"]._data.ui = 255;
+    if (UIMap["green"]._data.ui > 255)
+        UIMap["green"]._data.ui = 255;
     
 
-    // if (UIMap["Blue property color"]._data.ui > 255)
-    //     UIMap["Blue property color"]._data.ui = 255;
+    if (UIMap["blue"]._data.ui > 255)
+        UIMap["blue"]._data.ui = 255;
     
-    // if (UIMap["Alpha property color"]._data.ui > 255)
-    //     UIMap["Alpha property color"]._data.ui = 255;
+    if (UIMap["alpha"]._data.ui > 255)
+        UIMap["alpha"]._data.ui = 255;
+
+    if (UIMap["w crop x"]._data.f > 100.f)
+        UIMap["w crop x"]._data.f = 100.f;
+
+    if (UIMap["w crop x"]._data.f < 0.f)
+        UIMap["w crop x"]._data.f = 0.f;
+
+    if (UIMap["w crop y"]._data.f > 100.f)
+        UIMap["w crop y"]._data.f = 100.f;
+
+    if (UIMap["w crop y"]._data.f < 0.f)
+        UIMap["w crop y"]._data.f = 0.f;
+
+    if (UIMap["w crop h"]._data.f > 100.f)
+        UIMap["w crop h"]._data.f = 100.f;
+
+    if (UIMap["w crop h"]._data.f < 0.f)
+        UIMap["w crop h"]._data.f = 0.f;
+
+    if (UIMap["w crop w"]._data.f > 100.f)
+        UIMap["w crop w"]._data.f = 100.f;
+
+    if (UIMap["w crop w"]._data.f < 0.f)
+        UIMap["w crop w"]._data.f = 0.f;
+
+    if (UIMap["e crop x"]._data.f > 100.f)
+        UIMap["e crop x"]._data.f = 100.f;
+
+    if (UIMap["e crop x"]._data.f < 0.f)
+        UIMap["e crop x"]._data.f = 0.f;
+
+    if (UIMap["e crop y"]._data.f > 100.f)
+        UIMap["e crop y"]._data.f = 100.f;
+
+    if (UIMap["e crop y"]._data.f < 0.f)
+        UIMap["e crop y"]._data.f = 0.f;
+
+    if (UIMap["e crop h"]._data.f > 100.f)
+        UIMap["e crop h"]._data.f = 100.f;
+
+    if (UIMap["e crop h"]._data.f < 0.f)
+        UIMap["e crop h"]._data.f = 0.f;
+
+    if (UIMap["e crop w"]._data.f > 100.f)
+        UIMap["e crop w"]._data.f = 100.f;
+
+    if (UIMap["e crop w"]._data.f < 0.f)
+        UIMap["e crop w"]._data.f = 0.f;
 }
 
 // std::vector<unsigned int> loadedImages;

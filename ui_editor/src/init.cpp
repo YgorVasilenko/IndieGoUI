@@ -321,6 +321,9 @@ void initWidgets() {
     UIMap.addElement("to widgets from style", UI_BUTTON, &ws_widget, to_new_subrow);
     UIMap["to widgets from style"].label = "back to widgets";
 
+    UIMap.addElement("style selected widget", UI_STRING_LABEL, &ws_widget, to_new_subrow);
+    UIMap["style selected widget"].label = "selected widget: None";
+
     ws_widget.updateRowHeight(1, 0.4f);
 
     UIMap["red"].height = 0.05f;
@@ -403,7 +406,8 @@ void initWidgets() {
     
     UIMap.addElement("load size", UI_FLOAT, &fonts_widget, to_new_subrow);
     UIMap["load size"].label = "load size";
-    
+    UIMap["load size"]._data.f = 16.f;
+
     UIMap.addElement("selected for font update", UI_STRING_TEXT, &fonts_widget, to_new_subrow);
     UIMap["selected for font update"].label = "selected: None";
 
@@ -414,11 +418,11 @@ void initWidgets() {
     UIMap["loaded fonts"].label = "loaded fonts";
 
     UIMap.addElement("font sizes", UI_ITEMS_LIST, &fonts_widget, to_new_col);
-    UIMap["font sizes"].label = "font sizes";
+    UIMap["font sizes"].label = "sizes";
     fonts_widget.updateRowHeight(0, 0.8f);
     fonts_widget.updateColWidth(0, 0, 0.37f);
-    fonts_widget.updateColWidth(0, 1, 0.3f);
-    fonts_widget.updateColWidth(0, 2, 0.3f);
+    fonts_widget.updateColWidth(0, 1, 0.45f);
+    fonts_widget.updateColWidth(0, 2, 0.15f);
 
     UIMap["load font"].height = 0.1f;
     UIMap["load size"].height = 0.1f;
