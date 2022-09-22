@@ -1,0 +1,123 @@
+// See README.txt for information and build instructions.
+//
+// Note: START and END tags are used in comments to define sections used in
+// tutorials.  They are not part of the syntax for Protocol Buffers.
+//
+// To get an in-depth walkthrough of this file and the related examples, see:
+// https://developers.google.com/protocol-buffers/docs/tutorials
+
+// [START declaration]
+syntax = "proto3";
+package ui_serialization;
+
+
+// UI data
+// ---------------------------------------------------------
+message region {
+    float x = 1;
+    float y = 2;
+    float w = 3;
+    float h = 4;
+}
+
+message region_size {
+    float x = 1;
+    float y = 2;
+}
+
+message StyleColor {
+    float r = 1;
+    float g = 2;
+    float b = 3;
+    float a = 4;
+}
+
+// message SkinImage {
+//     string path = 1;
+//     region crop = 2;
+// }
+
+message Font {
+    string name = 1;
+    float size = 2;
+}
+
+message SkinnedProperty {
+    region crop = 1;
+    uint32 prop_type = 2;
+}
+
+message LayoutRow {
+    float height = 1;
+    repeated float cols_widths = 2;
+}
+
+message WidgetBase {
+    string name = 1;
+    region size_loc = 2;
+    bool bordered = 3;
+    bool titled = 4;
+    bool minimizable = 5;
+    bool scalable = 6;
+    bool movable = 7;
+
+    Font font = 8;
+    
+    // different display settings
+    float border_size = 9; 
+    region_size padding = 10;
+	region_size spacing = 11;
+
+    // on load when elements added to new row
+    // it's size will be adjusted
+    repeated LayoutRow rows = 12;
+
+    // on load skinned element will call useSkinImage
+    repeated SkinnedProperty skinned_props = 13;
+    repeated StyleColor styled_props = 14;
+
+}
+
+message Element {
+    string name = 1;
+    string widget_name = 2;
+    uint32 type = 3;
+    uint32 elt_push_opt = 4;
+    Font font = 5;
+
+    // different display settings
+    float border = 6; 
+	float rounding = 7;
+	region_size padding = 8;
+
+    // on load skinned element will call useSkinImage
+    repeated SkinnedProperty skinned_props = 9;
+    repeated StyleColor styled_props = 10;
+
+    string label = 11;
+    uint32 text_align = 12;
+
+    float width = 13;
+    float height = 14;
+    // TODO : add items from UI_ITEMS_LIST
+}
+
+message Widget {
+    WidgetBase widget = 1;
+    repeated Element elements = 2;
+}
+
+// Binary file to serialize ui to
+message SerializedUI {
+    // main manager loads fonts
+    // font.name here records path
+    // similar paths could be saved, just specifying font size
+    repeated Font fonts = 1;
+    repeated Widget widgets = 2;
+
+    // saved path to image
+    repeated string images = 3;
+    optional uint32 skinning_image_idx = 4;
+}
+
+// [END messages]

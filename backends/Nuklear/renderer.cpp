@@ -13,6 +13,8 @@
 #include <IndieGoUI.h>
 #include <string>
 #include <regex>
+#include <filesystem>
+namespace fs = std::filesystem;
 
 enum nk_glfw_init_state{
     NK_GLFW3_DEFAULT=0,
@@ -44,7 +46,7 @@ struct nk_glfw {
     int display_width, display_height;
     struct nk_glfw_device ogl;
     struct nk_context ctx;
-    struct nk_font_atlas atlas;
+    // struct nk_font_atlas atlas;
     struct nk_vec2 fb_scale;
     unsigned int text[NK_GLFW_TEXT_MAX];
     int text_len;
@@ -67,18 +69,24 @@ struct nk_glfw_vertex {
   #define NK_SHADER_VERSION "#version 300 es\n"
 #endif
 
-
 #define MAX_VERTEX_BUFFER 512 * 1024
 #define MAX_ELEMENT_BUFFER 128 * 1024
 
-std::map<std::string, struct nk_font *> loaded_fonts;
+// font_name = font_size : <fontPtr>
+std::map<std::string, std::map<float, struct nk_font *>> backend_loaded_fonts;
+
+// texture_iid = vector<sub_images>
+std::map<unsigned int, std::vector<std::pair<struct nk_image, IndieGo::UI::region<float>>>> images;
 
 // Use winID to store window's context. If window destroyed and re-initializes
 // context should be same for respective winID
 std::map<std::string, struct nk_glfw*> glfw_storage;
 
+
+std::map<std::string, struct nk_font> fonts;
+
 // TODO - struct for several atlases loading
-struct nk_font_atlas * atlas = NULL;
+struct nk_font_atlas atlas;
 
 struct nk_vec2 cursor_pos;
 
@@ -88,6 +96,7 @@ NK_API bool disableMouse = false;
 
 void nk_glfw3_device_upload_atlas(struct nk_glfw* glfw, const void *image, int width, int height) {
     struct nk_glfw_device *dev = &glfw->ogl;
+    glDeleteTextures(1, &dev->font_tex);
     glGenTextures(1, &dev->font_tex);
     glBindTexture(GL_TEXTURE_2D, dev->font_tex);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
@@ -197,36 +206,23 @@ NK_API void nk_glfw3_device_create(struct nk_glfw* glfw) {
     glBindVertexArray(0);
 }
 
-struct nk_context* nk_glfw3_init(struct nk_glfw* glfw, GLFWwindow *win, enum nk_glfw_init_state init_state) {
-    glfwSetWindowUserPointer(win, glfw);
-    glfw->win = win;
-    nk_init_default(&glfw->ctx, 0);
-    glfw->ctx.clip.copy = nk_glfw3_clipboard_copy;
-    glfw->ctx.clip.paste = nk_glfw3_clipboard_paste;
-    glfw->ctx.clip.userdata = nk_handle_ptr(0);
-    glfw->last_button_click = 0;
-    nk_glfw3_device_create(glfw);
-
-    glfw->is_double_click_down = nk_false;
-    glfw->double_click_pos = nk_vec2(0, 0);
-
-    return &glfw->ctx;
-}
-
-void nk_glfw3_font_stash_begin(struct nk_glfw* glfw, struct nk_font_atlas **atlas) {
-    nk_font_atlas_init_default(&glfw->atlas);
-    nk_font_atlas_begin(&glfw->atlas);
-    *atlas = &glfw->atlas;
+// Leagcy functions for loading default font
+// ----------------------------------------------------------
+void nk_glfw3_font_stash_begin(struct nk_glfw* glfw) {
+    nk_font_atlas_init_default(&atlas);
+    nk_font_atlas_begin(&atlas);
+    // *atlas = &glfw->atlas;
 }
 
 void nk_glfw3_font_stash_end(struct nk_glfw* glfw) {
     const void* image; int w, h;
-    image = nk_font_atlas_bake(&glfw->atlas, &w, &h, NK_FONT_ATLAS_RGBA32);
+    image = nk_font_atlas_bake(&atlas, &w, &h, NK_FONT_ATLAS_RGBA32);
     nk_glfw3_device_upload_atlas(glfw, image, w, h);
-    nk_font_atlas_end(&glfw->atlas, nk_handle_id((int)glfw->ogl.font_tex), &glfw->ogl.null);
-    if (glfw->atlas.default_font)
-        nk_style_set_font(&glfw->ctx, &glfw->atlas.default_font->handle);
+    nk_font_atlas_end(&atlas, nk_handle_id((int)glfw->ogl.font_tex), &glfw->ogl.null);
+    if (&atlas.default_font)
+        nk_style_set_font(&glfw->ctx, &atlas.default_font->handle);
 }
+// ----------------------------------------------------------
 
 NK_API void nk_glfw3_render(struct nk_glfw* glfw, enum nk_anti_aliasing AA, int max_vertex_buffer, int max_element_buffer) {
 
@@ -346,20 +342,14 @@ void prepareUIRenderer(GLFWwindow* window, std::string & winID) {
 	glfw->is_double_click_down = nk_false;
 	glfw->double_click_pos = nk_vec2(0, 0);
 
-    nk_glfw3_font_stash_begin(glfw, &atlas);
+    nk_glfw3_font_stash_begin(glfw);
     nk_glfw3_font_stash_end(glfw);
 }
 
 using namespace IndieGo::UI;
 
-struct NuklearInitData {
-    std::string winID;
-    GLFWwindow* window;
-};
-
 void Manager::scroll(void * window, double xoff, double yoff) {
     std::string glfw_win = *reinterpret_cast<std::string*>(window);
-    // GLFWwindow * glfw_win = reinterpret_cast<GLFWwindow*>(window);
     struct nk_glfw * glfw = glfw_storage[glfw_win];
 
     (void)xoff;
@@ -368,8 +358,6 @@ void Manager::scroll(void * window, double xoff, double yoff) {
 }
 
 void Manager::mouse_move(void * window, double x, double y) {
-    // GLFWwindow * glfw_win = reinterpret_cast<GLFWwindow*>(window);
-    // struct nk_glfw * glfw = glfw_storage[glfw_win];
 
     cursor_pos.x = x;
     cursor_pos.y = y;
@@ -402,7 +390,6 @@ void Manager::mouse_button(void * window, int button, int action, int mods){
 }
 
 void Manager::char_input(void * window, unsigned int codepoint) {
-    // GLFWwindow * glfw_win = reinterpret_cast<GLFWwindow*>(window);
     std::string glfw_win = *reinterpret_cast<std::string*>(window);
     struct nk_glfw * glfw = glfw_storage[glfw_win];
 
@@ -412,7 +399,6 @@ void Manager::char_input(void * window, unsigned int codepoint) {
 }
 
 void Manager::key_input(void * window, unsigned int codepoint, bool pressed) {
-    // GLFWwindow * glfw_win = reinterpret_cast<GLFWwindow*>(window);
     std::string glfw_win = *reinterpret_cast<std::string*>(window);
     struct nk_glfw * glfw = glfw_storage[glfw_win];
 
@@ -424,7 +410,7 @@ void Manager::key_input(void * window, unsigned int codepoint, bool pressed) {
 }
 
 // Memory for string input storage
-char text[64] = {};
+char text[512] = {};
 int text_len;
 
 void stringToText(std::string & str) {
@@ -449,57 +435,116 @@ void textToString(std::string & str) {
 //
 //-------------------------------------------------------
 
-void UI_element::callUIfunction() {
-    if (custom_style)
-        nk_style_from_table(ctx, (struct nk_color*)style.elements);
+void UI_element::callUIfunction(float x, float y, float space_w, float space_h) {
+
+    if (font != "None") {
+        nk_style_set_font(
+            ctx,
+            &backend_loaded_fonts[font][font_size]->handle
+        );
+    }
+
+    // prepare space for element
+    nk_layout_space_push(
+        ctx, 
+        nk_rect(
+            x + space_w * width * padding.w, // left border
+            y + space_h * height * padding.h,
+            space_w * width - (space_w * width * padding.w * 2.f), // right border
+            space_h * height - (space_h * height * padding.h * 2.f)
+        )
+    );
 
     std::string full_name;
     nk_bool nk_val;
     static const float ratio[] = { 100, 120 };
     float dbgVal;
     if (type == UI_BOOL) {
-        struct nk_key_selector ks;
+        // TODO : add skinning
+        /*struct nk_key_selector ks;
         if (hovered_by_keys) {
             ks.focused = true;
-        }
+        }*/
         nk_val = _data.b;
-        nk_checkbox_label(ctx, label.c_str(), &nk_val, &ks);
+        //nk_checkbox_label(ctx, label.c_str(), &nk_val, &ks);
+        nk_checkbox_label(ctx, label.c_str(), &nk_val);
         _data.b = nk_val;
         return;
     }
 
     if (type == UI_FLOAT) {
+        // TODO : add skinning
         full_name = "#" + label + ":";
         nk_property_float(ctx, full_name.c_str(), -300000.0f, &_data.f, 300000.0f, 1, 0.5f);
         return;
     }
 
     if (type == UI_INT) {
+        // TODO : add skinning
         full_name = "#" + label + ":";
         nk_property_int(ctx, full_name.c_str(), -1024, &_data.i, 1024, 1, 0.5f);
         return;
     }
 
     if (type == UI_UINT) {
+        // TODO : add skinning
         full_name = "#" + label + ":";
         nk_property_int(ctx, full_name.c_str(), 0, &_data.i, 2040, 1, 0.5f);
         return;
     }
 
     if (type == UI_STRING_INPUT) {
+        // TODO : add skinning
         std::string& stringRef = *_data.strPtr;
         stringToText(stringRef);
-        nk_edit_string(ctx, NK_EDIT_SIMPLE, text, &text_len, 64, nk_filter_default);
+        nk_edit_string(ctx, NK_EDIT_SIMPLE, text, &text_len, 512, nk_filter_default);
         textToString(stringRef);
         return;
     }
 
     if (type == UI_BUTTON) {
-        struct nk_key_selector ks;
+        // TODO : add skinning
+        ctx->style.button.border = border;
+        ctx->style.button.rounding = rounding;
+        // ctx->style.button.
+        if (skinned_style.props[normal].first != -1) {
+            ctx->style.button.normal = nk_style_item_image(
+                images[skinned_style.props[normal].first][skinned_style.props[normal].second].first
+            );
+        }
+        if (skinned_style.props[hover].first != -1) {
+            ctx->style.button.hover = nk_style_item_image(
+                images[skinned_style.props[hover].first][skinned_style.props[hover].second].first
+            );
+        }
+        if (skinned_style.props[active].first != -1) {
+            ctx->style.button.active = nk_style_item_image(
+                images[skinned_style.props[active].first][skinned_style.props[active].second].first
+            );
+        }
+        /*if (skinned_style.props[cursor_normal].first != -1) {
+            ctx->style.button. = nk_style_item_image(
+                images[skinned_style.props[cursor_normal].first][skinned_style.props[cursor_normal].second].first
+            );
+        }*/
+        /*if (skinned_style.props[cursor_hover].first != -1) {
+            ctx->style.button.c = nk_style_item_image(
+                images[skinned_style.props[cursor_hover].first][skinned_style.props[cursor_hover].second].first
+            );
+        }*/
+        /*if (skinned_style.props[cursor_active].first != -1) {
+            ctx->style.progress.cursor_active = nk_style_item_image(
+                images[skinned_style.props[cursor_active].first][skinned_style.props[cursor_active].second].first
+            );
+        }*/
+
+
+        /*struct nk_key_selector ks;
         if (hovered_by_keys) {
             ks.focused = true;
-        }
-        if (nk_button_label(ctx, label.c_str(), &ks))
+        }*/
+        //if (nk_button_label(ctx, label.c_str(), &ks))
+        if (nk_button_label(ctx, label.c_str()))
             _data.b = true;
         else
             _data.b = false;
@@ -509,7 +554,12 @@ void UI_element::callUIfunction() {
         return;
     }
 
+    if (type == UI_EMPTY) {
+        nk_spacing(ctx, 1);
+    }
+
     if (type == UI_BUTTON_SWITCH) {
+        // TODO : add skinning
         if (_data.b) {
                 struct nk_style_button button;
                 button = ctx->style.button;
@@ -531,6 +581,7 @@ void UI_element::callUIfunction() {
     }
 
     if (type == UI_COLOR_PICKER) {
+        // TODO : add skinning
         struct nk_colorf & curr_widget_color = *reinterpret_cast<nk_colorf*>(&_data.c);
         if (nk_combo_begin_color(ctx, nk_rgb_cf(curr_widget_color), nk_vec2(nk_widget_width(ctx), 400))) {
             color_picker_unwrapped = true;
@@ -546,8 +597,14 @@ void UI_element::callUIfunction() {
             color_picker_unwrapped = false;
         }
     }
+    
+    if (type == UI_IMAGE) {
+        // TODO : add skinning
+        if (_data.i != -1)
+            nk_image(ctx, images[_data.i][cropId].first);
+    }
 
-    if (type == UI_STRING_LABEL){
+    if (type == UI_STRING_LABEL) {
         nk_flags align;
         switch(text_align){
           case LEFT:
@@ -563,7 +620,53 @@ void UI_element::callUIfunction() {
         nk_label(ctx, label.c_str(), align);
     }
 
+    if (type == UI_STRING_TEXT) {
+        nk_label_wrap(ctx, label.c_str());
+    }
+    
+    if (type == UI_PROGRESS) {
+        if (skinned_style.props[normal].first != -1) {
+            ctx->style.progress.normal = nk_style_item_image(
+                images[skinned_style.props[normal].first][skinned_style.props[normal].second].first
+            );
+        }
+        if (skinned_style.props[hover].first != -1) {
+            ctx->style.progress.hover = nk_style_item_image(
+                images[skinned_style.props[hover].first][skinned_style.props[hover].second].first
+            );
+        }
+        if (skinned_style.props[active].first != -1) {
+            ctx->style.progress.active = nk_style_item_image(
+                images[skinned_style.props[active].first][skinned_style.props[active].second].first
+            );
+        }
+        if (skinned_style.props[cursor_normal].first != -1) {
+            ctx->style.progress.cursor_normal = nk_style_item_image(
+                images[skinned_style.props[cursor_normal].first][skinned_style.props[cursor_normal].second].first
+            );
+        }
+        if (skinned_style.props[cursor_hover].first != -1) {
+            ctx->style.progress.cursor_hover = nk_style_item_image(
+                images[skinned_style.props[cursor_hover].first][skinned_style.props[cursor_hover].second].first
+            );
+        }
+        if (skinned_style.props[cursor_active].first != -1) {
+            ctx->style.progress.cursor_active = nk_style_item_image(
+                images[skinned_style.props[cursor_active].first][skinned_style.props[cursor_active].second].first
+            );
+        }
+
+        ctx->style.progress.border = border;
+        ctx->style.progress.rounding = rounding;
+        ctx->style.progress.padding = nk_vec2(padding.h, padding.w);
+
+        nk_size curr = _data.ui;
+        nk_progress(ctx, &curr, 100, modifyable_progress_bar);
+        _data.ui = curr;
+    }
+
     if (type == UI_ITEMS_LIST) {
+        // TODO : add skinning
         ui_string_group& uiGroupRef = *_data.usgPtr;
         uiGroupRef.selection_switch = false;
         if (uiGroupRef.selectMethod == RADIO_SELECT) {
@@ -577,6 +680,18 @@ void UI_element::callUIfunction() {
                 }
             }
         } else if (uiGroupRef.selectMethod == LIST_SELECT) {
+            nk_flags align;
+            switch(text_align){
+            case LEFT:
+                align = NK_TEXT_LEFT;
+                break;
+            case CENTER:
+                align = NK_TEXT_CENTERED;
+                break;
+            case RIGHT:
+                align = NK_TEXT_RIGHT;
+                break;
+            }
             std::regex e(uiGroupRef.regrex_filter);
             if (nk_group_begin(ctx, label.c_str(), NK_WINDOW_TITLE | NK_WINDOW_BORDER)) {
                 int selected = 0;
@@ -591,7 +706,7 @@ void UI_element::callUIfunction() {
                             continue;
                     }
                     nk_layout_row_dynamic(ctx, 20, 1);
-                    nk_selectable_label(ctx, uiGroupRef.elements[i].c_str(), NK_TEXT_CENTERED, &selected);
+                    nk_selectable_label(ctx, uiGroupRef.elements[i].c_str(), align, &selected);
                     if (selected) {
                         if ( uiGroupRef.selected_element != i )
                             uiGroupRef.selection_switch = true;
@@ -603,8 +718,8 @@ void UI_element::callUIfunction() {
         } else if (uiGroupRef.selectMethod == BUTTON_SELECT) {
             bool useLabels = uiGroupRef.elements.size() == uiGroupRef.element_labels.size();
             int i = 0;
-            struct nk_key_selector ks;
-            ks.focused = true;
+            /*struct nk_key_selector ks;
+            ks.focused = true;*/
             for (auto it = uiGroupRef.elements.begin(); it != uiGroupRef.elements.end(); it++) {
                 if (useLabels) {
                     nk_layout_row_dynamic(ctx, 25, 2);
@@ -626,11 +741,15 @@ void UI_element::callUIfunction() {
                     ctx->style.button.text_active = nk_rgb(60, 60, 60);
                     if (uiGroupRef.use_selected_string) {
                         nk_button_label(ctx, uiGroupRef.selectedString.c_str());
-                    } else {
-                        nk_button_label(ctx, it->c_str(), uiGroupRef.focused_by_key_element == i ? &ks : 0);
                     }
+                    //} else {
+                    //    //nk_button_label(ctx, it->c_str(), uiGroupRef.focused_by_key_element == i ? &ks : 0);
+                    //    nk_button_label(ctx, it->c_str(), uiGroupRef.focused_by_key_element == i ? &ks : 0);
+                    //}
                     ctx->style.button = button;
-                } else if (nk_button_label(ctx, it->c_str(), uiGroupRef.focused_by_key_element == i ? &ks : 0 )) {
+                //} else if (nk_button_label(ctx, it->c_str(), uiGroupRef.focused_by_key_element == i ? &ks : 0 )) {
+                }
+                else if (nk_button_label(ctx, it->c_str())) {
                     if ( uiGroupRef.selected_element != i )
                         uiGroupRef.selection_switch = true;
                     uiGroupRef.selected_element = i;
@@ -639,6 +758,41 @@ void UI_element::callUIfunction() {
             }
         }
     }
+}
+
+void UI_element::initImage(unsigned int texID, unsigned int w, unsigned int h, region<float> crop) {
+    if (type != UI_IMAGE) {
+        // TODO : add error message
+        return;
+    }
+
+    Manager::addImage(
+        texID,
+        w,
+        h,
+        crop
+    );
+
+    _data.i = texID;
+    cropId = images[texID].size() - 1;
+}
+
+void UI_element::useSkinImage(
+	unsigned int texID,
+	unsigned short w,
+	unsigned short h,
+	region<float> crop,
+	IMAGE_SKIN_ELEMENT elt
+) {
+    Manager::addImage(texID, w, h, crop);
+    skinned_style.props[elt].first = texID;
+    skinned_style.props[elt].second = images[texID].size() - 1;
+}
+
+IndieGo::UI::region<float> UI_element::getImgCrop(IndieGo::UI::IMAGE_SKIN_ELEMENT elt) {
+    int idx = skinned_style.props[elt].first;
+    if (idx == -1) return { 0.f, 0.f, 0.f, 0.f };
+    return images[ skinned_style.props[elt].first ][ skinned_style.props[elt].second ].second;
 }
 
 //--------------------------------------------------------
@@ -674,50 +828,157 @@ void WIDGET::callImmediateBackend(UI_elements_map & UIMap){
         setFocus = false;
     }
 
-    // TODO : prior to drawing, check if window's size changed
+    // NOTE : prior to drawing, user should check if window's size changed
     // if so, try fitting widget to new size as much as possible
+    float x = screen_size.w * screen_region.x;
+    float y = screen_size.h * screen_region.y;
+    float w = screen_size.w * screen_region.w;
+    float h = screen_size.h * screen_region.h;
+
+    if (initialized_in_backend) {
+        nk_window_set_bounds(ctx, name.c_str(), nk_rect(x, y, w, h));
+    }
+
+    // check various styling possibilities
+    // Background
+    if (skinned_style.props[background].first != -1) {
+        ctx->style.window.fixed_background = nk_style_item_image(
+            images[skinned_style.props[background].first][skinned_style.props[background].second].first
+        );
+    }
+
+    // Header
+    if (skinned_style.props[normal].first != -1) {
+        ctx->style.window.header.normal = nk_style_item_image(
+            images[skinned_style.props[normal].first][skinned_style.props[normal].second].first
+        );
+    }
+    if (skinned_style.props[hover].first != -1) {
+        ctx->style.window.header.hover = nk_style_item_image(
+            images[skinned_style.props[hover].first][skinned_style.props[hover].second].first
+        );
+    }
+    if (skinned_style.props[active].first != -1) {
+        ctx->style.window.header.active = nk_style_item_image(
+            images[skinned_style.props[active].first][skinned_style.props[active].second].first
+        );
+    }
+
+    ctx->style.window.spacing = nk_vec2(spacing.h, spacing.w);
+    ctx->style.window.padding = nk_vec2(padding.h, padding.w);
+    ctx->style.window.border = border_size;
+
+    if (font != "None") {
+        nk_style_set_font(
+            ctx,
+            &backend_loaded_fonts[font][font_size]->handle
+        );
+    }
+
     if (
         nk_begin(
             ctx,
             name.c_str(),
             nk_rect(
-                (float)screen_region.x,
-                (float)screen_region.y,
-                (float)screen_region.w,
-                (float)screen_region.h
+                screen_size.w * screen_region.x,
+                screen_size.h * screen_region.y,
+                screen_size.w * screen_region.w,
+                screen_size.h * screen_region.h
             ),
             flags
         )
     ) {
+        initialized_in_backend = true;
         focused = nk_window_has_focus(ctx);
         hasCursor = nk_window_is_hovered(ctx);
         callWidgetUI(UIMap);
     }
+    if (movable) {
+        // update screen_region with current bounds, if those are changed by user
+        screen_region.x = ctx->current->bounds.x / screen_size.w;
+        screen_region.y = ctx->current->bounds.y / screen_size.h;
+        screen_region.w = ctx->current->bounds.w / screen_size.w;
+        screen_region.h = ctx->current->bounds.h / screen_size.h;
+    }
     nk_end(ctx);
 }
 
-void WIDGET::allocateRow(unsigned int cols, float min_height){
-    nk_layout_row_dynamic(ctx, min_height, cols);
+void Manager::addImage(
+    unsigned int texID,
+    unsigned short w,
+	unsigned short h,
+	region<float> crop
+) {
+
+    images[texID].push_back(
+          std::pair<struct nk_image, region<float>> { 
+            nk_subimage_id(
+                texID, 
+                w,
+                h, 
+                nk_rect(
+                    crop.x * w, 
+                    crop.y * h, 
+                    crop.w * w, 
+                    crop.h * h
+                )
+            ), 
+            crop 
+            }
+    );
 }
 
-void WIDGET::allocateEmptySpace(unsigned int fill_count){
-    nk_spacing(ctx, fill_count);
+void WIDGET::useSkinImage(
+	unsigned int texID,
+	unsigned short w,
+	unsigned short h,
+	region<float> crop,
+	IMAGE_SKIN_ELEMENT elt
+) {
+    Manager::addImage(texID, w, h, crop);
+    skinned_style.props[elt].first = texID;
+    skinned_style.props[elt].second = images[texID].size() - 1;
 }
 
-void WIDGET::allocateGroupStart(elements_group & g, float min_height){
-    g.unfolded = nk_tree_push(ctx, NK_TREE_TAB, g.name.c_str(), NK_MINIMIZED);
-    if (g.unfolded)
-        nk_layout_row_dynamic(ctx, min_height, g.row_items_count);
+IndieGo::UI::region<float> WIDGET::getImgCrop(IndieGo::UI::IMAGE_SKIN_ELEMENT elt) {
+    int idx = skinned_style.props[elt].first;
+    if (idx == -1) return { 0.f, 0.f, 0.f, 0.f };
+    return images[ skinned_style.props[elt].first ][ skinned_style.props[elt].second ].second;
 }
 
-void WIDGET::allocateGroupEnd(){
-    nk_tree_pop(ctx);
+// TODO : calculate elements count in row
+// so far - 64 == max
+void WIDGET::allocateRow(unsigned int cols, float min_height, bool in_pixels) {
+    float height = in_pixels ? min_height : screen_size.h * screen_region.h * min_height;
+    nk_layout_space_begin(
+        ctx, 
+        NK_STATIC, 
+        height,
+        64
+    );
 }
+
+void WIDGET::endRow() {
+    nk_layout_space_end(ctx);
+}
+
+// void WIDGET::allocateEmptySpace(unsigned int fill_count){
+//     nk_spacing(ctx, fill_count);
+// }
+
+// void WIDGET::allocateGroupStart(elements_group & g, float min_height){
+//     g.unfolded = nk_tree_push(ctx, NK_TREE_TAB, g.name.c_str(), NK_MINIMIZED);
+//     if (g.unfolded)
+//         nk_layout_row_dynamic(ctx, min_height, g.row_items_count);
+// }
+
+// void WIDGET::allocateGroupEnd(){
+//     nk_tree_pop(ctx);
+// }
 
 #define NK_GLFW_GL3_MOUSE_GRABBING
 
 void Manager::drawFrameStart(std::string & winID) {
-    // GLFWwindow * glfw_win = reinterpret_cast<GLFWwindow*>(window);
     struct nk_glfw * glfw = glfw_storage[winID];
 
     int i;
@@ -805,6 +1066,14 @@ void Manager::drawFrameStart(std::string & winID) {
     nk_input_end(&glfw->ctx);
     glfw->text_len = 0;
     glfw->scroll = nk_vec2(0,0);
+
+    // set "default global" font
+    if (main_font != "None") {
+        nk_style_set_font(
+            &glfw->ctx, 
+            &backend_loaded_fonts[main_font][main_font_size]->handle
+        );
+    }
 }
 
 void Manager::drawFrameEnd(std::string & winID) {
@@ -813,27 +1082,70 @@ void Manager::drawFrameEnd(std::string & winID) {
     nk_glfw3_render(glfw, NK_ANTI_ALIASING_ON, MAX_VERTEX_BUFFER, MAX_ELEMENT_BUFFER);
 }
 
-void Manager::init(void * initData){
-    NuklearInitData * initPtr = reinterpret_cast<NuklearInitData*>(initData);
-    prepareUIRenderer(initPtr->window, initPtr->winID);
+void Manager::init(std::string winID, void * initData){
+    // NuklearInitData * initPtr = reinterpret_cast<NuklearInitData*>(initData);
+    prepareUIRenderer((GLFWwindow*)initData, winID);
 }
 
-void Manager::addWindow(void * initData){
-    NuklearInitData * initPtr = reinterpret_cast<NuklearInitData*>(initData);
-    prepareUIRenderer(initPtr->window, initPtr->winID);
+void Manager::addWindow(std::string winID, void * initData) {
+    prepareUIRenderer((GLFWwindow*)initData, winID);
 }
 
-void Manager::removeWindow(void * winData) {
-    // NuklearInitData * winPtr = reinterpret_cast<NuklearInitData*>(winData);
-    // if (glfw_storage.find(winPtr->winID) != glfw_storage.end()) {
-    //     std::cout << "[NUKLEAR::INFO] releasing context for " << winPtr->winID << std::endl;
-    //     // get rid of old context data before creating new window
-    //     nk_free(&glfw_storage[winPtr->winID]->ctx);
-    //     delete glfw_storage[winPtr->winID];
-    //     glfw_storage.erase(
-    //         glfw_storage.find(winPtr->winID)
-    //     );
-    // }
+void Manager::removeWindow(std::string winID, void * winData) {
+
 }
 
+void * img_data = NULL;
+void Manager::loadFont(std::string path, const std::string & winID, float font_size, bool useProjectDir, bool cutProjDirFromPath) {
+    std::string font_name = fs::path(path).stem().string();
+    if (std::find(loaded_fonts[font_name].sizes.begin(), loaded_fonts[font_name].sizes.end(), font_size) != loaded_fonts[font_name].sizes.end())
+        return;
 
+    const void *image; int w, h;
+    struct nk_font_config cfg = nk_font_config(0);
+    nk_font_atlas_init_default(&atlas);
+    nk_font_atlas_begin(&atlas);
+
+    loaded_fonts[ font_name ].sizes.push_back(font_size);
+    char * pd = getenv("PROJECT_DIR");
+    std::string project_dir = "";
+    if (useProjectDir && pd) {
+        project_dir = pd;
+        if (!cutProjDirFromPath) {
+            loaded_fonts[fs::path(path).stem().string()].path = path;
+        } else {
+            loaded_fonts[fs::path(path).stem().string()].path = path.substr(
+                project_dir.size(), path.size()
+            );
+        }
+    } else {
+        loaded_fonts[ fs::path(path).stem().string() ].path = path;
+    }
+
+    backend_loaded_fonts.clear();
+
+    bool mainFont = false;
+    for (auto font : loaded_fonts) {
+        mainFont = font.first == main_font;
+        for (auto font_size : font.second.sizes) {
+            if (mainFont) // never use PROJECT_DIR for main font loading
+                backend_loaded_fonts[font.first][font_size] = nk_font_atlas_add_from_file(&atlas, font.second.path.c_str(), font_size, &cfg );
+            else
+                backend_loaded_fonts[font.first][font_size] = nk_font_atlas_add_from_file(
+                    &atlas, 
+                    useProjectDir ? (project_dir + font.second.path).c_str() :font.second.path.c_str(),
+                    font_size, 
+                    &cfg
+                );
+        }
+    }
+
+    image = nk_font_atlas_bake(&atlas, &w, &h, NK_FONT_ATLAS_RGBA32);
+
+    nk_glfw3_device_upload_atlas(glfw_storage[winID], image, w, h);
+    nk_font_atlas_end(&atlas, nk_handle_id((int)glfw_storage[winID]->ogl.font_tex), &glfw_storage[winID]->ogl.null);
+    if (main_font == "None") {
+        main_font = font_name;
+        main_font_size = font_size;
+    }
+}
