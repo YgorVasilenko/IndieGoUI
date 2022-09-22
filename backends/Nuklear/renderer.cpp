@@ -787,11 +787,6 @@ void UI_element::useSkinImage(
     Manager::addImage(texID, w, h, crop);
     skinned_style.props[elt].first = texID;
     skinned_style.props[elt].second = images[texID].size() - 1;
-    /*images[texID].push_back(
-        std::pair<struct nk_image, region<float>> { nk_subimage_id(texID, w,h, nk_rect(crop.x, crop.y, crop.w, crop.h)), crop }
-    );*/
-    /*skinned_style.props[elt].first = texID;
-    skinned_style.props[elt].second = images[texID].size() - 1;*/
 }
 
 IndieGo::UI::region<float> UI_element::getImgCrop(IndieGo::UI::IMAGE_SKIN_ELEMENT elt) {
@@ -800,9 +795,6 @@ IndieGo::UI::region<float> UI_element::getImgCrop(IndieGo::UI::IMAGE_SKIN_ELEMEN
     return images[ skinned_style.props[elt].first ][ skinned_style.props[elt].second ].second;
 }
 
-bool test_img_loaded = false;
-// extern unsigned int load_image(const char *filename);
-struct nk_image test_i;
 //--------------------------------------------------------
 //
 //            Widget display function. May use
@@ -836,7 +828,7 @@ void WIDGET::callImmediateBackend(UI_elements_map & UIMap){
         setFocus = false;
     }
 
-    // TODO : prior to drawing, check if window's size changed
+    // NOTE : prior to drawing, user should check if window's size changed
     // if so, try fitting widget to new size as much as possible
     float x = screen_size.w * screen_region.x;
     float y = screen_size.h * screen_region.y;
@@ -1104,8 +1096,7 @@ void Manager::removeWindow(std::string winID, void * winData) {
 }
 
 void * img_data = NULL;
-void Manager::loadFont(std::string path, const std::string & winID, float font_size) {
-
+void Manager::loadFont(std::string path, const std::string & winID, float font_size, bool useProjectDir, bool cutProjDirFromPath) {
     std::string font_name = fs::path(path).stem().string();
     if (std::find(loaded_fonts[font_name].sizes.begin(), loaded_fonts[font_name].sizes.end(), font_size) != loaded_fonts[font_name].sizes.end())
         return;
@@ -1118,20 +1109,34 @@ void Manager::loadFont(std::string path, const std::string & winID, float font_s
     loaded_fonts[ font_name ].sizes.push_back(font_size);
     char * pd = getenv("PROJECT_DIR");
     std::string project_dir = "";
-    if (pd) {
+    if (useProjectDir && pd) {
         project_dir = pd;
-        loaded_fonts[fs::path(path).stem().string()].path = path.substr(
-            project_dir.size(), path.size()
-        );
+        if (!cutProjDirFromPath) {
+            loaded_fonts[fs::path(path).stem().string()].path = path;
+        } else {
+            loaded_fonts[fs::path(path).stem().string()].path = path.substr(
+                project_dir.size(), path.size()
+            );
+        }
     } else {
         loaded_fonts[ fs::path(path).stem().string() ].path = path;
     }
 
     backend_loaded_fonts.clear();
 
+    bool mainFont = false;
     for (auto font : loaded_fonts) {
+        mainFont = font.first == main_font;
         for (auto font_size : font.second.sizes) {
-            backend_loaded_fonts[font.first][font_size] = nk_font_atlas_add_from_file(&atlas, (project_dir + font.second.path).c_str(), font_size, &cfg);
+            if (mainFont) // never use PROJECT_DIR for main font loading
+                backend_loaded_fonts[font.first][font_size] = nk_font_atlas_add_from_file(&atlas, font.second.path.c_str(), font_size, &cfg );
+            else
+                backend_loaded_fonts[font.first][font_size] = nk_font_atlas_add_from_file(
+                    &atlas, 
+                    useProjectDir ? (project_dir + font.second.path).c_str() :font.second.path.c_str(),
+                    font_size, 
+                    &cfg
+                );
         }
     }
 

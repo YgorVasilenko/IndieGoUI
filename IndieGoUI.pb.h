@@ -57,9 +57,6 @@ extern LayoutRowDefaultTypeInternal _LayoutRow_default_instance_;
 class SerializedUI;
 struct SerializedUIDefaultTypeInternal;
 extern SerializedUIDefaultTypeInternal _SerializedUI_default_instance_;
-class SkinImage;
-struct SkinImageDefaultTypeInternal;
-extern SkinImageDefaultTypeInternal _SkinImage_default_instance_;
 class SkinnedProperty;
 struct SkinnedPropertyDefaultTypeInternal;
 extern SkinnedPropertyDefaultTypeInternal _SkinnedProperty_default_instance_;
@@ -84,7 +81,6 @@ template<> ::ui_serialization::Element* Arena::CreateMaybeMessage<::ui_serializa
 template<> ::ui_serialization::Font* Arena::CreateMaybeMessage<::ui_serialization::Font>(Arena*);
 template<> ::ui_serialization::LayoutRow* Arena::CreateMaybeMessage<::ui_serialization::LayoutRow>(Arena*);
 template<> ::ui_serialization::SerializedUI* Arena::CreateMaybeMessage<::ui_serialization::SerializedUI>(Arena*);
-template<> ::ui_serialization::SkinImage* Arena::CreateMaybeMessage<::ui_serialization::SkinImage>(Arena*);
 template<> ::ui_serialization::SkinnedProperty* Arena::CreateMaybeMessage<::ui_serialization::SkinnedProperty>(Arena*);
 template<> ::ui_serialization::StyleColor* Arena::CreateMaybeMessage<::ui_serialization::StyleColor>(Arena*);
 template<> ::ui_serialization::Widget* Arena::CreateMaybeMessage<::ui_serialization::Widget>(Arena*);
@@ -617,179 +613,6 @@ class StyleColor final :
 };
 // -------------------------------------------------------------------
 
-class SkinImage final :
-    public ::PROTOBUF_NAMESPACE_ID::Message /* @@protoc_insertion_point(class_definition:ui_serialization.SkinImage) */ {
- public:
-  inline SkinImage() : SkinImage(nullptr) {}
-  ~SkinImage() override;
-  explicit PROTOBUF_CONSTEXPR SkinImage(::PROTOBUF_NAMESPACE_ID::internal::ConstantInitialized);
-
-  SkinImage(const SkinImage& from);
-  SkinImage(SkinImage&& from) noexcept
-    : SkinImage() {
-    *this = ::std::move(from);
-  }
-
-  inline SkinImage& operator=(const SkinImage& from) {
-    CopyFrom(from);
-    return *this;
-  }
-  inline SkinImage& operator=(SkinImage&& from) noexcept {
-    if (this == &from) return *this;
-    if (GetOwningArena() == from.GetOwningArena()
-  #ifdef PROTOBUF_FORCE_COPY_IN_MOVE
-        && GetOwningArena() != nullptr
-  #endif  // !PROTOBUF_FORCE_COPY_IN_MOVE
-    ) {
-      InternalSwap(&from);
-    } else {
-      CopyFrom(from);
-    }
-    return *this;
-  }
-
-  static const ::PROTOBUF_NAMESPACE_ID::Descriptor* descriptor() {
-    return GetDescriptor();
-  }
-  static const ::PROTOBUF_NAMESPACE_ID::Descriptor* GetDescriptor() {
-    return default_instance().GetMetadata().descriptor;
-  }
-  static const ::PROTOBUF_NAMESPACE_ID::Reflection* GetReflection() {
-    return default_instance().GetMetadata().reflection;
-  }
-  static const SkinImage& default_instance() {
-    return *internal_default_instance();
-  }
-  static inline const SkinImage* internal_default_instance() {
-    return reinterpret_cast<const SkinImage*>(
-               &_SkinImage_default_instance_);
-  }
-  static constexpr int kIndexInFileMessages =
-    3;
-
-  friend void swap(SkinImage& a, SkinImage& b) {
-    a.Swap(&b);
-  }
-  inline void Swap(SkinImage* other) {
-    if (other == this) return;
-  #ifdef PROTOBUF_FORCE_COPY_IN_SWAP
-    if (GetOwningArena() != nullptr &&
-        GetOwningArena() == other->GetOwningArena()) {
-   #else  // PROTOBUF_FORCE_COPY_IN_SWAP
-    if (GetOwningArena() == other->GetOwningArena()) {
-  #endif  // !PROTOBUF_FORCE_COPY_IN_SWAP
-      InternalSwap(other);
-    } else {
-      ::PROTOBUF_NAMESPACE_ID::internal::GenericSwap(this, other);
-    }
-  }
-  void UnsafeArenaSwap(SkinImage* other) {
-    if (other == this) return;
-    GOOGLE_DCHECK(GetOwningArena() == other->GetOwningArena());
-    InternalSwap(other);
-  }
-
-  // implements Message ----------------------------------------------
-
-  SkinImage* New(::PROTOBUF_NAMESPACE_ID::Arena* arena = nullptr) const final {
-    return CreateMaybeMessage<SkinImage>(arena);
-  }
-  using ::PROTOBUF_NAMESPACE_ID::Message::CopyFrom;
-  void CopyFrom(const SkinImage& from);
-  using ::PROTOBUF_NAMESPACE_ID::Message::MergeFrom;
-  void MergeFrom( const SkinImage& from) {
-    SkinImage::MergeImpl(*this, from);
-  }
-  private:
-  static void MergeImpl(::PROTOBUF_NAMESPACE_ID::Message& to_msg, const ::PROTOBUF_NAMESPACE_ID::Message& from_msg);
-  public:
-  PROTOBUF_ATTRIBUTE_REINITIALIZES void Clear() final;
-  bool IsInitialized() const final;
-
-  size_t ByteSizeLong() const final;
-  const char* _InternalParse(const char* ptr, ::PROTOBUF_NAMESPACE_ID::internal::ParseContext* ctx) final;
-  uint8_t* _InternalSerialize(
-      uint8_t* target, ::PROTOBUF_NAMESPACE_ID::io::EpsCopyOutputStream* stream) const final;
-  int GetCachedSize() const final { return _impl_._cached_size_.Get(); }
-
-  private:
-  void SharedCtor(::PROTOBUF_NAMESPACE_ID::Arena* arena, bool is_message_owned);
-  void SharedDtor();
-  void SetCachedSize(int size) const final;
-  void InternalSwap(SkinImage* other);
-
-  private:
-  friend class ::PROTOBUF_NAMESPACE_ID::internal::AnyMetadata;
-  static ::PROTOBUF_NAMESPACE_ID::StringPiece FullMessageName() {
-    return "ui_serialization.SkinImage";
-  }
-  protected:
-  explicit SkinImage(::PROTOBUF_NAMESPACE_ID::Arena* arena,
-                       bool is_message_owned = false);
-  public:
-
-  static const ClassData _class_data_;
-  const ::PROTOBUF_NAMESPACE_ID::Message::ClassData*GetClassData() const final;
-
-  ::PROTOBUF_NAMESPACE_ID::Metadata GetMetadata() const final;
-
-  // nested types ----------------------------------------------------
-
-  // accessors -------------------------------------------------------
-
-  enum : int {
-    kPathFieldNumber = 1,
-    kCropFieldNumber = 2,
-  };
-  // string path = 1;
-  void clear_path();
-  const std::string& path() const;
-  template <typename ArgT0 = const std::string&, typename... ArgT>
-  void set_path(ArgT0&& arg0, ArgT... args);
-  std::string* mutable_path();
-  PROTOBUF_NODISCARD std::string* release_path();
-  void set_allocated_path(std::string* path);
-  private:
-  const std::string& _internal_path() const;
-  inline PROTOBUF_ALWAYS_INLINE void _internal_set_path(const std::string& value);
-  std::string* _internal_mutable_path();
-  public:
-
-  // .ui_serialization.region crop = 2;
-  bool has_crop() const;
-  private:
-  bool _internal_has_crop() const;
-  public:
-  void clear_crop();
-  const ::ui_serialization::region& crop() const;
-  PROTOBUF_NODISCARD ::ui_serialization::region* release_crop();
-  ::ui_serialization::region* mutable_crop();
-  void set_allocated_crop(::ui_serialization::region* crop);
-  private:
-  const ::ui_serialization::region& _internal_crop() const;
-  ::ui_serialization::region* _internal_mutable_crop();
-  public:
-  void unsafe_arena_set_allocated_crop(
-      ::ui_serialization::region* crop);
-  ::ui_serialization::region* unsafe_arena_release_crop();
-
-  // @@protoc_insertion_point(class_scope:ui_serialization.SkinImage)
- private:
-  class _Internal;
-
-  template <typename T> friend class ::PROTOBUF_NAMESPACE_ID::Arena::InternalHelper;
-  typedef void InternalArenaConstructable_;
-  typedef void DestructorSkippable_;
-  struct Impl_ {
-    ::PROTOBUF_NAMESPACE_ID::internal::ArenaStringPtr path_;
-    ::ui_serialization::region* crop_;
-    mutable ::PROTOBUF_NAMESPACE_ID::internal::CachedSize _cached_size_;
-  };
-  union { Impl_ _impl_; };
-  friend struct ::TableStruct_IndieGoUI_2eproto;
-};
-// -------------------------------------------------------------------
-
 class Font final :
     public ::PROTOBUF_NAMESPACE_ID::Message /* @@protoc_insertion_point(class_definition:ui_serialization.Font) */ {
  public:
@@ -838,7 +661,7 @@ class Font final :
                &_Font_default_instance_);
   }
   static constexpr int kIndexInFileMessages =
-    4;
+    3;
 
   friend void swap(Font& a, Font& b) {
     a.Swap(&b);
@@ -1002,7 +825,7 @@ class SkinnedProperty final :
                &_SkinnedProperty_default_instance_);
   }
   static constexpr int kIndexInFileMessages =
-    5;
+    4;
 
   friend void swap(SkinnedProperty& a, SkinnedProperty& b) {
     a.Swap(&b);
@@ -1075,26 +898,26 @@ class SkinnedProperty final :
   // accessors -------------------------------------------------------
 
   enum : int {
-    kImgFieldNumber = 1,
+    kCropFieldNumber = 1,
     kPropTypeFieldNumber = 2,
   };
-  // .ui_serialization.SkinImage img = 1;
-  bool has_img() const;
+  // .ui_serialization.region crop = 1;
+  bool has_crop() const;
   private:
-  bool _internal_has_img() const;
+  bool _internal_has_crop() const;
   public:
-  void clear_img();
-  const ::ui_serialization::SkinImage& img() const;
-  PROTOBUF_NODISCARD ::ui_serialization::SkinImage* release_img();
-  ::ui_serialization::SkinImage* mutable_img();
-  void set_allocated_img(::ui_serialization::SkinImage* img);
+  void clear_crop();
+  const ::ui_serialization::region& crop() const;
+  PROTOBUF_NODISCARD ::ui_serialization::region* release_crop();
+  ::ui_serialization::region* mutable_crop();
+  void set_allocated_crop(::ui_serialization::region* crop);
   private:
-  const ::ui_serialization::SkinImage& _internal_img() const;
-  ::ui_serialization::SkinImage* _internal_mutable_img();
+  const ::ui_serialization::region& _internal_crop() const;
+  ::ui_serialization::region* _internal_mutable_crop();
   public:
-  void unsafe_arena_set_allocated_img(
-      ::ui_serialization::SkinImage* img);
-  ::ui_serialization::SkinImage* unsafe_arena_release_img();
+  void unsafe_arena_set_allocated_crop(
+      ::ui_serialization::region* crop);
+  ::ui_serialization::region* unsafe_arena_release_crop();
 
   // uint32 prop_type = 2;
   void clear_prop_type();
@@ -1113,7 +936,7 @@ class SkinnedProperty final :
   typedef void InternalArenaConstructable_;
   typedef void DestructorSkippable_;
   struct Impl_ {
-    ::ui_serialization::SkinImage* img_;
+    ::ui_serialization::region* crop_;
     uint32_t prop_type_;
     mutable ::PROTOBUF_NAMESPACE_ID::internal::CachedSize _cached_size_;
   };
@@ -1170,7 +993,7 @@ class LayoutRow final :
                &_LayoutRow_default_instance_);
   }
   static constexpr int kIndexInFileMessages =
-    6;
+    5;
 
   friend void swap(LayoutRow& a, LayoutRow& b) {
     a.Swap(&b);
@@ -1342,7 +1165,7 @@ class WidgetBase final :
                &_WidgetBase_default_instance_);
   }
   static constexpr int kIndexInFileMessages =
-    7;
+    6;
 
   friend void swap(WidgetBase& a, WidgetBase& b) {
     a.Swap(&b);
@@ -1701,7 +1524,7 @@ class Element final :
                &_Element_default_instance_);
   }
   static constexpr int kIndexInFileMessages =
-    8;
+    7;
 
   friend void swap(Element& a, Element& b) {
     a.Swap(&b);
@@ -2043,7 +1866,7 @@ class Widget final :
                &_Widget_default_instance_);
   }
   static constexpr int kIndexInFileMessages =
-    9;
+    8;
 
   friend void swap(Widget& a, Widget& b) {
     a.Swap(&b);
@@ -2220,7 +2043,7 @@ class SerializedUI final :
                &_SerializedUI_default_instance_);
   }
   static constexpr int kIndexInFileMessages =
-    10;
+    9;
 
   friend void swap(SerializedUI& a, SerializedUI& b) {
     a.Swap(&b);
@@ -2295,6 +2118,8 @@ class SerializedUI final :
   enum : int {
     kFontsFieldNumber = 1,
     kWidgetsFieldNumber = 2,
+    kImagesFieldNumber = 3,
+    kSkinningImageIdxFieldNumber = 4,
   };
   // repeated .ui_serialization.Font fonts = 1;
   int fonts_size() const;
@@ -2332,6 +2157,43 @@ class SerializedUI final :
   const ::PROTOBUF_NAMESPACE_ID::RepeatedPtrField< ::ui_serialization::Widget >&
       widgets() const;
 
+  // repeated string images = 3;
+  int images_size() const;
+  private:
+  int _internal_images_size() const;
+  public:
+  void clear_images();
+  const std::string& images(int index) const;
+  std::string* mutable_images(int index);
+  void set_images(int index, const std::string& value);
+  void set_images(int index, std::string&& value);
+  void set_images(int index, const char* value);
+  void set_images(int index, const char* value, size_t size);
+  std::string* add_images();
+  void add_images(const std::string& value);
+  void add_images(std::string&& value);
+  void add_images(const char* value);
+  void add_images(const char* value, size_t size);
+  const ::PROTOBUF_NAMESPACE_ID::RepeatedPtrField<std::string>& images() const;
+  ::PROTOBUF_NAMESPACE_ID::RepeatedPtrField<std::string>* mutable_images();
+  private:
+  const std::string& _internal_images(int index) const;
+  std::string* _internal_add_images();
+  public:
+
+  // optional uint32 skinning_image_idx = 4;
+  bool has_skinning_image_idx() const;
+  private:
+  bool _internal_has_skinning_image_idx() const;
+  public:
+  void clear_skinning_image_idx();
+  uint32_t skinning_image_idx() const;
+  void set_skinning_image_idx(uint32_t value);
+  private:
+  uint32_t _internal_skinning_image_idx() const;
+  void _internal_set_skinning_image_idx(uint32_t value);
+  public:
+
   // @@protoc_insertion_point(class_scope:ui_serialization.SerializedUI)
  private:
   class _Internal;
@@ -2340,9 +2202,12 @@ class SerializedUI final :
   typedef void InternalArenaConstructable_;
   typedef void DestructorSkippable_;
   struct Impl_ {
+    ::PROTOBUF_NAMESPACE_ID::internal::HasBits<1> _has_bits_;
+    mutable ::PROTOBUF_NAMESPACE_ID::internal::CachedSize _cached_size_;
     ::PROTOBUF_NAMESPACE_ID::RepeatedPtrField< ::ui_serialization::Font > fonts_;
     ::PROTOBUF_NAMESPACE_ID::RepeatedPtrField< ::ui_serialization::Widget > widgets_;
-    mutable ::PROTOBUF_NAMESPACE_ID::internal::CachedSize _cached_size_;
+    ::PROTOBUF_NAMESPACE_ID::RepeatedPtrField<std::string> images_;
+    uint32_t skinning_image_idx_;
   };
   union { Impl_ _impl_; };
   friend struct ::TableStruct_IndieGoUI_2eproto;
@@ -2568,150 +2433,6 @@ inline void StyleColor::set_a(float value) {
 
 // -------------------------------------------------------------------
 
-// SkinImage
-
-// string path = 1;
-inline void SkinImage::clear_path() {
-  _impl_.path_.ClearToEmpty();
-}
-inline const std::string& SkinImage::path() const {
-  // @@protoc_insertion_point(field_get:ui_serialization.SkinImage.path)
-  return _internal_path();
-}
-template <typename ArgT0, typename... ArgT>
-inline PROTOBUF_ALWAYS_INLINE
-void SkinImage::set_path(ArgT0&& arg0, ArgT... args) {
- 
- _impl_.path_.Set(static_cast<ArgT0 &&>(arg0), args..., GetArenaForAllocation());
-  // @@protoc_insertion_point(field_set:ui_serialization.SkinImage.path)
-}
-inline std::string* SkinImage::mutable_path() {
-  std::string* _s = _internal_mutable_path();
-  // @@protoc_insertion_point(field_mutable:ui_serialization.SkinImage.path)
-  return _s;
-}
-inline const std::string& SkinImage::_internal_path() const {
-  return _impl_.path_.Get();
-}
-inline void SkinImage::_internal_set_path(const std::string& value) {
-  
-  _impl_.path_.Set(value, GetArenaForAllocation());
-}
-inline std::string* SkinImage::_internal_mutable_path() {
-  
-  return _impl_.path_.Mutable(GetArenaForAllocation());
-}
-inline std::string* SkinImage::release_path() {
-  // @@protoc_insertion_point(field_release:ui_serialization.SkinImage.path)
-  return _impl_.path_.Release();
-}
-inline void SkinImage::set_allocated_path(std::string* path) {
-  if (path != nullptr) {
-    
-  } else {
-    
-  }
-  _impl_.path_.SetAllocated(path, GetArenaForAllocation());
-#ifdef PROTOBUF_FORCE_COPY_DEFAULT_STRING
-  if (_impl_.path_.IsDefault()) {
-    _impl_.path_.Set("", GetArenaForAllocation());
-  }
-#endif // PROTOBUF_FORCE_COPY_DEFAULT_STRING
-  // @@protoc_insertion_point(field_set_allocated:ui_serialization.SkinImage.path)
-}
-
-// .ui_serialization.region crop = 2;
-inline bool SkinImage::_internal_has_crop() const {
-  return this != internal_default_instance() && _impl_.crop_ != nullptr;
-}
-inline bool SkinImage::has_crop() const {
-  return _internal_has_crop();
-}
-inline void SkinImage::clear_crop() {
-  if (GetArenaForAllocation() == nullptr && _impl_.crop_ != nullptr) {
-    delete _impl_.crop_;
-  }
-  _impl_.crop_ = nullptr;
-}
-inline const ::ui_serialization::region& SkinImage::_internal_crop() const {
-  const ::ui_serialization::region* p = _impl_.crop_;
-  return p != nullptr ? *p : reinterpret_cast<const ::ui_serialization::region&>(
-      ::ui_serialization::_region_default_instance_);
-}
-inline const ::ui_serialization::region& SkinImage::crop() const {
-  // @@protoc_insertion_point(field_get:ui_serialization.SkinImage.crop)
-  return _internal_crop();
-}
-inline void SkinImage::unsafe_arena_set_allocated_crop(
-    ::ui_serialization::region* crop) {
-  if (GetArenaForAllocation() == nullptr) {
-    delete reinterpret_cast<::PROTOBUF_NAMESPACE_ID::MessageLite*>(_impl_.crop_);
-  }
-  _impl_.crop_ = crop;
-  if (crop) {
-    
-  } else {
-    
-  }
-  // @@protoc_insertion_point(field_unsafe_arena_set_allocated:ui_serialization.SkinImage.crop)
-}
-inline ::ui_serialization::region* SkinImage::release_crop() {
-  
-  ::ui_serialization::region* temp = _impl_.crop_;
-  _impl_.crop_ = nullptr;
-#ifdef PROTOBUF_FORCE_COPY_IN_RELEASE
-  auto* old =  reinterpret_cast<::PROTOBUF_NAMESPACE_ID::MessageLite*>(temp);
-  temp = ::PROTOBUF_NAMESPACE_ID::internal::DuplicateIfNonNull(temp);
-  if (GetArenaForAllocation() == nullptr) { delete old; }
-#else  // PROTOBUF_FORCE_COPY_IN_RELEASE
-  if (GetArenaForAllocation() != nullptr) {
-    temp = ::PROTOBUF_NAMESPACE_ID::internal::DuplicateIfNonNull(temp);
-  }
-#endif  // !PROTOBUF_FORCE_COPY_IN_RELEASE
-  return temp;
-}
-inline ::ui_serialization::region* SkinImage::unsafe_arena_release_crop() {
-  // @@protoc_insertion_point(field_release:ui_serialization.SkinImage.crop)
-  
-  ::ui_serialization::region* temp = _impl_.crop_;
-  _impl_.crop_ = nullptr;
-  return temp;
-}
-inline ::ui_serialization::region* SkinImage::_internal_mutable_crop() {
-  
-  if (_impl_.crop_ == nullptr) {
-    auto* p = CreateMaybeMessage<::ui_serialization::region>(GetArenaForAllocation());
-    _impl_.crop_ = p;
-  }
-  return _impl_.crop_;
-}
-inline ::ui_serialization::region* SkinImage::mutable_crop() {
-  ::ui_serialization::region* _msg = _internal_mutable_crop();
-  // @@protoc_insertion_point(field_mutable:ui_serialization.SkinImage.crop)
-  return _msg;
-}
-inline void SkinImage::set_allocated_crop(::ui_serialization::region* crop) {
-  ::PROTOBUF_NAMESPACE_ID::Arena* message_arena = GetArenaForAllocation();
-  if (message_arena == nullptr) {
-    delete _impl_.crop_;
-  }
-  if (crop) {
-    ::PROTOBUF_NAMESPACE_ID::Arena* submessage_arena =
-        ::PROTOBUF_NAMESPACE_ID::Arena::InternalGetOwningArena(crop);
-    if (message_arena != submessage_arena) {
-      crop = ::PROTOBUF_NAMESPACE_ID::internal::GetOwnedMessage(
-          message_arena, crop, submessage_arena);
-    }
-    
-  } else {
-    
-  }
-  _impl_.crop_ = crop;
-  // @@protoc_insertion_point(field_set_allocated:ui_serialization.SkinImage.crop)
-}
-
-// -------------------------------------------------------------------
-
 // Font
 
 // string name = 1;
@@ -2788,45 +2509,45 @@ inline void Font::set_size(float value) {
 
 // SkinnedProperty
 
-// .ui_serialization.SkinImage img = 1;
-inline bool SkinnedProperty::_internal_has_img() const {
-  return this != internal_default_instance() && _impl_.img_ != nullptr;
+// .ui_serialization.region crop = 1;
+inline bool SkinnedProperty::_internal_has_crop() const {
+  return this != internal_default_instance() && _impl_.crop_ != nullptr;
 }
-inline bool SkinnedProperty::has_img() const {
-  return _internal_has_img();
+inline bool SkinnedProperty::has_crop() const {
+  return _internal_has_crop();
 }
-inline void SkinnedProperty::clear_img() {
-  if (GetArenaForAllocation() == nullptr && _impl_.img_ != nullptr) {
-    delete _impl_.img_;
+inline void SkinnedProperty::clear_crop() {
+  if (GetArenaForAllocation() == nullptr && _impl_.crop_ != nullptr) {
+    delete _impl_.crop_;
   }
-  _impl_.img_ = nullptr;
+  _impl_.crop_ = nullptr;
 }
-inline const ::ui_serialization::SkinImage& SkinnedProperty::_internal_img() const {
-  const ::ui_serialization::SkinImage* p = _impl_.img_;
-  return p != nullptr ? *p : reinterpret_cast<const ::ui_serialization::SkinImage&>(
-      ::ui_serialization::_SkinImage_default_instance_);
+inline const ::ui_serialization::region& SkinnedProperty::_internal_crop() const {
+  const ::ui_serialization::region* p = _impl_.crop_;
+  return p != nullptr ? *p : reinterpret_cast<const ::ui_serialization::region&>(
+      ::ui_serialization::_region_default_instance_);
 }
-inline const ::ui_serialization::SkinImage& SkinnedProperty::img() const {
-  // @@protoc_insertion_point(field_get:ui_serialization.SkinnedProperty.img)
-  return _internal_img();
+inline const ::ui_serialization::region& SkinnedProperty::crop() const {
+  // @@protoc_insertion_point(field_get:ui_serialization.SkinnedProperty.crop)
+  return _internal_crop();
 }
-inline void SkinnedProperty::unsafe_arena_set_allocated_img(
-    ::ui_serialization::SkinImage* img) {
+inline void SkinnedProperty::unsafe_arena_set_allocated_crop(
+    ::ui_serialization::region* crop) {
   if (GetArenaForAllocation() == nullptr) {
-    delete reinterpret_cast<::PROTOBUF_NAMESPACE_ID::MessageLite*>(_impl_.img_);
+    delete reinterpret_cast<::PROTOBUF_NAMESPACE_ID::MessageLite*>(_impl_.crop_);
   }
-  _impl_.img_ = img;
-  if (img) {
+  _impl_.crop_ = crop;
+  if (crop) {
     
   } else {
     
   }
-  // @@protoc_insertion_point(field_unsafe_arena_set_allocated:ui_serialization.SkinnedProperty.img)
+  // @@protoc_insertion_point(field_unsafe_arena_set_allocated:ui_serialization.SkinnedProperty.crop)
 }
-inline ::ui_serialization::SkinImage* SkinnedProperty::release_img() {
+inline ::ui_serialization::region* SkinnedProperty::release_crop() {
   
-  ::ui_serialization::SkinImage* temp = _impl_.img_;
-  _impl_.img_ = nullptr;
+  ::ui_serialization::region* temp = _impl_.crop_;
+  _impl_.crop_ = nullptr;
 #ifdef PROTOBUF_FORCE_COPY_IN_RELEASE
   auto* old =  reinterpret_cast<::PROTOBUF_NAMESPACE_ID::MessageLite*>(temp);
   temp = ::PROTOBUF_NAMESPACE_ID::internal::DuplicateIfNonNull(temp);
@@ -2838,44 +2559,44 @@ inline ::ui_serialization::SkinImage* SkinnedProperty::release_img() {
 #endif  // !PROTOBUF_FORCE_COPY_IN_RELEASE
   return temp;
 }
-inline ::ui_serialization::SkinImage* SkinnedProperty::unsafe_arena_release_img() {
-  // @@protoc_insertion_point(field_release:ui_serialization.SkinnedProperty.img)
+inline ::ui_serialization::region* SkinnedProperty::unsafe_arena_release_crop() {
+  // @@protoc_insertion_point(field_release:ui_serialization.SkinnedProperty.crop)
   
-  ::ui_serialization::SkinImage* temp = _impl_.img_;
-  _impl_.img_ = nullptr;
+  ::ui_serialization::region* temp = _impl_.crop_;
+  _impl_.crop_ = nullptr;
   return temp;
 }
-inline ::ui_serialization::SkinImage* SkinnedProperty::_internal_mutable_img() {
+inline ::ui_serialization::region* SkinnedProperty::_internal_mutable_crop() {
   
-  if (_impl_.img_ == nullptr) {
-    auto* p = CreateMaybeMessage<::ui_serialization::SkinImage>(GetArenaForAllocation());
-    _impl_.img_ = p;
+  if (_impl_.crop_ == nullptr) {
+    auto* p = CreateMaybeMessage<::ui_serialization::region>(GetArenaForAllocation());
+    _impl_.crop_ = p;
   }
-  return _impl_.img_;
+  return _impl_.crop_;
 }
-inline ::ui_serialization::SkinImage* SkinnedProperty::mutable_img() {
-  ::ui_serialization::SkinImage* _msg = _internal_mutable_img();
-  // @@protoc_insertion_point(field_mutable:ui_serialization.SkinnedProperty.img)
+inline ::ui_serialization::region* SkinnedProperty::mutable_crop() {
+  ::ui_serialization::region* _msg = _internal_mutable_crop();
+  // @@protoc_insertion_point(field_mutable:ui_serialization.SkinnedProperty.crop)
   return _msg;
 }
-inline void SkinnedProperty::set_allocated_img(::ui_serialization::SkinImage* img) {
+inline void SkinnedProperty::set_allocated_crop(::ui_serialization::region* crop) {
   ::PROTOBUF_NAMESPACE_ID::Arena* message_arena = GetArenaForAllocation();
   if (message_arena == nullptr) {
-    delete _impl_.img_;
+    delete _impl_.crop_;
   }
-  if (img) {
+  if (crop) {
     ::PROTOBUF_NAMESPACE_ID::Arena* submessage_arena =
-        ::PROTOBUF_NAMESPACE_ID::Arena::InternalGetOwningArena(img);
+        ::PROTOBUF_NAMESPACE_ID::Arena::InternalGetOwningArena(crop);
     if (message_arena != submessage_arena) {
-      img = ::PROTOBUF_NAMESPACE_ID::internal::GetOwnedMessage(
-          message_arena, img, submessage_arena);
+      crop = ::PROTOBUF_NAMESPACE_ID::internal::GetOwnedMessage(
+          message_arena, crop, submessage_arena);
     }
     
   } else {
     
   }
-  _impl_.img_ = img;
-  // @@protoc_insertion_point(field_set_allocated:ui_serialization.SkinnedProperty.img)
+  _impl_.crop_ = crop;
+  // @@protoc_insertion_point(field_set_allocated:ui_serialization.SkinnedProperty.crop)
 }
 
 // uint32 prop_type = 2;
@@ -4395,11 +4116,112 @@ SerializedUI::widgets() const {
   return _impl_.widgets_;
 }
 
+// repeated string images = 3;
+inline int SerializedUI::_internal_images_size() const {
+  return _impl_.images_.size();
+}
+inline int SerializedUI::images_size() const {
+  return _internal_images_size();
+}
+inline void SerializedUI::clear_images() {
+  _impl_.images_.Clear();
+}
+inline std::string* SerializedUI::add_images() {
+  std::string* _s = _internal_add_images();
+  // @@protoc_insertion_point(field_add_mutable:ui_serialization.SerializedUI.images)
+  return _s;
+}
+inline const std::string& SerializedUI::_internal_images(int index) const {
+  return _impl_.images_.Get(index);
+}
+inline const std::string& SerializedUI::images(int index) const {
+  // @@protoc_insertion_point(field_get:ui_serialization.SerializedUI.images)
+  return _internal_images(index);
+}
+inline std::string* SerializedUI::mutable_images(int index) {
+  // @@protoc_insertion_point(field_mutable:ui_serialization.SerializedUI.images)
+  return _impl_.images_.Mutable(index);
+}
+inline void SerializedUI::set_images(int index, const std::string& value) {
+  _impl_.images_.Mutable(index)->assign(value);
+  // @@protoc_insertion_point(field_set:ui_serialization.SerializedUI.images)
+}
+inline void SerializedUI::set_images(int index, std::string&& value) {
+  _impl_.images_.Mutable(index)->assign(std::move(value));
+  // @@protoc_insertion_point(field_set:ui_serialization.SerializedUI.images)
+}
+inline void SerializedUI::set_images(int index, const char* value) {
+  GOOGLE_DCHECK(value != nullptr);
+  _impl_.images_.Mutable(index)->assign(value);
+  // @@protoc_insertion_point(field_set_char:ui_serialization.SerializedUI.images)
+}
+inline void SerializedUI::set_images(int index, const char* value, size_t size) {
+  _impl_.images_.Mutable(index)->assign(
+    reinterpret_cast<const char*>(value), size);
+  // @@protoc_insertion_point(field_set_pointer:ui_serialization.SerializedUI.images)
+}
+inline std::string* SerializedUI::_internal_add_images() {
+  return _impl_.images_.Add();
+}
+inline void SerializedUI::add_images(const std::string& value) {
+  _impl_.images_.Add()->assign(value);
+  // @@protoc_insertion_point(field_add:ui_serialization.SerializedUI.images)
+}
+inline void SerializedUI::add_images(std::string&& value) {
+  _impl_.images_.Add(std::move(value));
+  // @@protoc_insertion_point(field_add:ui_serialization.SerializedUI.images)
+}
+inline void SerializedUI::add_images(const char* value) {
+  GOOGLE_DCHECK(value != nullptr);
+  _impl_.images_.Add()->assign(value);
+  // @@protoc_insertion_point(field_add_char:ui_serialization.SerializedUI.images)
+}
+inline void SerializedUI::add_images(const char* value, size_t size) {
+  _impl_.images_.Add()->assign(reinterpret_cast<const char*>(value), size);
+  // @@protoc_insertion_point(field_add_pointer:ui_serialization.SerializedUI.images)
+}
+inline const ::PROTOBUF_NAMESPACE_ID::RepeatedPtrField<std::string>&
+SerializedUI::images() const {
+  // @@protoc_insertion_point(field_list:ui_serialization.SerializedUI.images)
+  return _impl_.images_;
+}
+inline ::PROTOBUF_NAMESPACE_ID::RepeatedPtrField<std::string>*
+SerializedUI::mutable_images() {
+  // @@protoc_insertion_point(field_mutable_list:ui_serialization.SerializedUI.images)
+  return &_impl_.images_;
+}
+
+// optional uint32 skinning_image_idx = 4;
+inline bool SerializedUI::_internal_has_skinning_image_idx() const {
+  bool value = (_impl_._has_bits_[0] & 0x00000001u) != 0;
+  return value;
+}
+inline bool SerializedUI::has_skinning_image_idx() const {
+  return _internal_has_skinning_image_idx();
+}
+inline void SerializedUI::clear_skinning_image_idx() {
+  _impl_.skinning_image_idx_ = 0u;
+  _impl_._has_bits_[0] &= ~0x00000001u;
+}
+inline uint32_t SerializedUI::_internal_skinning_image_idx() const {
+  return _impl_.skinning_image_idx_;
+}
+inline uint32_t SerializedUI::skinning_image_idx() const {
+  // @@protoc_insertion_point(field_get:ui_serialization.SerializedUI.skinning_image_idx)
+  return _internal_skinning_image_idx();
+}
+inline void SerializedUI::_internal_set_skinning_image_idx(uint32_t value) {
+  _impl_._has_bits_[0] |= 0x00000001u;
+  _impl_.skinning_image_idx_ = value;
+}
+inline void SerializedUI::set_skinning_image_idx(uint32_t value) {
+  _internal_set_skinning_image_idx(value);
+  // @@protoc_insertion_point(field_set:ui_serialization.SerializedUI.skinning_image_idx)
+}
+
 #ifdef __GNUC__
   #pragma GCC diagnostic pop
 #endif  // __GNUC__
-// -------------------------------------------------------------------
-
 // -------------------------------------------------------------------
 
 // -------------------------------------------------------------------

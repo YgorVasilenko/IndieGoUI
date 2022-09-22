@@ -77,8 +77,6 @@ void updateUIFromElement(std::string elementName, std::string winID);
 extern void updateUIFromLayout(std::string widID, std::string winID, bool upd_row = false, bool upd_col = false);
 extern void updateLayoutFromUI(std::string widID, std::string winID, bool upd_row = false, bool upd_col = false);
 
-extern void useBackgroundImage(std::string widID, std::string winID, unsigned int texID);
-extern unsigned int load_image(const char *filename, bool load_skinning_image = false);
 extern std::list<std::string> getPaths();
 
 extern void initWidgets();
@@ -131,9 +129,12 @@ std::pair<std::string, std::string> getResourcesPath() {
     if (p) {
         path = p;
         project_name = fs::path( path ).filename().string();
-        path += "/current_scene";
     } else {
-        path = getenv("INDIEGO_HOME");
+        p = getenv("INDIEGO_HOME");
+        if (p)
+            path = p;
+        else
+            path = fs::current_path().string();
     }
     return std::pair<std::string, std::string>(path, project_name);
 }
@@ -193,7 +194,6 @@ int main() {
     int prev_selected_style_element = -1;
     int prev_selected_row = -1;
     int prev_selected_col = -1;
-    // int prev_selected_font_size = -1;
     int width, height;
     std::string selected_for_font_update = "None";
     bool update_widget_font = false;
@@ -204,6 +204,7 @@ int main() {
 
         if (e_skinning_props_list.selected_element != -1 && UIMap["e apply skin"]._data.b) {
             TexData td = Manager::load_image(UIMap["e skin image path"].label);
+            GUI.skinning_image = UIMap["e skin image path"].label;
             UI_element& e = UIMap[elements_list.getSelected()];
             region<float> crop;
             crop.x = UIMap["e crop x"]._data.f / UI_FLT_VAL_SCALE;
@@ -365,10 +366,10 @@ int main() {
         
 
         if (UIMap["save ui"]._data.b) {
-            std::string save_path = getenv("PROJECT_DIR");
+            std::pair<std::string, std::string> save_items = getResourcesPath();
             GUI.serialize(
                 winID,
-                save_path + "/ui_test.indg",
+                save_items.first + "/ui_" + save_items.second + ".indg",
                 skip_save_widgets
             );
         }
@@ -376,12 +377,15 @@ int main() {
         if (UIMap["load ui"]._data.b) {
             std::string load_path = *getPaths().begin();
             GUI.deserialize(winID, load_path);
-            // TODO : 
-            // - add all loaded widgets to widgets_list
-            // - check skinning save/load
-            // - check fonts save/load
-            // - check styling save/load
-            // - use getResourcesPaths() to get save/load location
+            for (auto widget : GUI.widgets[winID]) {
+                if (std::find(skip_save_widgets.begin(), skip_save_widgets.end(), widget.first) != skip_save_widgets.end())
+                    continue;
+                widgets_list.elements.push_back(widget.first);
+            }
+            for (auto font : GUI.loaded_fonts) {
+                if (font.first == GUI.main_font) continue;
+                fonts_list.elements.push_back(font.first);
+            }
         }
 
         // update screen size each frame before calling immediate backend
@@ -402,17 +406,20 @@ int main() {
             GUI.loadFont(
                 *getPaths().begin(), 
                 winID, 
-                UIMap["load size"]._data.f
+                UIMap["load size"]._data.f,
+                true
             );
             // update fonts list
             fonts_list.elements.clear();
             for (auto font_path : GUI.loaded_fonts) {
+                if (fs::path(font_path.first).stem().string() == GUI.main_font) continue; // don't display main font
                 fonts_list.elements.push_back( fs::path(font_path.first).stem().string() );
             }
         }
 
         if (w_skinning_props_list.selected_element != -1 && UIMap["w apply skin"]._data.b) {
-            TexData td = Manager::load_image(UIMap["w skin image path"].label);
+            TexData td = Manager::load_image(UIMap["w skin image path"].label, true);
+            GUI.skinning_image = UIMap["e skin image path"].label;
             WIDGET & w = GUI.getWidget(
                 widgets_list.getSelected(), 
                 winID
@@ -431,7 +438,6 @@ int main() {
             );
         }
 
-        // prev_selected_font_size = font_sizes_list.selected_element;
         font_sizes_list.elements.clear();
         if (fonts_list.selected_element != -1) {
             for (auto size : GUI.loaded_fonts[fonts_list.getSelected()].sizes) {

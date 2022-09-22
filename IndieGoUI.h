@@ -706,7 +706,10 @@ namespace IndieGo {
 
 			// [win_id] = ui_map
 			std::map<std::string, UI_elements_map> UIMaps;
-
+			
+			// required for serialization
+			std::string skinning_image = "None";
+			
 			// paths of fonts, used by widgets and vector of available sizes
 			std::string main_font = "None";
 			float main_font_size = 16.f;
@@ -722,7 +725,7 @@ namespace IndieGo {
 			void serialize(const std::string & winID, const std::string & path, const std::vector<std::string> & skipWidgets = {});
 			void deserialize(const std::string & winID, const std::string & path);
 
-			void loadFont(std::string path, const std::string & winID, float font_size = 16.f);
+			void loadFont(std::string path, const std::string & winID, float font_size = 16.f, bool useProjectDir = false, bool cutProjDirFromPath = true);
 
 			// provide init functions in backend renderer module
 			void init(
@@ -775,7 +778,7 @@ namespace IndieGo {
 
 			// adds new image to global vector of images. Returns index or recently added image
 			static void addImage(unsigned int texID,unsigned short w, unsigned short h, region<float> crop);
-			static TexData load_image(const std::string & path);
+			static TexData load_image(std::string path, bool useProjectDir = false);
 
 			WIDGET & addWidget(WIDGET & new_widget, const std::string & win_name = DEFAULT_WINDOW_NAME) {
 				// can't add widgets for window without map

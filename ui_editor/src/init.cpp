@@ -1,5 +1,7 @@
 #include <IndieGoUI.h>
+#include <filesystem>
 
+namespace fs = std::filesystem;
 using namespace IndieGo::UI;
 
 extern Manager GUI;
@@ -98,6 +100,10 @@ void initWidgets() {
     UIMap["edit widget elements"].height = 0.07f;
     UIMap["skins and styling"].width = 0.48f;
     UIMap["skins and styling"].height = 0.07f;
+    UIMap["save ui"].width = 0.48f;
+    UIMap["save ui"].height = 0.07f;
+    UIMap["load ui"].width = 0.48f;
+    UIMap["load ui"].height = 0.07f;
 
     // third column and it's elements
     c_widget.layout_grid[0].cells[2].min_width = 0.2f;
@@ -432,4 +438,16 @@ void initWidgets() {
     UIMap["load font"].height = 0.1f;
     UIMap["load size"].height = 0.1f;
     UIMap["apply font"].height = 0.1f;
+  
+    std::string home_dir = fs::current_path().string();
+    if (home_dir.find("ui_editor") == std::string::npos) {
+        std::cout << "[WARNING] cwd does not contain 'ui_editor'! Can't find default font" << std::endl;
+        std::cout << "[WARNING] First loaded font will be used as default." << std::endl;
+        return;
+    }
+
+    std::string font_path = home_dir.substr(
+        0, home_dir.find("ui_editor")
+    ) + "ui_editor/fonts/Roboto-Regular.ttf";
+    GUI.loadFont(font_path, winID);
 }

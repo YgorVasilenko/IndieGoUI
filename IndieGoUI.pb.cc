@@ -67,20 +67,6 @@ struct StyleColorDefaultTypeInternal {
   };
 };
 PROTOBUF_ATTRIBUTE_NO_DESTROY PROTOBUF_CONSTINIT PROTOBUF_ATTRIBUTE_INIT_PRIORITY1 StyleColorDefaultTypeInternal _StyleColor_default_instance_;
-PROTOBUF_CONSTEXPR SkinImage::SkinImage(
-    ::_pbi::ConstantInitialized): _impl_{
-    /*decltype(_impl_.path_)*/{&::_pbi::fixed_address_empty_string, ::_pbi::ConstantInitialized{}}
-  , /*decltype(_impl_.crop_)*/nullptr
-  , /*decltype(_impl_._cached_size_)*/{}} {}
-struct SkinImageDefaultTypeInternal {
-  PROTOBUF_CONSTEXPR SkinImageDefaultTypeInternal()
-      : _instance(::_pbi::ConstantInitialized{}) {}
-  ~SkinImageDefaultTypeInternal() {}
-  union {
-    SkinImage _instance;
-  };
-};
-PROTOBUF_ATTRIBUTE_NO_DESTROY PROTOBUF_CONSTINIT PROTOBUF_ATTRIBUTE_INIT_PRIORITY1 SkinImageDefaultTypeInternal _SkinImage_default_instance_;
 PROTOBUF_CONSTEXPR Font::Font(
     ::_pbi::ConstantInitialized): _impl_{
     /*decltype(_impl_.name_)*/{&::_pbi::fixed_address_empty_string, ::_pbi::ConstantInitialized{}}
@@ -97,7 +83,7 @@ struct FontDefaultTypeInternal {
 PROTOBUF_ATTRIBUTE_NO_DESTROY PROTOBUF_CONSTINIT PROTOBUF_ATTRIBUTE_INIT_PRIORITY1 FontDefaultTypeInternal _Font_default_instance_;
 PROTOBUF_CONSTEXPR SkinnedProperty::SkinnedProperty(
     ::_pbi::ConstantInitialized): _impl_{
-    /*decltype(_impl_.img_)*/nullptr
+    /*decltype(_impl_.crop_)*/nullptr
   , /*decltype(_impl_.prop_type_)*/0u
   , /*decltype(_impl_._cached_size_)*/{}} {}
 struct SkinnedPropertyDefaultTypeInternal {
@@ -191,9 +177,12 @@ struct WidgetDefaultTypeInternal {
 PROTOBUF_ATTRIBUTE_NO_DESTROY PROTOBUF_CONSTINIT PROTOBUF_ATTRIBUTE_INIT_PRIORITY1 WidgetDefaultTypeInternal _Widget_default_instance_;
 PROTOBUF_CONSTEXPR SerializedUI::SerializedUI(
     ::_pbi::ConstantInitialized): _impl_{
-    /*decltype(_impl_.fonts_)*/{}
+    /*decltype(_impl_._has_bits_)*/{}
+  , /*decltype(_impl_._cached_size_)*/{}
+  , /*decltype(_impl_.fonts_)*/{}
   , /*decltype(_impl_.widgets_)*/{}
-  , /*decltype(_impl_._cached_size_)*/{}} {}
+  , /*decltype(_impl_.images_)*/{}
+  , /*decltype(_impl_.skinning_image_idx_)*/0u} {}
 struct SerializedUIDefaultTypeInternal {
   PROTOBUF_CONSTEXPR SerializedUIDefaultTypeInternal()
       : _instance(::_pbi::ConstantInitialized{}) {}
@@ -204,7 +193,7 @@ struct SerializedUIDefaultTypeInternal {
 };
 PROTOBUF_ATTRIBUTE_NO_DESTROY PROTOBUF_CONSTINIT PROTOBUF_ATTRIBUTE_INIT_PRIORITY1 SerializedUIDefaultTypeInternal _SerializedUI_default_instance_;
 }  // namespace ui_serialization
-static ::_pb::Metadata file_level_metadata_IndieGoUI_2eproto[11];
+static ::_pb::Metadata file_level_metadata_IndieGoUI_2eproto[10];
 static constexpr ::_pb::EnumDescriptor const** file_level_enum_descriptors_IndieGoUI_2eproto = nullptr;
 static constexpr ::_pb::ServiceDescriptor const** file_level_service_descriptors_IndieGoUI_2eproto = nullptr;
 
@@ -244,16 +233,6 @@ const uint32_t TableStruct_IndieGoUI_2eproto::offsets[] PROTOBUF_SECTION_VARIABL
   PROTOBUF_FIELD_OFFSET(::ui_serialization::StyleColor, _impl_.b_),
   PROTOBUF_FIELD_OFFSET(::ui_serialization::StyleColor, _impl_.a_),
   ~0u,  // no _has_bits_
-  PROTOBUF_FIELD_OFFSET(::ui_serialization::SkinImage, _internal_metadata_),
-  ~0u,  // no _extensions_
-  ~0u,  // no _oneof_case_
-  ~0u,  // no _weak_field_map_
-  ~0u,  // no _inlined_string_donated_
-  ~0u,  // no _split_
-  ~0u,  // no sizeof(Split)
-  PROTOBUF_FIELD_OFFSET(::ui_serialization::SkinImage, _impl_.path_),
-  PROTOBUF_FIELD_OFFSET(::ui_serialization::SkinImage, _impl_.crop_),
-  ~0u,  // no _has_bits_
   PROTOBUF_FIELD_OFFSET(::ui_serialization::Font, _internal_metadata_),
   ~0u,  // no _extensions_
   ~0u,  // no _oneof_case_
@@ -271,7 +250,7 @@ const uint32_t TableStruct_IndieGoUI_2eproto::offsets[] PROTOBUF_SECTION_VARIABL
   ~0u,  // no _inlined_string_donated_
   ~0u,  // no _split_
   ~0u,  // no sizeof(Split)
-  PROTOBUF_FIELD_OFFSET(::ui_serialization::SkinnedProperty, _impl_.img_),
+  PROTOBUF_FIELD_OFFSET(::ui_serialization::SkinnedProperty, _impl_.crop_),
   PROTOBUF_FIELD_OFFSET(::ui_serialization::SkinnedProperty, _impl_.prop_type_),
   ~0u,  // no _has_bits_
   PROTOBUF_FIELD_OFFSET(::ui_serialization::LayoutRow, _internal_metadata_),
@@ -337,7 +316,7 @@ const uint32_t TableStruct_IndieGoUI_2eproto::offsets[] PROTOBUF_SECTION_VARIABL
   ~0u,  // no sizeof(Split)
   PROTOBUF_FIELD_OFFSET(::ui_serialization::Widget, _impl_.widget_),
   PROTOBUF_FIELD_OFFSET(::ui_serialization::Widget, _impl_.elements_),
-  ~0u,  // no _has_bits_
+  PROTOBUF_FIELD_OFFSET(::ui_serialization::SerializedUI, _impl_._has_bits_),
   PROTOBUF_FIELD_OFFSET(::ui_serialization::SerializedUI, _internal_metadata_),
   ~0u,  // no _extensions_
   ~0u,  // no _oneof_case_
@@ -347,26 +326,30 @@ const uint32_t TableStruct_IndieGoUI_2eproto::offsets[] PROTOBUF_SECTION_VARIABL
   ~0u,  // no sizeof(Split)
   PROTOBUF_FIELD_OFFSET(::ui_serialization::SerializedUI, _impl_.fonts_),
   PROTOBUF_FIELD_OFFSET(::ui_serialization::SerializedUI, _impl_.widgets_),
+  PROTOBUF_FIELD_OFFSET(::ui_serialization::SerializedUI, _impl_.images_),
+  PROTOBUF_FIELD_OFFSET(::ui_serialization::SerializedUI, _impl_.skinning_image_idx_),
+  ~0u,
+  ~0u,
+  ~0u,
+  0,
 };
 static const ::_pbi::MigrationSchema schemas[] PROTOBUF_SECTION_VARIABLE(protodesc_cold) = {
   { 0, -1, -1, sizeof(::ui_serialization::region)},
   { 12, -1, -1, sizeof(::ui_serialization::region_size)},
   { 22, -1, -1, sizeof(::ui_serialization::StyleColor)},
-  { 34, -1, -1, sizeof(::ui_serialization::SkinImage)},
-  { 44, -1, -1, sizeof(::ui_serialization::Font)},
-  { 54, -1, -1, sizeof(::ui_serialization::SkinnedProperty)},
-  { 64, -1, -1, sizeof(::ui_serialization::LayoutRow)},
-  { 74, -1, -1, sizeof(::ui_serialization::WidgetBase)},
-  { 96, -1, -1, sizeof(::ui_serialization::Element)},
-  { 118, -1, -1, sizeof(::ui_serialization::Widget)},
-  { 128, -1, -1, sizeof(::ui_serialization::SerializedUI)},
+  { 34, -1, -1, sizeof(::ui_serialization::Font)},
+  { 44, -1, -1, sizeof(::ui_serialization::SkinnedProperty)},
+  { 54, -1, -1, sizeof(::ui_serialization::LayoutRow)},
+  { 64, -1, -1, sizeof(::ui_serialization::WidgetBase)},
+  { 86, -1, -1, sizeof(::ui_serialization::Element)},
+  { 108, -1, -1, sizeof(::ui_serialization::Widget)},
+  { 118, 130, -1, sizeof(::ui_serialization::SerializedUI)},
 };
 
 static const ::_pb::Message* const file_default_instances[] = {
   &::ui_serialization::_region_default_instance_._instance,
   &::ui_serialization::_region_size_default_instance_._instance,
   &::ui_serialization::_StyleColor_default_instance_._instance,
-  &::ui_serialization::_SkinImage_default_instance_._instance,
   &::ui_serialization::_Font_default_instance_._instance,
   &::ui_serialization::_SkinnedProperty_default_instance_._instance,
   &::ui_serialization::_LayoutRow_default_instance_._instance,
@@ -381,45 +364,45 @@ const char descriptor_table_protodef_IndieGoUI_2eproto[] PROTOBUF_SECTION_VARIAB
   "egion\022\t\n\001x\030\001 \001(\002\022\t\n\001y\030\002 \001(\002\022\t\n\001w\030\003 \001(\002\022\t"
   "\n\001h\030\004 \001(\002\"#\n\013region_size\022\t\n\001x\030\001 \001(\002\022\t\n\001y"
   "\030\002 \001(\002\"8\n\nStyleColor\022\t\n\001r\030\001 \001(\002\022\t\n\001g\030\002 \001"
-  "(\002\022\t\n\001b\030\003 \001(\002\022\t\n\001a\030\004 \001(\002\"A\n\tSkinImage\022\014\n"
-  "\004path\030\001 \001(\t\022&\n\004crop\030\002 \001(\0132\030.ui_serializa"
-  "tion.region\"\"\n\004Font\022\014\n\004name\030\001 \001(\t\022\014\n\004siz"
-  "e\030\002 \001(\002\"N\n\017SkinnedProperty\022(\n\003img\030\001 \001(\0132"
-  "\033.ui_serialization.SkinImage\022\021\n\tprop_typ"
-  "e\030\002 \001(\r\"0\n\tLayoutRow\022\016\n\006height\030\001 \001(\002\022\023\n\013"
-  "cols_widths\030\002 \003(\002\"\324\003\n\nWidgetBase\022\014\n\004name"
-  "\030\001 \001(\t\022*\n\010size_loc\030\002 \001(\0132\030.ui_serializat"
-  "ion.region\022\020\n\010bordered\030\003 \001(\010\022\016\n\006titled\030\004"
-  " \001(\010\022\023\n\013minimizable\030\005 \001(\010\022\020\n\010scalable\030\006 "
-  "\001(\010\022\017\n\007movable\030\007 \001(\010\022$\n\004font\030\010 \001(\0132\026.ui_"
-  "serialization.Font\022\023\n\013border_size\030\t \001(\002\022"
-  ".\n\007padding\030\n \001(\0132\035.ui_serialization.regi"
-  "on_size\022.\n\007spacing\030\013 \001(\0132\035.ui_serializat"
-  "ion.region_size\022)\n\004rows\030\014 \003(\0132\033.ui_seria"
-  "lization.LayoutRow\0228\n\rskinned_props\030\r \003("
-  "\0132!.ui_serialization.SkinnedProperty\0222\n\014"
-  "styled_props\030\016 \003(\0132\034.ui_serialization.St"
-  "yleColor\"\370\002\n\007Element\022\014\n\004name\030\001 \001(\t\022\023\n\013wi"
-  "dget_name\030\002 \001(\t\022\014\n\004type\030\003 \001(\r\022\024\n\014elt_pus"
-  "h_opt\030\004 \001(\r\022$\n\004font\030\005 \001(\0132\026.ui_serializa"
-  "tion.Font\022\016\n\006border\030\006 \001(\002\022\020\n\010rounding\030\007 "
-  "\001(\002\022.\n\007padding\030\010 \001(\0132\035.ui_serialization."
-  "region_size\0228\n\rskinned_props\030\t \003(\0132!.ui_"
-  "serialization.SkinnedProperty\0222\n\014styled_"
-  "props\030\n \003(\0132\034.ui_serialization.StyleColo"
-  "r\022\r\n\005label\030\013 \001(\t\022\022\n\ntext_align\030\014 \001(\r\022\r\n\005"
-  "width\030\r \001(\002\022\016\n\006height\030\016 \001(\002\"c\n\006Widget\022,\n"
-  "\006widget\030\001 \001(\0132\034.ui_serialization.WidgetB"
-  "ase\022+\n\010elements\030\002 \003(\0132\031.ui_serialization"
-  ".Element\"`\n\014SerializedUI\022%\n\005fonts\030\001 \003(\0132"
-  "\026.ui_serialization.Font\022)\n\007widgets\030\002 \003(\013"
-  "2\030.ui_serialization.Widgetb\006proto3"
+  "(\002\022\t\n\001b\030\003 \001(\002\022\t\n\001a\030\004 \001(\002\"\"\n\004Font\022\014\n\004name"
+  "\030\001 \001(\t\022\014\n\004size\030\002 \001(\002\"L\n\017SkinnedProperty\022"
+  "&\n\004crop\030\001 \001(\0132\030.ui_serialization.region\022"
+  "\021\n\tprop_type\030\002 \001(\r\"0\n\tLayoutRow\022\016\n\006heigh"
+  "t\030\001 \001(\002\022\023\n\013cols_widths\030\002 \003(\002\"\324\003\n\nWidgetB"
+  "ase\022\014\n\004name\030\001 \001(\t\022*\n\010size_loc\030\002 \001(\0132\030.ui"
+  "_serialization.region\022\020\n\010bordered\030\003 \001(\010\022"
+  "\016\n\006titled\030\004 \001(\010\022\023\n\013minimizable\030\005 \001(\010\022\020\n\010"
+  "scalable\030\006 \001(\010\022\017\n\007movable\030\007 \001(\010\022$\n\004font\030"
+  "\010 \001(\0132\026.ui_serialization.Font\022\023\n\013border_"
+  "size\030\t \001(\002\022.\n\007padding\030\n \001(\0132\035.ui_seriali"
+  "zation.region_size\022.\n\007spacing\030\013 \001(\0132\035.ui"
+  "_serialization.region_size\022)\n\004rows\030\014 \003(\013"
+  "2\033.ui_serialization.LayoutRow\0228\n\rskinned"
+  "_props\030\r \003(\0132!.ui_serialization.SkinnedP"
+  "roperty\0222\n\014styled_props\030\016 \003(\0132\034.ui_seria"
+  "lization.StyleColor\"\370\002\n\007Element\022\014\n\004name\030"
+  "\001 \001(\t\022\023\n\013widget_name\030\002 \001(\t\022\014\n\004type\030\003 \001(\r"
+  "\022\024\n\014elt_push_opt\030\004 \001(\r\022$\n\004font\030\005 \001(\0132\026.u"
+  "i_serialization.Font\022\016\n\006border\030\006 \001(\002\022\020\n\010"
+  "rounding\030\007 \001(\002\022.\n\007padding\030\010 \001(\0132\035.ui_ser"
+  "ialization.region_size\0228\n\rskinned_props\030"
+  "\t \003(\0132!.ui_serialization.SkinnedProperty"
+  "\0222\n\014styled_props\030\n \003(\0132\034.ui_serializatio"
+  "n.StyleColor\022\r\n\005label\030\013 \001(\t\022\022\n\ntext_alig"
+  "n\030\014 \001(\r\022\r\n\005width\030\r \001(\002\022\016\n\006height\030\016 \001(\002\"c"
+  "\n\006Widget\022,\n\006widget\030\001 \001(\0132\034.ui_serializat"
+  "ion.WidgetBase\022+\n\010elements\030\002 \003(\0132\031.ui_se"
+  "rialization.Element\"\250\001\n\014SerializedUI\022%\n\005"
+  "fonts\030\001 \003(\0132\026.ui_serialization.Font\022)\n\007w"
+  "idgets\030\002 \003(\0132\030.ui_serialization.Widget\022\016"
+  "\n\006images\030\003 \003(\t\022\037\n\022skinning_image_idx\030\004 \001"
+  "(\rH\000\210\001\001B\025\n\023_skinning_image_idxb\006proto3"
   ;
 static ::_pbi::once_flag descriptor_table_IndieGoUI_2eproto_once;
 const ::_pbi::DescriptorTable descriptor_table_IndieGoUI_2eproto = {
-    false, false, 1474, descriptor_table_protodef_IndieGoUI_2eproto,
+    false, false, 1478, descriptor_table_protodef_IndieGoUI_2eproto,
     "IndieGoUI.proto",
-    &descriptor_table_IndieGoUI_2eproto_once, nullptr, 0, 11,
+    &descriptor_table_IndieGoUI_2eproto_once, nullptr, 0, 10,
     schemas, file_default_instances, TableStruct_IndieGoUI_2eproto::offsets,
     file_level_metadata_IndieGoUI_2eproto, file_level_enum_descriptors_IndieGoUI_2eproto,
     file_level_service_descriptors_IndieGoUI_2eproto,
@@ -1283,251 +1266,6 @@ void StyleColor::InternalSwap(StyleColor* other) {
 
 // ===================================================================
 
-class SkinImage::_Internal {
- public:
-  static const ::ui_serialization::region& crop(const SkinImage* msg);
-};
-
-const ::ui_serialization::region&
-SkinImage::_Internal::crop(const SkinImage* msg) {
-  return *msg->_impl_.crop_;
-}
-SkinImage::SkinImage(::PROTOBUF_NAMESPACE_ID::Arena* arena,
-                         bool is_message_owned)
-  : ::PROTOBUF_NAMESPACE_ID::Message(arena, is_message_owned) {
-  SharedCtor(arena, is_message_owned);
-  // @@protoc_insertion_point(arena_constructor:ui_serialization.SkinImage)
-}
-SkinImage::SkinImage(const SkinImage& from)
-  : ::PROTOBUF_NAMESPACE_ID::Message() {
-  SkinImage* const _this = this; (void)_this;
-  new (&_impl_) Impl_{
-      decltype(_impl_.path_){}
-    , decltype(_impl_.crop_){nullptr}
-    , /*decltype(_impl_._cached_size_)*/{}};
-
-  _internal_metadata_.MergeFrom<::PROTOBUF_NAMESPACE_ID::UnknownFieldSet>(from._internal_metadata_);
-  _impl_.path_.InitDefault();
-  #ifdef PROTOBUF_FORCE_COPY_DEFAULT_STRING
-    _impl_.path_.Set("", GetArenaForAllocation());
-  #endif // PROTOBUF_FORCE_COPY_DEFAULT_STRING
-  if (!from._internal_path().empty()) {
-    _this->_impl_.path_.Set(from._internal_path(), 
-      _this->GetArenaForAllocation());
-  }
-  if (from._internal_has_crop()) {
-    _this->_impl_.crop_ = new ::ui_serialization::region(*from._impl_.crop_);
-  }
-  // @@protoc_insertion_point(copy_constructor:ui_serialization.SkinImage)
-}
-
-inline void SkinImage::SharedCtor(
-    ::_pb::Arena* arena, bool is_message_owned) {
-  (void)arena;
-  (void)is_message_owned;
-  new (&_impl_) Impl_{
-      decltype(_impl_.path_){}
-    , decltype(_impl_.crop_){nullptr}
-    , /*decltype(_impl_._cached_size_)*/{}
-  };
-  _impl_.path_.InitDefault();
-  #ifdef PROTOBUF_FORCE_COPY_DEFAULT_STRING
-    _impl_.path_.Set("", GetArenaForAllocation());
-  #endif // PROTOBUF_FORCE_COPY_DEFAULT_STRING
-}
-
-SkinImage::~SkinImage() {
-  // @@protoc_insertion_point(destructor:ui_serialization.SkinImage)
-  if (auto *arena = _internal_metadata_.DeleteReturnArena<::PROTOBUF_NAMESPACE_ID::UnknownFieldSet>()) {
-  (void)arena;
-    return;
-  }
-  SharedDtor();
-}
-
-inline void SkinImage::SharedDtor() {
-  GOOGLE_DCHECK(GetArenaForAllocation() == nullptr);
-  _impl_.path_.Destroy();
-  if (this != internal_default_instance()) delete _impl_.crop_;
-}
-
-void SkinImage::SetCachedSize(int size) const {
-  _impl_._cached_size_.Set(size);
-}
-
-void SkinImage::Clear() {
-// @@protoc_insertion_point(message_clear_start:ui_serialization.SkinImage)
-  uint32_t cached_has_bits = 0;
-  // Prevent compiler warnings about cached_has_bits being unused
-  (void) cached_has_bits;
-
-  _impl_.path_.ClearToEmpty();
-  if (GetArenaForAllocation() == nullptr && _impl_.crop_ != nullptr) {
-    delete _impl_.crop_;
-  }
-  _impl_.crop_ = nullptr;
-  _internal_metadata_.Clear<::PROTOBUF_NAMESPACE_ID::UnknownFieldSet>();
-}
-
-const char* SkinImage::_InternalParse(const char* ptr, ::_pbi::ParseContext* ctx) {
-#define CHK_(x) if (PROTOBUF_PREDICT_FALSE(!(x))) goto failure
-  while (!ctx->Done(&ptr)) {
-    uint32_t tag;
-    ptr = ::_pbi::ReadTag(ptr, &tag);
-    switch (tag >> 3) {
-      // string path = 1;
-      case 1:
-        if (PROTOBUF_PREDICT_TRUE(static_cast<uint8_t>(tag) == 10)) {
-          auto str = _internal_mutable_path();
-          ptr = ::_pbi::InlineGreedyStringParser(str, ptr, ctx);
-          CHK_(ptr);
-          CHK_(::_pbi::VerifyUTF8(str, "ui_serialization.SkinImage.path"));
-        } else
-          goto handle_unusual;
-        continue;
-      // .ui_serialization.region crop = 2;
-      case 2:
-        if (PROTOBUF_PREDICT_TRUE(static_cast<uint8_t>(tag) == 18)) {
-          ptr = ctx->ParseMessage(_internal_mutable_crop(), ptr);
-          CHK_(ptr);
-        } else
-          goto handle_unusual;
-        continue;
-      default:
-        goto handle_unusual;
-    }  // switch
-  handle_unusual:
-    if ((tag == 0) || ((tag & 7) == 4)) {
-      CHK_(ptr);
-      ctx->SetLastTag(tag);
-      goto message_done;
-    }
-    ptr = UnknownFieldParse(
-        tag,
-        _internal_metadata_.mutable_unknown_fields<::PROTOBUF_NAMESPACE_ID::UnknownFieldSet>(),
-        ptr, ctx);
-    CHK_(ptr != nullptr);
-  }  // while
-message_done:
-  return ptr;
-failure:
-  ptr = nullptr;
-  goto message_done;
-#undef CHK_
-}
-
-uint8_t* SkinImage::_InternalSerialize(
-    uint8_t* target, ::PROTOBUF_NAMESPACE_ID::io::EpsCopyOutputStream* stream) const {
-  // @@protoc_insertion_point(serialize_to_array_start:ui_serialization.SkinImage)
-  uint32_t cached_has_bits = 0;
-  (void) cached_has_bits;
-
-  // string path = 1;
-  if (!this->_internal_path().empty()) {
-    ::PROTOBUF_NAMESPACE_ID::internal::WireFormatLite::VerifyUtf8String(
-      this->_internal_path().data(), static_cast<int>(this->_internal_path().length()),
-      ::PROTOBUF_NAMESPACE_ID::internal::WireFormatLite::SERIALIZE,
-      "ui_serialization.SkinImage.path");
-    target = stream->WriteStringMaybeAliased(
-        1, this->_internal_path(), target);
-  }
-
-  // .ui_serialization.region crop = 2;
-  if (this->_internal_has_crop()) {
-    target = ::PROTOBUF_NAMESPACE_ID::internal::WireFormatLite::
-      InternalWriteMessage(2, _Internal::crop(this),
-        _Internal::crop(this).GetCachedSize(), target, stream);
-  }
-
-  if (PROTOBUF_PREDICT_FALSE(_internal_metadata_.have_unknown_fields())) {
-    target = ::_pbi::WireFormat::InternalSerializeUnknownFieldsToArray(
-        _internal_metadata_.unknown_fields<::PROTOBUF_NAMESPACE_ID::UnknownFieldSet>(::PROTOBUF_NAMESPACE_ID::UnknownFieldSet::default_instance), target, stream);
-  }
-  // @@protoc_insertion_point(serialize_to_array_end:ui_serialization.SkinImage)
-  return target;
-}
-
-size_t SkinImage::ByteSizeLong() const {
-// @@protoc_insertion_point(message_byte_size_start:ui_serialization.SkinImage)
-  size_t total_size = 0;
-
-  uint32_t cached_has_bits = 0;
-  // Prevent compiler warnings about cached_has_bits being unused
-  (void) cached_has_bits;
-
-  // string path = 1;
-  if (!this->_internal_path().empty()) {
-    total_size += 1 +
-      ::PROTOBUF_NAMESPACE_ID::internal::WireFormatLite::StringSize(
-        this->_internal_path());
-  }
-
-  // .ui_serialization.region crop = 2;
-  if (this->_internal_has_crop()) {
-    total_size += 1 +
-      ::PROTOBUF_NAMESPACE_ID::internal::WireFormatLite::MessageSize(
-        *_impl_.crop_);
-  }
-
-  return MaybeComputeUnknownFieldsSize(total_size, &_impl_._cached_size_);
-}
-
-const ::PROTOBUF_NAMESPACE_ID::Message::ClassData SkinImage::_class_data_ = {
-    ::PROTOBUF_NAMESPACE_ID::Message::CopyWithSourceCheck,
-    SkinImage::MergeImpl
-};
-const ::PROTOBUF_NAMESPACE_ID::Message::ClassData*SkinImage::GetClassData() const { return &_class_data_; }
-
-
-void SkinImage::MergeImpl(::PROTOBUF_NAMESPACE_ID::Message& to_msg, const ::PROTOBUF_NAMESPACE_ID::Message& from_msg) {
-  auto* const _this = static_cast<SkinImage*>(&to_msg);
-  auto& from = static_cast<const SkinImage&>(from_msg);
-  // @@protoc_insertion_point(class_specific_merge_from_start:ui_serialization.SkinImage)
-  GOOGLE_DCHECK_NE(&from, _this);
-  uint32_t cached_has_bits = 0;
-  (void) cached_has_bits;
-
-  if (!from._internal_path().empty()) {
-    _this->_internal_set_path(from._internal_path());
-  }
-  if (from._internal_has_crop()) {
-    _this->_internal_mutable_crop()->::ui_serialization::region::MergeFrom(
-        from._internal_crop());
-  }
-  _this->_internal_metadata_.MergeFrom<::PROTOBUF_NAMESPACE_ID::UnknownFieldSet>(from._internal_metadata_);
-}
-
-void SkinImage::CopyFrom(const SkinImage& from) {
-// @@protoc_insertion_point(class_specific_copy_from_start:ui_serialization.SkinImage)
-  if (&from == this) return;
-  Clear();
-  MergeFrom(from);
-}
-
-bool SkinImage::IsInitialized() const {
-  return true;
-}
-
-void SkinImage::InternalSwap(SkinImage* other) {
-  using std::swap;
-  auto* lhs_arena = GetArenaForAllocation();
-  auto* rhs_arena = other->GetArenaForAllocation();
-  _internal_metadata_.InternalSwap(&other->_internal_metadata_);
-  ::PROTOBUF_NAMESPACE_ID::internal::ArenaStringPtr::InternalSwap(
-      &_impl_.path_, lhs_arena,
-      &other->_impl_.path_, rhs_arena
-  );
-  swap(_impl_.crop_, other->_impl_.crop_);
-}
-
-::PROTOBUF_NAMESPACE_ID::Metadata SkinImage::GetMetadata() const {
-  return ::_pbi::AssignDescriptors(
-      &descriptor_table_IndieGoUI_2eproto_getter, &descriptor_table_IndieGoUI_2eproto_once,
-      file_level_metadata_IndieGoUI_2eproto[3]);
-}
-
-// ===================================================================
-
 class Font::_Internal {
  public:
 };
@@ -1765,19 +1503,19 @@ void Font::InternalSwap(Font* other) {
 ::PROTOBUF_NAMESPACE_ID::Metadata Font::GetMetadata() const {
   return ::_pbi::AssignDescriptors(
       &descriptor_table_IndieGoUI_2eproto_getter, &descriptor_table_IndieGoUI_2eproto_once,
-      file_level_metadata_IndieGoUI_2eproto[4]);
+      file_level_metadata_IndieGoUI_2eproto[3]);
 }
 
 // ===================================================================
 
 class SkinnedProperty::_Internal {
  public:
-  static const ::ui_serialization::SkinImage& img(const SkinnedProperty* msg);
+  static const ::ui_serialization::region& crop(const SkinnedProperty* msg);
 };
 
-const ::ui_serialization::SkinImage&
-SkinnedProperty::_Internal::img(const SkinnedProperty* msg) {
-  return *msg->_impl_.img_;
+const ::ui_serialization::region&
+SkinnedProperty::_Internal::crop(const SkinnedProperty* msg) {
+  return *msg->_impl_.crop_;
 }
 SkinnedProperty::SkinnedProperty(::PROTOBUF_NAMESPACE_ID::Arena* arena,
                          bool is_message_owned)
@@ -1789,13 +1527,13 @@ SkinnedProperty::SkinnedProperty(const SkinnedProperty& from)
   : ::PROTOBUF_NAMESPACE_ID::Message() {
   SkinnedProperty* const _this = this; (void)_this;
   new (&_impl_) Impl_{
-      decltype(_impl_.img_){nullptr}
+      decltype(_impl_.crop_){nullptr}
     , decltype(_impl_.prop_type_){}
     , /*decltype(_impl_._cached_size_)*/{}};
 
   _internal_metadata_.MergeFrom<::PROTOBUF_NAMESPACE_ID::UnknownFieldSet>(from._internal_metadata_);
-  if (from._internal_has_img()) {
-    _this->_impl_.img_ = new ::ui_serialization::SkinImage(*from._impl_.img_);
+  if (from._internal_has_crop()) {
+    _this->_impl_.crop_ = new ::ui_serialization::region(*from._impl_.crop_);
   }
   _this->_impl_.prop_type_ = from._impl_.prop_type_;
   // @@protoc_insertion_point(copy_constructor:ui_serialization.SkinnedProperty)
@@ -1806,7 +1544,7 @@ inline void SkinnedProperty::SharedCtor(
   (void)arena;
   (void)is_message_owned;
   new (&_impl_) Impl_{
-      decltype(_impl_.img_){nullptr}
+      decltype(_impl_.crop_){nullptr}
     , decltype(_impl_.prop_type_){0u}
     , /*decltype(_impl_._cached_size_)*/{}
   };
@@ -1823,7 +1561,7 @@ SkinnedProperty::~SkinnedProperty() {
 
 inline void SkinnedProperty::SharedDtor() {
   GOOGLE_DCHECK(GetArenaForAllocation() == nullptr);
-  if (this != internal_default_instance()) delete _impl_.img_;
+  if (this != internal_default_instance()) delete _impl_.crop_;
 }
 
 void SkinnedProperty::SetCachedSize(int size) const {
@@ -1836,10 +1574,10 @@ void SkinnedProperty::Clear() {
   // Prevent compiler warnings about cached_has_bits being unused
   (void) cached_has_bits;
 
-  if (GetArenaForAllocation() == nullptr && _impl_.img_ != nullptr) {
-    delete _impl_.img_;
+  if (GetArenaForAllocation() == nullptr && _impl_.crop_ != nullptr) {
+    delete _impl_.crop_;
   }
-  _impl_.img_ = nullptr;
+  _impl_.crop_ = nullptr;
   _impl_.prop_type_ = 0u;
   _internal_metadata_.Clear<::PROTOBUF_NAMESPACE_ID::UnknownFieldSet>();
 }
@@ -1850,10 +1588,10 @@ const char* SkinnedProperty::_InternalParse(const char* ptr, ::_pbi::ParseContex
     uint32_t tag;
     ptr = ::_pbi::ReadTag(ptr, &tag);
     switch (tag >> 3) {
-      // .ui_serialization.SkinImage img = 1;
+      // .ui_serialization.region crop = 1;
       case 1:
         if (PROTOBUF_PREDICT_TRUE(static_cast<uint8_t>(tag) == 10)) {
-          ptr = ctx->ParseMessage(_internal_mutable_img(), ptr);
+          ptr = ctx->ParseMessage(_internal_mutable_crop(), ptr);
           CHK_(ptr);
         } else
           goto handle_unusual;
@@ -1895,11 +1633,11 @@ uint8_t* SkinnedProperty::_InternalSerialize(
   uint32_t cached_has_bits = 0;
   (void) cached_has_bits;
 
-  // .ui_serialization.SkinImage img = 1;
-  if (this->_internal_has_img()) {
+  // .ui_serialization.region crop = 1;
+  if (this->_internal_has_crop()) {
     target = ::PROTOBUF_NAMESPACE_ID::internal::WireFormatLite::
-      InternalWriteMessage(1, _Internal::img(this),
-        _Internal::img(this).GetCachedSize(), target, stream);
+      InternalWriteMessage(1, _Internal::crop(this),
+        _Internal::crop(this).GetCachedSize(), target, stream);
   }
 
   // uint32 prop_type = 2;
@@ -1924,11 +1662,11 @@ size_t SkinnedProperty::ByteSizeLong() const {
   // Prevent compiler warnings about cached_has_bits being unused
   (void) cached_has_bits;
 
-  // .ui_serialization.SkinImage img = 1;
-  if (this->_internal_has_img()) {
+  // .ui_serialization.region crop = 1;
+  if (this->_internal_has_crop()) {
     total_size += 1 +
       ::PROTOBUF_NAMESPACE_ID::internal::WireFormatLite::MessageSize(
-        *_impl_.img_);
+        *_impl_.crop_);
   }
 
   // uint32 prop_type = 2;
@@ -1954,9 +1692,9 @@ void SkinnedProperty::MergeImpl(::PROTOBUF_NAMESPACE_ID::Message& to_msg, const 
   uint32_t cached_has_bits = 0;
   (void) cached_has_bits;
 
-  if (from._internal_has_img()) {
-    _this->_internal_mutable_img()->::ui_serialization::SkinImage::MergeFrom(
-        from._internal_img());
+  if (from._internal_has_crop()) {
+    _this->_internal_mutable_crop()->::ui_serialization::region::MergeFrom(
+        from._internal_crop());
   }
   if (from._internal_prop_type() != 0) {
     _this->_internal_set_prop_type(from._internal_prop_type());
@@ -1981,15 +1719,15 @@ void SkinnedProperty::InternalSwap(SkinnedProperty* other) {
   ::PROTOBUF_NAMESPACE_ID::internal::memswap<
       PROTOBUF_FIELD_OFFSET(SkinnedProperty, _impl_.prop_type_)
       + sizeof(SkinnedProperty::_impl_.prop_type_)
-      - PROTOBUF_FIELD_OFFSET(SkinnedProperty, _impl_.img_)>(
-          reinterpret_cast<char*>(&_impl_.img_),
-          reinterpret_cast<char*>(&other->_impl_.img_));
+      - PROTOBUF_FIELD_OFFSET(SkinnedProperty, _impl_.crop_)>(
+          reinterpret_cast<char*>(&_impl_.crop_),
+          reinterpret_cast<char*>(&other->_impl_.crop_));
 }
 
 ::PROTOBUF_NAMESPACE_ID::Metadata SkinnedProperty::GetMetadata() const {
   return ::_pbi::AssignDescriptors(
       &descriptor_table_IndieGoUI_2eproto_getter, &descriptor_table_IndieGoUI_2eproto_once,
-      file_level_metadata_IndieGoUI_2eproto[5]);
+      file_level_metadata_IndieGoUI_2eproto[4]);
 }
 
 // ===================================================================
@@ -2212,7 +1950,7 @@ void LayoutRow::InternalSwap(LayoutRow* other) {
 ::PROTOBUF_NAMESPACE_ID::Metadata LayoutRow::GetMetadata() const {
   return ::_pbi::AssignDescriptors(
       &descriptor_table_IndieGoUI_2eproto_getter, &descriptor_table_IndieGoUI_2eproto_once,
-      file_level_metadata_IndieGoUI_2eproto[6]);
+      file_level_metadata_IndieGoUI_2eproto[5]);
 }
 
 // ===================================================================
@@ -2849,7 +2587,7 @@ void WidgetBase::InternalSwap(WidgetBase* other) {
 ::PROTOBUF_NAMESPACE_ID::Metadata WidgetBase::GetMetadata() const {
   return ::_pbi::AssignDescriptors(
       &descriptor_table_IndieGoUI_2eproto_getter, &descriptor_table_IndieGoUI_2eproto_once,
-      file_level_metadata_IndieGoUI_2eproto[7]);
+      file_level_metadata_IndieGoUI_2eproto[6]);
 }
 
 // ===================================================================
@@ -3530,7 +3268,7 @@ void Element::InternalSwap(Element* other) {
 ::PROTOBUF_NAMESPACE_ID::Metadata Element::GetMetadata() const {
   return ::_pbi::AssignDescriptors(
       &descriptor_table_IndieGoUI_2eproto_getter, &descriptor_table_IndieGoUI_2eproto_once,
-      file_level_metadata_IndieGoUI_2eproto[8]);
+      file_level_metadata_IndieGoUI_2eproto[7]);
 }
 
 // ===================================================================
@@ -3757,13 +3495,19 @@ void Widget::InternalSwap(Widget* other) {
 ::PROTOBUF_NAMESPACE_ID::Metadata Widget::GetMetadata() const {
   return ::_pbi::AssignDescriptors(
       &descriptor_table_IndieGoUI_2eproto_getter, &descriptor_table_IndieGoUI_2eproto_once,
-      file_level_metadata_IndieGoUI_2eproto[9]);
+      file_level_metadata_IndieGoUI_2eproto[8]);
 }
 
 // ===================================================================
 
 class SerializedUI::_Internal {
  public:
+  using HasBits = decltype(std::declval<SerializedUI>()._impl_._has_bits_);
+  static constexpr int32_t kHasBitsOffset =
+    8 * PROTOBUF_FIELD_OFFSET(SerializedUI, _impl_._has_bits_);
+  static void set_has_skinning_image_idx(HasBits* has_bits) {
+    (*has_bits)[0] |= 1u;
+  }
 };
 
 SerializedUI::SerializedUI(::PROTOBUF_NAMESPACE_ID::Arena* arena,
@@ -3776,11 +3520,15 @@ SerializedUI::SerializedUI(const SerializedUI& from)
   : ::PROTOBUF_NAMESPACE_ID::Message() {
   SerializedUI* const _this = this; (void)_this;
   new (&_impl_) Impl_{
-      decltype(_impl_.fonts_){from._impl_.fonts_}
+      decltype(_impl_._has_bits_){from._impl_._has_bits_}
+    , /*decltype(_impl_._cached_size_)*/{}
+    , decltype(_impl_.fonts_){from._impl_.fonts_}
     , decltype(_impl_.widgets_){from._impl_.widgets_}
-    , /*decltype(_impl_._cached_size_)*/{}};
+    , decltype(_impl_.images_){from._impl_.images_}
+    , decltype(_impl_.skinning_image_idx_){}};
 
   _internal_metadata_.MergeFrom<::PROTOBUF_NAMESPACE_ID::UnknownFieldSet>(from._internal_metadata_);
+  _this->_impl_.skinning_image_idx_ = from._impl_.skinning_image_idx_;
   // @@protoc_insertion_point(copy_constructor:ui_serialization.SerializedUI)
 }
 
@@ -3789,9 +3537,12 @@ inline void SerializedUI::SharedCtor(
   (void)arena;
   (void)is_message_owned;
   new (&_impl_) Impl_{
-      decltype(_impl_.fonts_){arena}
-    , decltype(_impl_.widgets_){arena}
+      decltype(_impl_._has_bits_){}
     , /*decltype(_impl_._cached_size_)*/{}
+    , decltype(_impl_.fonts_){arena}
+    , decltype(_impl_.widgets_){arena}
+    , decltype(_impl_.images_){arena}
+    , decltype(_impl_.skinning_image_idx_){0u}
   };
 }
 
@@ -3808,6 +3559,7 @@ inline void SerializedUI::SharedDtor() {
   GOOGLE_DCHECK(GetArenaForAllocation() == nullptr);
   _impl_.fonts_.~RepeatedPtrField();
   _impl_.widgets_.~RepeatedPtrField();
+  _impl_.images_.~RepeatedPtrField();
 }
 
 void SerializedUI::SetCachedSize(int size) const {
@@ -3822,11 +3574,15 @@ void SerializedUI::Clear() {
 
   _impl_.fonts_.Clear();
   _impl_.widgets_.Clear();
+  _impl_.images_.Clear();
+  _impl_.skinning_image_idx_ = 0u;
+  _impl_._has_bits_.Clear();
   _internal_metadata_.Clear<::PROTOBUF_NAMESPACE_ID::UnknownFieldSet>();
 }
 
 const char* SerializedUI::_InternalParse(const char* ptr, ::_pbi::ParseContext* ctx) {
 #define CHK_(x) if (PROTOBUF_PREDICT_FALSE(!(x))) goto failure
+  _Internal::HasBits has_bits{};
   while (!ctx->Done(&ptr)) {
     uint32_t tag;
     ptr = ::_pbi::ReadTag(ptr, &tag);
@@ -3857,6 +3613,30 @@ const char* SerializedUI::_InternalParse(const char* ptr, ::_pbi::ParseContext* 
         } else
           goto handle_unusual;
         continue;
+      // repeated string images = 3;
+      case 3:
+        if (PROTOBUF_PREDICT_TRUE(static_cast<uint8_t>(tag) == 26)) {
+          ptr -= 1;
+          do {
+            ptr += 1;
+            auto str = _internal_add_images();
+            ptr = ::_pbi::InlineGreedyStringParser(str, ptr, ctx);
+            CHK_(ptr);
+            CHK_(::_pbi::VerifyUTF8(str, "ui_serialization.SerializedUI.images"));
+            if (!ctx->DataAvailable(ptr)) break;
+          } while (::PROTOBUF_NAMESPACE_ID::internal::ExpectTag<26>(ptr));
+        } else
+          goto handle_unusual;
+        continue;
+      // optional uint32 skinning_image_idx = 4;
+      case 4:
+        if (PROTOBUF_PREDICT_TRUE(static_cast<uint8_t>(tag) == 32)) {
+          _Internal::set_has_skinning_image_idx(&has_bits);
+          _impl_.skinning_image_idx_ = ::PROTOBUF_NAMESPACE_ID::internal::ReadVarint32(&ptr);
+          CHK_(ptr);
+        } else
+          goto handle_unusual;
+        continue;
       default:
         goto handle_unusual;
     }  // switch
@@ -3873,6 +3653,7 @@ const char* SerializedUI::_InternalParse(const char* ptr, ::_pbi::ParseContext* 
     CHK_(ptr != nullptr);
   }  // while
 message_done:
+  _impl_._has_bits_.Or(has_bits);
   return ptr;
 failure:
   ptr = nullptr;
@@ -3900,6 +3681,22 @@ uint8_t* SerializedUI::_InternalSerialize(
     const auto& repfield = this->_internal_widgets(i);
     target = ::PROTOBUF_NAMESPACE_ID::internal::WireFormatLite::
         InternalWriteMessage(2, repfield, repfield.GetCachedSize(), target, stream);
+  }
+
+  // repeated string images = 3;
+  for (int i = 0, n = this->_internal_images_size(); i < n; i++) {
+    const auto& s = this->_internal_images(i);
+    ::PROTOBUF_NAMESPACE_ID::internal::WireFormatLite::VerifyUtf8String(
+      s.data(), static_cast<int>(s.length()),
+      ::PROTOBUF_NAMESPACE_ID::internal::WireFormatLite::SERIALIZE,
+      "ui_serialization.SerializedUI.images");
+    target = stream->WriteString(3, s, target);
+  }
+
+  // optional uint32 skinning_image_idx = 4;
+  if (_internal_has_skinning_image_idx()) {
+    target = stream->EnsureSpace(target);
+    target = ::_pbi::WireFormatLite::WriteUInt32ToArray(4, this->_internal_skinning_image_idx(), target);
   }
 
   if (PROTOBUF_PREDICT_FALSE(_internal_metadata_.have_unknown_fields())) {
@@ -3932,6 +3729,20 @@ size_t SerializedUI::ByteSizeLong() const {
       ::PROTOBUF_NAMESPACE_ID::internal::WireFormatLite::MessageSize(msg);
   }
 
+  // repeated string images = 3;
+  total_size += 1 *
+      ::PROTOBUF_NAMESPACE_ID::internal::FromIntSize(_impl_.images_.size());
+  for (int i = 0, n = _impl_.images_.size(); i < n; i++) {
+    total_size += ::PROTOBUF_NAMESPACE_ID::internal::WireFormatLite::StringSize(
+      _impl_.images_.Get(i));
+  }
+
+  // optional uint32 skinning_image_idx = 4;
+  cached_has_bits = _impl_._has_bits_[0];
+  if (cached_has_bits & 0x00000001u) {
+    total_size += ::_pbi::WireFormatLite::UInt32SizePlusOne(this->_internal_skinning_image_idx());
+  }
+
   return MaybeComputeUnknownFieldsSize(total_size, &_impl_._cached_size_);
 }
 
@@ -3952,6 +3763,10 @@ void SerializedUI::MergeImpl(::PROTOBUF_NAMESPACE_ID::Message& to_msg, const ::P
 
   _this->_impl_.fonts_.MergeFrom(from._impl_.fonts_);
   _this->_impl_.widgets_.MergeFrom(from._impl_.widgets_);
+  _this->_impl_.images_.MergeFrom(from._impl_.images_);
+  if (from._internal_has_skinning_image_idx()) {
+    _this->_internal_set_skinning_image_idx(from._internal_skinning_image_idx());
+  }
   _this->_internal_metadata_.MergeFrom<::PROTOBUF_NAMESPACE_ID::UnknownFieldSet>(from._internal_metadata_);
 }
 
@@ -3969,14 +3784,17 @@ bool SerializedUI::IsInitialized() const {
 void SerializedUI::InternalSwap(SerializedUI* other) {
   using std::swap;
   _internal_metadata_.InternalSwap(&other->_internal_metadata_);
+  swap(_impl_._has_bits_[0], other->_impl_._has_bits_[0]);
   _impl_.fonts_.InternalSwap(&other->_impl_.fonts_);
   _impl_.widgets_.InternalSwap(&other->_impl_.widgets_);
+  _impl_.images_.InternalSwap(&other->_impl_.images_);
+  swap(_impl_.skinning_image_idx_, other->_impl_.skinning_image_idx_);
 }
 
 ::PROTOBUF_NAMESPACE_ID::Metadata SerializedUI::GetMetadata() const {
   return ::_pbi::AssignDescriptors(
       &descriptor_table_IndieGoUI_2eproto_getter, &descriptor_table_IndieGoUI_2eproto_once,
-      file_level_metadata_IndieGoUI_2eproto[10]);
+      file_level_metadata_IndieGoUI_2eproto[9]);
 }
 
 // @@protoc_insertion_point(namespace_scope)
@@ -3993,10 +3811,6 @@ Arena::CreateMaybeMessage< ::ui_serialization::region_size >(Arena* arena) {
 template<> PROTOBUF_NOINLINE ::ui_serialization::StyleColor*
 Arena::CreateMaybeMessage< ::ui_serialization::StyleColor >(Arena* arena) {
   return Arena::CreateMessageInternal< ::ui_serialization::StyleColor >(arena);
-}
-template<> PROTOBUF_NOINLINE ::ui_serialization::SkinImage*
-Arena::CreateMaybeMessage< ::ui_serialization::SkinImage >(Arena* arena) {
-  return Arena::CreateMessageInternal< ::ui_serialization::SkinImage >(arena);
 }
 template<> PROTOBUF_NOINLINE ::ui_serialization::Font*
 Arena::CreateMaybeMessage< ::ui_serialization::Font >(Arena* arena) {

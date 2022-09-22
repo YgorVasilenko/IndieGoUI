@@ -32,10 +32,10 @@ message StyleColor {
     float a = 4;
 }
 
-message SkinImage {
-    string path = 1;
-    region crop = 2;
-}
+// message SkinImage {
+//     string path = 1;
+//     region crop = 2;
+// }
 
 message Font {
     string name = 1;
@@ -43,7 +43,7 @@ message Font {
 }
 
 message SkinnedProperty {
-    SkinImage img = 1;
+    region crop = 1;
     uint32 prop_type = 2;
 }
 
@@ -114,6 +114,10 @@ message SerializedUI {
     // similar paths could be saved, just specifying font size
     repeated Font fonts = 1;
     repeated Widget widgets = 2;
+
+    // saved path to image
+    repeated string images = 3;
+    optional uint32 skinning_image_idx = 4;
 }
 
 // [END messages]

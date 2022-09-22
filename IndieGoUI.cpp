@@ -4,12 +4,17 @@
 #include <glad/glad.h>
 #include <GLFW/glfw3.h>
 
+#include <filesystem>
+namespace fs = std::filesystem;
+
 #define STB_IMAGE_IMPLEMENTATION
 #include "stb_image.h"
 
 #if !defined NO_SERIALIZATION !defined NO_UI_SERIALIZATION
 #include <IndieGoUI.pb.h>
 #endif
+
+
 
 using namespace IndieGo::UI;
 
@@ -94,25 +99,34 @@ void addElement(
     UI_elements_map & UIMap = GUI.UIMaps[winID];
     // add element to widget
     UIMap.addElement(elt_name, type, &w, push_opt);
-
-    // TODO : process special cases
-    /*w.layout_grid[row].in_pixels = false;
-    w.layout_grid[row].min_height = 0.25f;*/
 }
-
-// extern unsigned int skinning_image_id;
-// extern unsigned int si_w;
-// extern unsigned int si_h;
 
 // helper function lo load image through stbi
 // in other engine parts ImageLoader will do that
-TexData Manager::load_image(const std::string & path) {
+TexData Manager::load_image(std::string path, bool useProjectDir) {
+    char* pd = getenv("PROJECT_DIR");
+    std::string project_dir = "";
+    if (useProjectDir && pd) {
+        project_dir = pd;
+        if (path.size() > project_dir.size()) {
+            path = path.substr(
+                project_dir.size(), path.size()
+            );
+        }
+    }
+
     if (loaded_textures.find(path) != loaded_textures.end()) {
         return loaded_textures[path];
     }
     // unsigned int tex;
     TexData& td = loaded_textures[path];
-    unsigned char *data = stbi_load(path.c_str(), &td.w, &td.h, &td.n, 0);
+    unsigned char *data = stbi_load(
+        useProjectDir ? (project_dir + path).c_str() : path.c_str(), 
+        &td.w, 
+        &td.h, 
+        &td.n, 
+        0
+    );
     
     if (!data) {
         std::cout << "[ERROR] failed to load image " << path << std::endl;
@@ -136,9 +150,6 @@ TexData Manager::load_image(const std::string & path) {
     
     return td;
 }
-
-
-extern std::string skinning_img_path = "";
 
 void Manager::serialize(const std::string & winID, const std::string & path, const std::vector<std::string> & skipWidgets) {
 #if !defined NO_SERIALIZATION !defined NO_UI_SERIALIZATION
@@ -190,13 +201,12 @@ void Manager::serialize(const std::string & winID, const std::string & path, con
             if (prop.second.first != -1) {
                 ui_serialization::SkinnedProperty * sp = w->mutable_widget()->add_skinned_props();
                 sp->set_prop_type((unsigned int)prop.first);
-                sp->mutable_img()->set_path(skinning_img_path);
 
                 region<float> crop = widget.second.getImgCrop(prop.first);
-                sp->mutable_img()->mutable_crop()->set_h(crop.h);
-                sp->mutable_img()->mutable_crop()->set_w(crop.w);
-                sp->mutable_img()->mutable_crop()->set_x(crop.x);
-                sp->mutable_img()->mutable_crop()->set_y(crop.y);
+                sp->mutable_crop()->set_h(crop.h);
+                sp->mutable_crop()->set_w(crop.w);
+                sp->mutable_crop()->set_x(crop.x);
+                sp->mutable_crop()->set_y(crop.y);
             }
         }
 
@@ -240,19 +250,17 @@ void Manager::serialize(const std::string & winID, const std::string & path, con
             e->set_width(UIMap[elt_name].width);
             e->set_height(UIMap[elt_name].height);
 
-            // e->set_add_on_new_row(add_to_new_row);
             // skinned props
             for (auto prop : UIMap[elt_name].skinned_style.props) {
                 if (prop.second.first != -1) {
                     ui_serialization::SkinnedProperty * sp = e->add_skinned_props();
                     sp->set_prop_type((unsigned int)prop.first);
-                    sp->mutable_img()->set_path(skinning_img_path);
 
                     region<float> crop = UIMap[elt_name].getImgCrop(prop.first);
-                    sp->mutable_img()->mutable_crop()->set_h(crop.h);
-                    sp->mutable_img()->mutable_crop()->set_w(crop.w);
-                    sp->mutable_img()->mutable_crop()->set_x(crop.x);
-                    sp->mutable_img()->mutable_crop()->set_y(crop.y);
+                    sp->mutable_crop()->set_h(crop.h);
+                    sp->mutable_crop()->set_w(crop.w);
+                    sp->mutable_crop()->set_x(crop.x);
+                    sp->mutable_crop()->set_y(crop.y);
                 }
             }
 
@@ -268,6 +276,8 @@ void Manager::serialize(const std::string & winID, const std::string & path, con
     }
 
     for (auto font : loaded_fonts) {
+        // skip "default" font serialization
+        if (fs::path(font.first).stem().string() == main_font) continue;
         for (auto size : font.second.sizes) {
             ui_serialization::Font * f = serialized_ui.add_fonts();
             f->set_name(font.second.path);
@@ -275,6 +285,14 @@ void Manager::serialize(const std::string & winID, const std::string & path, con
         }
     }
 
+    unsigned int i = 0;
+    for (auto image : loaded_textures) {
+        serialized_ui.add_images(image.first);
+        if (image.first == skinning_image) {
+            serialized_ui.set_skinning_image_idx(i);
+        }
+        i++;
+    }
     std::ofstream file(path, std::ios::binary);
     serialized_ui.SerializeToOstream(&file);
     file.close();
@@ -293,6 +311,16 @@ void Manager::deserialize(const std::string & winID, const std::string & path) {
     }
     unsigned int idx = 0;
     UI_elements_map & UIMap = GUI.UIMaps[winID];
+    
+    // load images first, because ui uses them
+    
+    for (unsigned int i = 0; i < serialized_ui.images_size(); i++) {
+        Manager::load_image(serialized_ui.images(i));
+        if (serialized_ui.has_skinning_image_idx() && i == serialized_ui.skinning_image_idx()) {
+            skinning_image = serialized_ui.images(i);
+        }
+    }
+
     // load ui widgets
     for (int i = 0; i < serialized_ui.widgets_size(); i++) {
         const ui_serialization::Widget & w = serialized_ui.widgets(i);
@@ -331,20 +359,20 @@ void Manager::deserialize(const std::string & winID, const std::string & path) {
 
         // skinned props
         for (int j = 0; j < w.widget().skinned_props_size(); j++) {
-            // TODO : check if image is loaded. Load, if not
             const ui_serialization::SkinnedProperty & sp = w.widget().skinned_props(j);
             region<float> crop_region;
-            crop_region.h = sp.img().crop().h();
-            crop_region.w = sp.img().crop().w();
-            crop_region.y = sp.img().crop().y();
-            crop_region.x = sp.img().crop().x();
-            // added_w.useSkinImage(
-            //     skinning_image_id,
-            //     si_w,
-            //     si_h,
-            //     crop_region,
-            //     (IMAGE_SKIN_ELEMENT)sp.prop_type()
-            // );
+            crop_region.h = sp.crop().h();
+            crop_region.w = sp.crop().w();
+            crop_region.y = sp.crop().y();
+            crop_region.x = sp.crop().x();
+            TexData td = Manager::load_image(skinning_image);
+            added_w.useSkinImage(
+                td.texID,
+                td.w,
+                td.h,
+                crop_region,
+                (IMAGE_SKIN_ELEMENT)sp.prop_type()
+            );
         }
 
         // color styled props
@@ -380,20 +408,20 @@ void Manager::deserialize(const std::string & winID, const std::string & path) {
 
             // skinned props
             for (int k = 0; k < e.skinned_props_size(); k++) {
-                // TODO : check if image is loaded. Load, if not
                 const ui_serialization::SkinnedProperty & sp = e.skinned_props(j);
                 region<float> crop_region;
-                crop_region.h = sp.img().crop().h();
-                crop_region.w = sp.img().crop().w();
-                crop_region.y = sp.img().crop().y();
-                crop_region.x = sp.img().crop().x();
-                // UIMap[e.name()].useSkinImage(
-                //     skinning_image_id,
-                //     si_w,
-                //     si_h,
-                //     crop_region,
-                //     (IMAGE_SKIN_ELEMENT)sp.prop_type()
-                // );
+                crop_region.h = sp.crop().h();
+                crop_region.w = sp.crop().w();
+                crop_region.y = sp.crop().y();
+                crop_region.x = sp.crop().x();
+                TexData td = Manager::load_image(skinning_image);
+                UIMap[e.name()].useSkinImage(
+                    td.texID,
+                    td.w,
+                    td.h,
+                    crop_region,
+                    (IMAGE_SKIN_ELEMENT)sp.prop_type()
+                );
             }
             // color styled props
             for (int k = 0; k < 28; k++) {
@@ -425,8 +453,7 @@ void Manager::deserialize(const std::string & winID, const std::string & path) {
     // load used fonts
     for (int i = 0; i < serialized_ui.fonts_size(); i++) {
         const ui_serialization::Font & f = serialized_ui.fonts(i);
-        loadFont(f.name(), winID, f.size());
+        loadFont(f.name(), winID, f.size(), true, false);
     }
-
 #endif
 }
