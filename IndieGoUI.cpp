@@ -10,7 +10,7 @@ namespace fs = std::filesystem;
 #define STB_IMAGE_IMPLEMENTATION
 #include "stb_image.h"
 
-#if !defined NO_SERIALIZATION !defined NO_UI_SERIALIZATION
+#if !defined NO_SERIALIZATION && !defined NO_UI_SERIALIZATION
 #include <IndieGoUI.pb.h>
 #endif
 
@@ -71,13 +71,7 @@ void createNewWidget(
     WIDGET & widget = GUI.addWidget(newWidget, winID);
 }
 
-// void useBackgroundImage(std::string widID, std::string winID, unsigned int texID) {
-//    /* WIDGET & w = GUI.getWidget(widID, winID);
-//     w.img_idx = GUI.addImage(texID);
-//     w.backgroundImage = true;*/
-// }
-
-extern ELT_PUSH_OPT push_opt;
+ELT_PUSH_OPT push_opt = to_new_row;
 void addElement(
     std::string widID, 
     std::string winID, 
@@ -152,7 +146,7 @@ TexData Manager::load_image(std::string path, bool useProjectDir) {
 }
 
 void Manager::serialize(const std::string & winID, const std::string & path, const std::vector<std::string> & skipWidgets) {
-#if !defined NO_SERIALIZATION !defined NO_UI_SERIALIZATION
+#if !defined NO_SERIALIZATION && !defined NO_UI_SERIALIZATION
     UI_elements_map & UIMap = GUI.UIMaps[winID];
     ui_serialization::SerializedUI serialized_ui;
     for (auto widget : GUI.widgets[winID]) {
@@ -300,7 +294,7 @@ void Manager::serialize(const std::string & winID, const std::string & path, con
 }
 
 void Manager::deserialize(const std::string & winID, const std::string & path) {
-#if !defined NO_SERIALIZATION !defined NO_UI_SERIALIZATION
+#if !defined NO_SERIALIZATION && !defined NO_UI_SERIALIZATION
     ui_serialization::SerializedUI serialized_ui;
     std::ifstream file(path, std::ios::binary);
     if (!serialized_ui.ParseFromIstream(&file)) {
