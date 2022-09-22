@@ -1,20 +1,34 @@
+// TODO :
+// Fonts 
+// - load fonts by adding to atlas
+// - reload atlas each time new font is loaded
+// extra. split rows and columns
+
 #include <IndieGoUI.h>
 #include <glad/glad.h>
 #include <GLFW/glfw3.h>
 #include <chrono>
+#include <list>
+#include <filesystem>
+namespace fs = std::filesystem;
 
 // Plain simple code for window creation
 // Created window will hold a widget
-#define WIDTH 1280
-#define HEIGHT 800
+// #define WIDTH 1280
+// #define HEIGHT 800
 
 GLFWwindow * screen;
 
 using namespace IndieGo::UI;
 
 Manager GUI;
-WIDGET test_widget, logging_widget;
-std::string winID = "OpenGL_Nuklear UI";
+WIDGET creator_widget;
+WIDGET styling_widget;
+std::string winID = "UI test app";
+
+// [widID] = current_line
+std::map<std::string, unsigned int> widgets_fill;
+
 // Window input callbacks
 void cursor_position_callback(GLFWwindow* window, double xpos, double ypos) {
 	GUI.mouse_move( &winID, xpos, ypos);
@@ -24,7 +38,7 @@ void mouse_button_callback(GLFWwindow* window, int button, int action, int mods)
     GUI.mouse_button( &winID,button, action, mods);
 }
 
-void scroll_callback(GLFWwindow* window, double xoffset, double yoffset){
+void scroll_callback(GLFWwindow* window, double xoffset, double yoffset) {
     GUI.scroll( &winID, xoffset, yoffset);
 }
 
@@ -38,49 +52,8 @@ void key_callback(GLFWwindow* window, int key, int scancode, int action, int mod
 
 unsigned int buttons_count = 1;
 
-std::vector<std::string> list_items = {
-    "Spam", "Eggs"
-};
-
-std::string getColorPropName(COLOR_ELEMENTS prop) {
-    if (prop == UI_COLOR_TEXT) return "UI_COLOR_TEXT";
-    if (prop == UI_COLOR_WINDOW) return "UI_COLOR_WINDOW";
-    if (prop == UI_COLOR_HEADER) return "UI_COLOR_HEADER";
-    if (prop == UI_COLOR_BORDER) return "UI_COLOR_BORDER";
-    if (prop == UI_COLOR_BUTTON) return "UI_COLOR_BUTTON";
-    if (prop == UI_COLOR_BUTTON_HOVER) return "UI_COLOR_BUTTON_HOVER";
-    if (prop == UI_COLOR_BUTTON_ACTIVE) return "UI_COLOR_BUTTON_ACTIVE";
-    if (prop == UI_COLOR_TOGGLE) return "UI_COLOR_TOGGLE";
-    if (prop == UI_COLOR_TOGGLE_HOVER) return "UI_COLOR_TOGGLE_HOVER";
-    if (prop == UI_COLOR_TOGGLE_CURSOR) return "UI_COLOR_TOGGLE_CURSOR";
-    if (prop == UI_COLOR_SELECT) return "UI_COLOR_SELECT";
-    if (prop == UI_COLOR_SELECT_ACTIVE) return "UI_COLOR_SELECT_ACTIVE";
-    if (prop == UI_COLOR_SLIDER) return "UI_COLOR_SLIDER";
-    if (prop == UI_COLOR_SLIDER_CURSOR) return "UI_COLOR_SLIDER_CURSOR";
-    if (prop == UI_COLOR_SLIDER_CURSOR_HOVER) return "UI_COLOR_SLIDER_CURSOR_HOVER";
-    if (prop == UI_COLOR_SLIDER_CURSOR_ACTIVE) return "UI_COLOR_SLIDER_CURSOR_ACTIVE";
-    if (prop == UI_COLOR_PROPERTY) return "UI_COLOR_PROPERTY";
-    if (prop == UI_COLOR_EDIT) return "UI_COLOR_EDIT";
-    if (prop == UI_COLOR_EDIT_CURSOR) return "UI_COLOR_EDIT_CURSOR";
-    if (prop == UI_COLOR_COMBO) return "UI_COLOR_COMBO";
-    if (prop == UI_COLOR_CHART) return "UI_COLOR_CHART";
-    if (prop == UI_COLOR_CHART_COLOR) return "UI_COLOR_CHART_COLOR";
-    if (prop == UI_COLOR_CHART_COLOR_HIGHLIGHT) return "UI_COLOR_CHART_COLOR_HIGHLIGHT";
-    if (prop == UI_COLOR_SCROLLBAR) return "UI_COLOR_SCROLLBAR";
-    if (prop == UI_COLOR_SCROLLBAR_CURSOR) return "UI_COLOR_SCROLLBAR_CURSOR";
-    if (prop == UI_COLOR_SCROLLBAR_CURSOR_HOVER) return "UI_COLOR_SCROLLBAR_CURSOR_HOVER";
-    if (prop == UI_COLOR_SCROLLBAR_CURSOR_ACTIVE) return "UI_COLOR_SCROLLBAR_CURSOR_ACTIVE";
-    if (prop == UI_COLOR_TAB_HEADER) return "UI_COLOR_TAB_HEADER";
-    return "NO_COLOR_PROPERTY";
-}
-
 double curr_time = 0.0, prev_time = 0.0;
 unsigned int frames = 0;
-
-// struct UI_Creator {
-//     std::name currWinId;
-//     vi
-// };
 
 int main() {
 
@@ -104,139 +77,120 @@ int main() {
 
     glViewport(0, 0, WIDTH, HEIGHT);
     GUI.init(winID, screen);
+    GUI.screen_size.w = WIDTH;
+    GUI.screen_size.h = HEIGHT;
 
-    // initialize test widget
-    test_widget.screen_region.x = WIDTH / 4;
-    test_widget.screen_region.y = HEIGHT / 4;
-    test_widget.screen_region.w = WIDTH / 2;
-    test_widget.screen_region.h = HEIGHT / 3;
-    test_widget.name = "OpenGL_Nuklear_UI widget";
-    test_widget.custom_style = true;
-    test_widget.style.elements[UI_COLOR_WINDOW].a = 175;
+    WIDGET test_widget;
+    test_widget.screen_region.h = 0.3f;
+    test_widget.screen_region.w = 0.3f;
+    test_widget.screen_region.x = 0.3f;
+    test_widget.screen_region.y = 0.3f;
+    test_widget.name = "test widget";
 
-	// logging widget initialization. Place at top-left corner,
-	// body is fully-transparent, so only text is visible
-	logging_widget.screen_region.x = 0;
-	logging_widget.screen_region.y = 0;
-	logging_widget.screen_region.w = WIDTH;
-	logging_widget.screen_region.h = HEIGHT / 4;
-	logging_widget.name = "log";
-    logging_widget.custom_style = true;
-	logging_widget.style.elements[UI_COLOR_WINDOW].a = 100;
-	logging_widget.border = false;
-	logging_widget.title = false;
-	logging_widget.minimizable = false;
-	logging_widget.scalable = false;
-	logging_widget.movable = false;
+    GUI.addWidget(test_widget, winID);
+    WIDGET & test_widget_h = GUI.getWidget("test widget", winID);
 
-    WIDGET & widget = GUI.addWidget(test_widget, "OpenGL_Nuklear_UI");
-	WIDGET & log = GUI.addWidget(logging_widget, "OpenGL_Nuklear_UI");
+    test_widget_h.minimizable = false;
+    test_widget_h.title = false;
+    test_widget_h.movable = false;
+    UI_elements_map & UIMap = GUI.UIMaps[winID];
+    
+    UIMap.addElement("group", UI_ITEMS_LIST, &test_widget_h);
+    test_widget_h.updateRowHeight(test_widget_h.layout_grid.size() - 1, 0.5f);
+    
+    UIMap.addElement("test button 1", UI_BUTTON, &test_widget_h, to_new_col);
+    UIMap["test button 1"].label = "TEST BUTTON";
+    UIMap["test button 1"].height = 0.1f;
+    
+    // TODO : set padding and border as % from widget
+    UIMap["test button 1"].padding.h = 5.f;
+    UIMap["test button 1"].padding.w = 10.f;
+    UIMap["test button 1"].border = 1.f;
 
-    UI_elements_map & UIMap = GUI.UIMaps["OpenGL_Nuklear_UI"];
+    UIMap.addElement("test button 2", UI_BUTTON, &test_widget_h, to_new_subrow);
+    UIMap["test button 2"].label = "TEST BUTTON";
+    UIMap["test button 2"].height = 0.1f;
+    UIMap["test button 2"].padding.h = 5.f;
+    UIMap["test button 2"].padding.w = 10.f;
 
-    // Example adding elements (properties) to UIMap
-    UIMap.addElement("add row", UI_BUTTON, &widget);
-    UIMap["add row"].label = "add row";
+    UIMap.addElement("test text", UI_STRING_TEXT, &test_widget_h, to_new_subrow);
+    UIMap["test text"].label = "This is some text to test layout. This text should be long enough to get wrapped! Also cell height should be sufficient to display it fully.";
+    UIMap["test text"].height = 0.2f;
+    
+    UIMap.addElement("test image 1", UI_IMAGE, &test_widget_h);
+    TexData tex;
+    tex = Manager::load_image("C:\\Users\\Public\\GobbyIsland\\Sprites\\magic_bar_3_parts.png");
+    region<float> crop;
+    crop.x = 0.f;
+    crop.y = 0.f;
+    crop.w = 0.5f;
+    crop.h = 1.f;
+    UIMap["test image 1"].initImage(tex.texID, tex.w, tex.h, crop);
+    test_widget_h.updateRowHeight(test_widget_h.layout_grid.size() - 1, 0.5f);
 
-    UIMap.addElement("add column", UI_BUTTON, &widget);
-    UIMap["add column"].label = "add column";
+    UIMap.addElement("test button 3", UI_BUTTON, &test_widget_h, to_new_col);
+    UIMap["test button 3"].label = "TEST BUTTON";
+    UIMap["test button 3"].height = 0.1f;
+    UIMap["test button 3"].rounding = 10.f;
 
-    UIMap.addElement("show list", UI_BOOL, &widget, 1);
-    UIMap["show list"].label = "show list";
+    UIMap.addElement("test image 2", UI_IMAGE, &test_widget_h, to_new_subrow);
+    crop.x = 0.5f;
+    crop.y = 0.f;
+    crop.w = 0.5f;
+    crop.h = 1.f;
+    UIMap["test image 2"].initImage(tex.texID, tex.w, tex.h, crop);
+    UIMap["test image 2"].height = 0.4f;
 
-    UIMap.addElement("items list size", UI_UINT, &widget, 1);
-    UIMap["items list size"].label = "items list size";
-    UIMap["items list size"]._data.i = 100;
+    crop.x = 0.f;
+    crop.y = 0.f;
+    crop.w = 1.f;
+    crop.h = 1.f;
+    test_widget_h.useSkinImage( tex.texID, tex.w, tex.h, crop, background );
 
-    UIMap.addElement("string items list", UI_ITEMS_LIST, &widget, 2);
-    UIMap["string items list"].label = "widget items list";
-    ui_string_group & example_list = *UIMap["string items list"]._data.usgPtr;
-    example_list.copyFrom(list_items);
 
-    UIMap.addElement("selected UI item", UI_STRING_LABEL, &widget, 3);
-    UIMap["selected UI item"].label = "selected UI item:";
-    UIMap["selected UI item"].hidden = true;
+    WIDGET technical_data_widget;
+    technical_data_widget.screen_region.h = 0.1f;
+    technical_data_widget.screen_region.w = 0.1f;
+    technical_data_widget.screen_region.x = 0.f;
+    technical_data_widget.screen_region.y = 0.f;
+    technical_data_widget.name = "data";
+    GUI.addWidget(technical_data_widget, winID);
+    WIDGET & td = GUI.getWidget("data", winID);
+    td.style.elements[UI_COLOR_WINDOW].a = 100;
 
-    UIMap.addElement("current list item", UI_STRING_INPUT, &widget, 3);
-    UIMap["current list item"].label = "current list item:";
-    UIMap["current list item"].hidden = true;
+    UIMap.addElement("FPS counter", UI_STRING_TEXT, &td);
+    unsigned int fps_counter = 0;
+    UIMap["FPS counter"].label = std::to_string(fps_counter);
+    UIMap["FPS counter"].padding.w = 10.f;
 
-    UIMap.addElement("test color picker", UI_COLOR_PICKER, &widget, 4);
-    UIMap["test color picker"].label = "test color picker";
-
-	// Adding logging text field to log widget
-	UIMap.addElement("fps counter", UI_STRING_LABEL, &log);
-    UIMap["fps counter"].label = "fps";
-	UIMap["fps counter"].text_align = LEFT;
-
-    // Adding logging text field to log widget
-	UIMap.addElement("Cursor hovered over", UI_STRING_LABEL, &log);
-    UIMap["Cursor hovered over"].label = "Cursor hovered over: ";
-	UIMap["Cursor hovered over"].text_align = LEFT;
-
+    td.updateRowHeight(0, 1.f);
 
 	// set initial time to zero
 	glfwSetTime(0.0);
-
-    // float color;
+    int width, height;
     while (!glfwWindowShouldClose(screen)) {
         glClearColor(0.2f, 0.3f, 0.3f, 1.0f);
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT | GL_STENCIL_BUFFER_BIT);
 
-        UIMap["string items list"].hidden = !UIMap["show list"]._data.b;
+        // update screen size each frame before calling immediate backend
+        glfwGetWindowSize(screen, &width, &height);
 
-        if (UIMap["show list"]._data.b) {
-            // Modify text edit filed, basing on user's input
-            if (example_list.selected_element > -1 ) {
-                std::string & curr_selected_item = example_list.getSelected();
-                if (example_list.selection_switch){
-                    *UIMap["current list item"]._data.strPtr = curr_selected_item;
-                    if (UIMap["current list item"].hidden) {
-                        UIMap["current list item"].hidden = false;
-                        UIMap["selected UI item"].hidden = false;
-                    }
-                } else {
-                    curr_selected_item = *UIMap["current list item"]._data.strPtr;
-                }
-            }
-        } else {
-            UIMap["current list item"].hidden = true;
-            UIMap["selected UI item"].hidden = true;
-            example_list.unselect();
-        }
+        GUI.screen_size.w = width;
+        GUI.screen_size.h = height;
 
-        // Always keep log widget in background
-        if (log.focused){
-            widget.setFocus = true;
-        }
-
-        if (GUI.hoveredWidgets["OpenGL_Nuklear_UI"]){
-            UIMap["Cursor hovered over"].label = "Cursor hovered over: " + GUI.hoveredWidgets["OpenGL_Nuklear_UI"]->name;
-        } else {
-            UIMap["Cursor hovered over"].label = "Cursor hovered over: None";
-        }
-
-        GUI.drawFrameStart(std::string("OpenGL_Nuklear UI"));
-        GUI.displayWidgets(std::string("OpenGL_Nuklear_UI"));
-        GUI.drawFrameEnd(std::string("OpenGL_Nuklear UI"));
-        
-        curr_time = glfwGetTime();
-        if ((curr_time - prev_time) > 1.0) {
-            prev_time = curr_time;
-            // update log woth fps
-            UIMap["fps counter"].label = "FPS: " + std::to_string(frames);
-            frames = 0;
-        }
-		frames++;
-
-        // Modify height of specific layout row, depending on data from ui element
-        widget.layout_grid[2].min_height = UIMap["items list size"]._data.i;
+        GUI.drawFrameStart(winID);
+        GUI.displayWidgets(winID);
+        GUI.drawFrameEnd(winID);
 
         glfwSwapBuffers(screen);
 	    glfwPollEvents();
-#ifdef CI_BUILD
-        break;
-#endif
+
+        fps_counter++;
+        if (glfwGetTime() >= 1.f) {
+            glfwSetTime(0.0);
+            UIMap["FPS counter"].label = std::to_string(fps_counter);
+            fps_counter = 0;
+        }
     }
     return 0;
 }
