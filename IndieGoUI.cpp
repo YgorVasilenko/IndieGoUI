@@ -15,7 +15,6 @@ namespace fs = std::filesystem;
 #endif
 
 
-
 using namespace IndieGo::UI;
 
 extern Manager GUI;
