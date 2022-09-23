@@ -139,7 +139,7 @@ std::pair<std::string, std::string> getResourcesPath() {
     return std::pair<std::string, std::string>(path, project_name);
 }
 
-ELT_PUSH_OPT push_opt = to_new_row;
+extern ELT_PUSH_OPT push_opt;
 
 int main() {
 

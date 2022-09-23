@@ -2,11 +2,11 @@ cmake_minimum_required(VERSION 3.10)
 
 project(UI_editor VERSION 1.0)
 
-set(RENDERER_INCLUDES .. ../os)
-
 # protobuf setup
 set(PROTOBUF_SRC $ENV{PROTOBUF_HOME}/src)
 set(PROTOBUF_LIB $ENV{PROTOBUF_HOME}/build/Debug)
+
+set(RENDERER_INCLUDES .. ../os ${PROTOBUF_SRC})
 
 if (DEFINED BACKEND)
     message("BACKEND: ${BACKEND}")
@@ -39,7 +39,6 @@ target_include_directories(
     UI_editor
     PUBLIC 
     ${RENDERER_INCLUDES}
-    ${PROTOBUF_SRC}
 )
 
 # link glfw library
