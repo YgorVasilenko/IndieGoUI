@@ -1,22 +1,9 @@
-// TODO :
-// Fonts 
-// - load fonts by adding to atlas
-// - reload atlas each time new font is loaded
-// extra. split rows and columns
-
 #include <IndieGoUI.h>
 #include <glad/glad.h>
 #include <GLFW/glfw3.h>
-#include <chrono>
-#include <list>
-#include <filesystem>
-namespace fs = std::filesystem;
 
 // Plain simple code for window creation
-// Created window will hold a widget
-// #define WIDTH 1280
-// #define HEIGHT 800
-
+// Created window will hold loaded widget
 GLFWwindow * screen;
 
 using namespace IndieGo::UI;
@@ -80,97 +67,31 @@ int main() {
     GUI.screen_size.w = WIDTH;
     GUI.screen_size.h = HEIGHT;
 
-    WIDGET test_widget;
-    test_widget.screen_region.h = 0.3f;
-    test_widget.screen_region.w = 0.3f;
-    test_widget.screen_region.x = 0.3f;
-    test_widget.screen_region.y = 0.3f;
-    test_widget.name = "test widget";
+    // PROJECT_DIR should contain created ui
+    std::string path = getenv("PROJECT_DIR");
 
-    GUI.addWidget(test_widget, winID);
-    WIDGET & test_widget_h = GUI.getWidget("test widget", winID);
+    GUI.deserialize(winID, path + "/ui_example_app.indg");
 
-    test_widget_h.minimizable = false;
-    test_widget_h.title = false;
-    test_widget_h.movable = false;
+    // get reference for UIMap
     UI_elements_map & UIMap = GUI.UIMaps[winID];
-    
-    UIMap.addElement("group", UI_ITEMS_LIST, &test_widget_h);
-    test_widget_h.updateRowHeight(test_widget_h.layout_grid.size() - 1, 0.5f);
-    
-    UIMap.addElement("test button 1", UI_BUTTON, &test_widget_h, to_new_col);
-    UIMap["test button 1"].label = "TEST BUTTON";
-    UIMap["test button 1"].height = 0.1f;
-    
-    // TODO : set padding and border as % from widget
-    UIMap["test button 1"].padding.h = 5.f;
-    UIMap["test button 1"].padding.w = 10.f;
-    UIMap["test button 1"].border = 1.f;
 
-    UIMap.addElement("test button 2", UI_BUTTON, &test_widget_h, to_new_subrow);
-    UIMap["test button 2"].label = "TEST BUTTON";
-    UIMap["test button 2"].height = 0.1f;
-    UIMap["test button 2"].padding.h = 5.f;
-    UIMap["test button 2"].padding.w = 10.f;
-
-    UIMap.addElement("test text", UI_STRING_TEXT, &test_widget_h, to_new_subrow);
-    UIMap["test text"].label = "This is some text to test layout. This text should be long enough to get wrapped! Also cell height should be sufficient to display it fully.";
-    UIMap["test text"].height = 0.2f;
-    
-    UIMap.addElement("test image 1", UI_IMAGE, &test_widget_h);
-    TexData tex;
-    tex = Manager::load_image("C:\\Users\\Public\\GobbyIsland\\Sprites\\magic_bar_3_parts.png");
-    region<float> crop;
-    crop.x = 0.f;
-    crop.y = 0.f;
-    crop.w = 0.5f;
-    crop.h = 1.f;
-    UIMap["test image 1"].initImage(tex.texID, tex.w, tex.h, crop);
-    test_widget_h.updateRowHeight(test_widget_h.layout_grid.size() - 1, 0.5f);
-
-    UIMap.addElement("test button 3", UI_BUTTON, &test_widget_h, to_new_col);
-    UIMap["test button 3"].label = "TEST BUTTON";
-    UIMap["test button 3"].height = 0.1f;
-    UIMap["test button 3"].rounding = 10.f;
-
-    UIMap.addElement("test image 2", UI_IMAGE, &test_widget_h, to_new_subrow);
-    crop.x = 0.5f;
-    crop.y = 0.f;
-    crop.w = 0.5f;
-    crop.h = 1.f;
-    UIMap["test image 2"].initImage(tex.texID, tex.w, tex.h, crop);
-    UIMap["test image 2"].height = 0.4f;
-
-    crop.x = 0.f;
-    crop.y = 0.f;
-    crop.w = 1.f;
-    crop.h = 1.f;
-    test_widget_h.useSkinImage( tex.texID, tex.w, tex.h, crop, background );
-
-
-    WIDGET technical_data_widget;
-    technical_data_widget.screen_region.h = 0.1f;
-    technical_data_widget.screen_region.w = 0.1f;
-    technical_data_widget.screen_region.x = 0.f;
-    technical_data_widget.screen_region.y = 0.f;
-    technical_data_widget.name = "data";
-    GUI.addWidget(technical_data_widget, winID);
-    WIDGET & td = GUI.getWidget("data", winID);
-    td.style.elements[UI_COLOR_WINDOW].a = 100;
-
-    UIMap.addElement("FPS counter", UI_STRING_TEXT, &td);
-    unsigned int fps_counter = 0;
-    UIMap["FPS counter"].label = std::to_string(fps_counter);
-    UIMap["FPS counter"].padding.w = 10.f;
-
-    td.updateRowHeight(0, 1.f);
+    // Update text so it will be align to left border
+    UIMap["FPS counter"].text_align = LEFT;
 
 	// set initial time to zero
 	glfwSetTime(0.0);
     int width, height;
+    unsigned int fps_counter = 0;
     while (!glfwWindowShouldClose(screen)) {
         glClearColor(0.2f, 0.3f, 0.3f, 1.0f);
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT | GL_STENCIL_BUFFER_BIT);
+
+        // Check ui element state
+        if (UIMap["press me"]._data.b) {
+
+            // Do stuff
+            std::cout << "[INFO] button pressed!" << std::endl;
+        }
 
         // update screen size each frame before calling immediate backend
         glfwGetWindowSize(screen, &width, &height);
@@ -188,7 +109,7 @@ int main() {
         fps_counter++;
         if (glfwGetTime() >= 1.f) {
             glfwSetTime(0.0);
-            UIMap["FPS counter"].label = std::to_string(fps_counter);
+            UIMap["FPS counter"].label = "FPS: " + std::to_string(fps_counter);
             fps_counter = 0;
         }
     }

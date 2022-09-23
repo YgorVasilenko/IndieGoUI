@@ -1,1 +1,1 @@
-$env:PROJECT_DIR=((resolve-path ..\example_app).path).replace('\', '/')
+$env:PROJECT_DIR=((resolve-path example_app).path).replace('\', '/')
