@@ -26,6 +26,9 @@ if (UIMap["my button"]._data.b) {
     // do stuff
 }
 ```
+<br>
+All resources (images and fonts) that one may load into UI should be taken from location, pointed by ```PROJECT_DIR``` env variable.<br>
+Also, created ui will be saved to ```PROJECT_DIR```.
 
 ## Runtime elements addition and modification
 Proped docs - TODO :)<br>
@@ -89,5 +92,6 @@ cmake --build build
 
 ## Running:
 ```
+.\env.ps1
 build\Debug\GUI_test.exe
 ```
