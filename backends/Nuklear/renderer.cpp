@@ -844,17 +844,6 @@ void WIDGET::callImmediateBackend(UI_elements_map & UIMap){
         setFocus = false;
     }
 
-    // NOTE : prior to drawing, user should check if window's size changed
-    // if so, try fitting widget to new size as much as possible
-    float x = screen_size.w * screen_region.x;
-    float y = screen_size.h * screen_region.y;
-    float w = screen_size.w * screen_region.w;
-    float h = screen_size.h * screen_region.h;
-
-    if (initialized_in_backend) {
-        nk_window_set_bounds(ctx, name.c_str(), nk_rect(x, y, w, h));
-    }
-
     // check various styling possibilities
     // Background
     if (skinned_style.props[background].first != -1) {
@@ -904,17 +893,17 @@ void WIDGET::callImmediateBackend(UI_elements_map & UIMap){
             flags
         )
     ) {
-        initialized_in_backend = true;
         focused = nk_window_has_focus(ctx);
         hasCursor = nk_window_is_hovered(ctx);
         callWidgetUI(UIMap);
     }
-    if (movable) {
+    if (movable || scalable) {
         // update screen_region with current bounds, if those are changed by user
-        screen_region.x = ctx->current->bounds.x / screen_size.w;
-        screen_region.y = ctx->current->bounds.y / screen_size.h;
-        screen_region.w = ctx->current->bounds.w / screen_size.w;
-        screen_region.h = ctx->current->bounds.h / screen_size.h;
+        struct nk_rect updBounds = nk_window_get_bounds(ctx);
+        screen_region.x = updBounds.x / screen_size.w;
+        screen_region.y = updBounds.y / screen_size.h;
+        screen_region.w = updBounds.w / screen_size.w;
+        screen_region.h = updBounds.h / screen_size.h;
     }
     nk_end(ctx);
 }

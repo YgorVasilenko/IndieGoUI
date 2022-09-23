@@ -632,7 +632,7 @@ namespace IndieGo {
 			// required for serialization
 			virtual region<float> getImgCrop(IMAGE_SKIN_ELEMENT elt);
 
-			bool initialized_in_backend = false;
+			// bool initialized_in_backend = false;
 
 			void callWidgetUI(UI_elements_map & UIMap) {
 				bool curr_group_folded = false;
