@@ -3,8 +3,14 @@ cmake_minimum_required(VERSION 3.10)
 project(UI_editor VERSION 1.0)
 
 # protobuf setup
-set(PROTOBUF_SRC $ENV{PROTOBUF_HOME}/src)
-set(PROTOBUF_LIB $ENV{PROTOBUF_HOME}/build/Debug)
+set(PROTOBUF_SRC ${CMAKE_CURRENT_LIST_DIR}/../protobuf/src)
+set(PROTOBUF_LIB ${CMAKE_CURRENT_LIST_DIR}/../protobuf/build)
+
+if (${CMAKE_HOST_SYSTEM_NAME} MATCHES Windows)
+    set(PROTOBUF_LIB ${CMAKE_CURRENT_LIST_DIR}/../protobuf/build/Win)
+else()
+    message(FATAL_ERROR "Only Windows currently supported!")
+endif()
 
 set(RENDERER_INCLUDES .. ../os ${PROTOBUF_SRC})
 

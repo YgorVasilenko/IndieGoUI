@@ -2,8 +2,19 @@ cmake_minimum_required(VERSION 3.10)
 
 project(GUI_test VERSION 1.0)
 
-set(RENDERER_INCLUDES .. ../os)
-set(RENDERER_SRC ../../IndieGoUI.cpp)
+# protobuf setup
+set(PROTOBUF_SRC ${CMAKE_CURRENT_LIST_DIR}/../protobuf/src)
+set(PROTOBUF_LIB ${CMAKE_CURRENT_LIST_DIR}/../protobuf/build)
+
+if (CMAKE_HOST_SYSTEM_NAME MATCHES Windows)
+    set(PROTOBUF_LIB ${CMAKE_CURRENT_LIST_DIR}/../protobuf/build/Win)
+else()
+    message(FATAL_ERROR "Only Windows currently supported!")
+endif()
+
+set(RENDERER_INCLUDES .. ../os ${PROTOBUF_SRC})
+set(RENDERER_SRC ../../IndieGoUI.cpp ../../IndieGoUI.pb.cc)
+
 if (DEFINED BACKEND)
     message("BACKEND: ${BACKEND}")
     set(RENDERER_SRC ${RENDERER_SRC} ../../backends/${BACKEND}/renderer.cpp)
@@ -33,17 +44,18 @@ target_include_directories(
     ${RENDERER_INCLUDES}
 )
 
-# link glfw library
 target_link_libraries(
     GUI_test
     PUBLIC "../lib/glfw3"
+
+    # serialization
+    PUBLIC ${PROTOBUF_LIB}/libprotobufd.lib
 )
 
 target_compile_definitions(
     GUI_test PUBLIC
     WIDTH=1920
     HEIGHT=1080
-    NO_SERIALIZATION=1
 )
 
 set(CMAKE_CXX_FLAGS_DEBUG " /std:c++17 /DEBUG /Zi")
