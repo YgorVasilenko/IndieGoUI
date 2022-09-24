@@ -1,6 +1,6 @@
-# UI map structure. Allows getting data from Immediate-mode backend and store it w/o bothering with callbacks.
+# structure for saving state of Immediate-mode backend UI elements. Allows getting data from Immediate-mode backend and store it w/o bothering with complex frameworks.
 
-Easily embed GUI elements into C++ application - no need to pre-build complex dependencies and add it to project.
+Easily embed GUI control elements into C++ application - no need to pre-build complex dependencies and add it to project.
 Use any Immediate-mode gui - see [Nuklear backend](https://github.com/YgorVasilenko/IndieGoUI/blob/main/backends/Nuklear/renderer.cpp), [App-side inclulde](https://github.com/YgorVasilenko/IndieGoUI/blob/main/IndieGoUI.h) for what required to be implemented.<br>
 <br>
 
@@ -27,7 +27,9 @@ if (UIMap["my button"]._data.b) {
 }
 ```
 <br>
-All resources (images and fonts) that one may load into UI should be taken from location, pointed by ```PROJECT_DIR``` env variable.<br>
+
+All resources (images and fonts) that one may load into UI should be taken from location, pointed by  ```PROJECT_DIR``` env variable.<br>
+
 Also, created ui will be saved to ```PROJECT_DIR```.
 
 ## Runtime elements addition and modification
