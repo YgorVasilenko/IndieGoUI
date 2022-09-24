@@ -32,8 +32,16 @@ All resources (images and fonts) that one may load into UI should be taken from 
 
 Also, created ui will be saved to ```PROJECT_DIR```.
 
+## Implemented using modules
+All modules listed here are already integrated in this repo.
+1. Google's [protobuf](https://developers.google.com/protocol-buffers) - save/load created ui
+2. [GLFW](https://www.glfw.org/) - example app window, i/o handling
+3. [Nuklear](https://github.com/YgorVasilenko/IndieGoUI/blob/main/backends/Nuklear/renderer.cpp) - currently implemented backend
+
+
+
 ## Runtime elements addition and modification
-Proped docs - TODO :)<br>
+Proper docs - TODO :)<br>
 Check [ui_editor](https://github.com/YgorVasilenko/IndieGoUI/blob/main/ui_editor/src/init.cpp)'s ```init.cpp``` module, [test_app](https://github.com/YgorVasilenko/IndieGoUI/blob/main/test_app/src/app.cpp) and [IndieGoUI.h](https://github.com/YgorVasilenko/IndieGoUI/blob/main/IndieGoUI.h) header to get idea of what could be done.<br>
 
 ## Support for arbitrary Immediate-mode GUI libriary
@@ -73,18 +81,14 @@ Where to store data from ```init*()```, ```use*()``` and ```load*()``` methods -
 
 ## Building example app:
 
-1. Make shure cmake available in PATH:
+1. Make sure cmake available in PATH:
 
-cmd:
-```cmd
-set "PATH=C:\Program Files\CMake\bin;%PATH%"
-```
 powershell:
 ```powershell
 $env:Path="C:\Program Files\CMake\bin;$env:Path"
 ```
 
-2. Build:
+1. Build:
 
 ```powershell
 cd example_app
@@ -97,3 +101,7 @@ cmake --build build
 .\env.ps1
 build\Debug\GUI_test.exe
 ```
+
+## TODO:
+1. Support Linux
+2. Implement [ImGUI](https://github.com/ocornut/imgui) backend

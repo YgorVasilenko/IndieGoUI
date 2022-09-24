@@ -33,9 +33,6 @@ WIDGET creator_widget;
 WIDGET styling_widget;
 std::string winID = "UI test app";
 
-// [widID] = current_line
-std::map<std::string, unsigned int> widgets_fill;
-
 // Window input callbacks
 void cursor_position_callback(GLFWwindow* window, double xpos, double ypos) {
 	GUI.mouse_move( &winID, xpos, ypos);
