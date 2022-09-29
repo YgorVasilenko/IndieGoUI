@@ -63,22 +63,22 @@ message WidgetBase {
     bool minimizable = 5;
     bool scalable = 6;
     bool movable = 7;
+    bool has_scrollbar = 9;
 
-    Font font = 8;
+    Font font = 10;
     
     // different display settings
-    float border_size = 9; 
-    region_size padding = 10;
-	region_size spacing = 11;
+    float border_size = 11; 
+    region_size padding = 12;
+	region_size spacing = 13;
 
     // on load when elements added to new row
     // it's size will be adjusted
-    repeated LayoutRow rows = 12;
+    repeated LayoutRow rows = 14;
 
     // on load skinned element will call useSkinImage
-    repeated SkinnedProperty skinned_props = 13;
-    repeated StyleColor styled_props = 14;
-
+    repeated SkinnedProperty skinned_props = 15;
+    repeated StyleColor styled_props = 16;
 }
 
 message Element {

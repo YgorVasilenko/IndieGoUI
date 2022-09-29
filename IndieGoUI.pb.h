@@ -1238,22 +1238,23 @@ class WidgetBase final :
   // accessors -------------------------------------------------------
 
   enum : int {
-    kRowsFieldNumber = 12,
-    kSkinnedPropsFieldNumber = 13,
-    kStyledPropsFieldNumber = 14,
+    kRowsFieldNumber = 14,
+    kSkinnedPropsFieldNumber = 15,
+    kStyledPropsFieldNumber = 16,
     kNameFieldNumber = 1,
     kSizeLocFieldNumber = 2,
-    kFontFieldNumber = 8,
-    kPaddingFieldNumber = 10,
-    kSpacingFieldNumber = 11,
+    kFontFieldNumber = 10,
+    kPaddingFieldNumber = 12,
+    kSpacingFieldNumber = 13,
     kBorderedFieldNumber = 3,
     kTitledFieldNumber = 4,
     kMinimizableFieldNumber = 5,
     kScalableFieldNumber = 6,
     kMovableFieldNumber = 7,
-    kBorderSizeFieldNumber = 9,
+    kHasScrollbarFieldNumber = 9,
+    kBorderSizeFieldNumber = 11,
   };
-  // repeated .ui_serialization.LayoutRow rows = 12;
+  // repeated .ui_serialization.LayoutRow rows = 14;
   int rows_size() const;
   private:
   int _internal_rows_size() const;
@@ -1271,7 +1272,7 @@ class WidgetBase final :
   const ::PROTOBUF_NAMESPACE_ID::RepeatedPtrField< ::ui_serialization::LayoutRow >&
       rows() const;
 
-  // repeated .ui_serialization.SkinnedProperty skinned_props = 13;
+  // repeated .ui_serialization.SkinnedProperty skinned_props = 15;
   int skinned_props_size() const;
   private:
   int _internal_skinned_props_size() const;
@@ -1289,7 +1290,7 @@ class WidgetBase final :
   const ::PROTOBUF_NAMESPACE_ID::RepeatedPtrField< ::ui_serialization::SkinnedProperty >&
       skinned_props() const;
 
-  // repeated .ui_serialization.StyleColor styled_props = 14;
+  // repeated .ui_serialization.StyleColor styled_props = 16;
   int styled_props_size() const;
   private:
   int _internal_styled_props_size() const;
@@ -1339,7 +1340,7 @@ class WidgetBase final :
       ::ui_serialization::region* size_loc);
   ::ui_serialization::region* unsafe_arena_release_size_loc();
 
-  // .ui_serialization.Font font = 8;
+  // .ui_serialization.Font font = 10;
   bool has_font() const;
   private:
   bool _internal_has_font() const;
@@ -1357,7 +1358,7 @@ class WidgetBase final :
       ::ui_serialization::Font* font);
   ::ui_serialization::Font* unsafe_arena_release_font();
 
-  // .ui_serialization.region_size padding = 10;
+  // .ui_serialization.region_size padding = 12;
   bool has_padding() const;
   private:
   bool _internal_has_padding() const;
@@ -1375,7 +1376,7 @@ class WidgetBase final :
       ::ui_serialization::region_size* padding);
   ::ui_serialization::region_size* unsafe_arena_release_padding();
 
-  // .ui_serialization.region_size spacing = 11;
+  // .ui_serialization.region_size spacing = 13;
   bool has_spacing() const;
   private:
   bool _internal_has_spacing() const;
@@ -1438,7 +1439,16 @@ class WidgetBase final :
   void _internal_set_movable(bool value);
   public:
 
-  // float border_size = 9;
+  // bool has_scrollbar = 9;
+  void clear_has_scrollbar();
+  bool has_scrollbar() const;
+  void set_has_scrollbar(bool value);
+  private:
+  bool _internal_has_scrollbar() const;
+  void _internal_set_has_scrollbar(bool value);
+  public:
+
+  // float border_size = 11;
   void clear_border_size();
   float border_size() const;
   void set_border_size(float value);
@@ -1468,6 +1478,7 @@ class WidgetBase final :
     bool minimizable_;
     bool scalable_;
     bool movable_;
+    bool has_scrollbar_;
     float border_size_;
     mutable ::PROTOBUF_NAMESPACE_ID::internal::CachedSize _cached_size_;
   };
@@ -2934,7 +2945,27 @@ inline void WidgetBase::set_movable(bool value) {
   // @@protoc_insertion_point(field_set:ui_serialization.WidgetBase.movable)
 }
 
-// .ui_serialization.Font font = 8;
+// bool has_scrollbar = 9;
+inline void WidgetBase::clear_has_scrollbar() {
+  _impl_.has_scrollbar_ = false;
+}
+inline bool WidgetBase::_internal_has_scrollbar() const {
+  return _impl_.has_scrollbar_;
+}
+inline bool WidgetBase::has_scrollbar() const {
+  // @@protoc_insertion_point(field_get:ui_serialization.WidgetBase.has_scrollbar)
+  return _internal_has_scrollbar();
+}
+inline void WidgetBase::_internal_set_has_scrollbar(bool value) {
+  
+  _impl_.has_scrollbar_ = value;
+}
+inline void WidgetBase::set_has_scrollbar(bool value) {
+  _internal_set_has_scrollbar(value);
+  // @@protoc_insertion_point(field_set:ui_serialization.WidgetBase.has_scrollbar)
+}
+
+// .ui_serialization.Font font = 10;
 inline bool WidgetBase::_internal_has_font() const {
   return this != internal_default_instance() && _impl_.font_ != nullptr;
 }
@@ -3024,7 +3055,7 @@ inline void WidgetBase::set_allocated_font(::ui_serialization::Font* font) {
   // @@protoc_insertion_point(field_set_allocated:ui_serialization.WidgetBase.font)
 }
 
-// float border_size = 9;
+// float border_size = 11;
 inline void WidgetBase::clear_border_size() {
   _impl_.border_size_ = 0;
 }
@@ -3044,7 +3075,7 @@ inline void WidgetBase::set_border_size(float value) {
   // @@protoc_insertion_point(field_set:ui_serialization.WidgetBase.border_size)
 }
 
-// .ui_serialization.region_size padding = 10;
+// .ui_serialization.region_size padding = 12;
 inline bool WidgetBase::_internal_has_padding() const {
   return this != internal_default_instance() && _impl_.padding_ != nullptr;
 }
@@ -3134,7 +3165,7 @@ inline void WidgetBase::set_allocated_padding(::ui_serialization::region_size* p
   // @@protoc_insertion_point(field_set_allocated:ui_serialization.WidgetBase.padding)
 }
 
-// .ui_serialization.region_size spacing = 11;
+// .ui_serialization.region_size spacing = 13;
 inline bool WidgetBase::_internal_has_spacing() const {
   return this != internal_default_instance() && _impl_.spacing_ != nullptr;
 }
@@ -3224,7 +3255,7 @@ inline void WidgetBase::set_allocated_spacing(::ui_serialization::region_size* s
   // @@protoc_insertion_point(field_set_allocated:ui_serialization.WidgetBase.spacing)
 }
 
-// repeated .ui_serialization.LayoutRow rows = 12;
+// repeated .ui_serialization.LayoutRow rows = 14;
 inline int WidgetBase::_internal_rows_size() const {
   return _impl_.rows_.size();
 }
@@ -3264,7 +3295,7 @@ WidgetBase::rows() const {
   return _impl_.rows_;
 }
 
-// repeated .ui_serialization.SkinnedProperty skinned_props = 13;
+// repeated .ui_serialization.SkinnedProperty skinned_props = 15;
 inline int WidgetBase::_internal_skinned_props_size() const {
   return _impl_.skinned_props_.size();
 }
@@ -3304,7 +3335,7 @@ WidgetBase::skinned_props() const {
   return _impl_.skinned_props_;
 }
 
-// repeated .ui_serialization.StyleColor styled_props = 14;
+// repeated .ui_serialization.StyleColor styled_props = 16;
 inline int WidgetBase::_internal_styled_props_size() const {
   return _impl_.styled_props_.size();
 }

@@ -834,6 +834,9 @@ void WIDGET::callImmediateBackend(UI_elements_map & UIMap){
     if (scalable)
         flags = flags | NK_WINDOW_SCALABLE;
 
+    if (!has_scrollbar)
+        flags = flags | NK_WINDOW_NO_SCROLLBAR;
+
     if (custom_style)
         nk_style_from_table(ctx, (struct nk_color*)style.elements);
     else
@@ -890,7 +893,7 @@ void WIDGET::callImmediateBackend(UI_elements_map & UIMap){
                 screen_size.w * screen_region.w,
                 screen_size.h * screen_region.h
             ),
-            flags
+            flags 
         )
     ) {
         focused = nk_window_has_focus(ctx);

@@ -122,8 +122,12 @@ void updateWidgetFromUI(
     w.minimizable = UIMap["minimizable"]._data.b;
     w.scalable = UIMap["scalable"]._data.b;
     w.movable = UIMap["movable"]._data.b;
+    w.has_scrollbar = UIMap["has scrollbar"]._data.b;
 
     w.border_size = UIMap["widget border"]._data.f;
+
+    // show/hide on screen
+    w.hidden = !UIMap["visible"]._data.b;
 
     if (styling_element != -1) {
         w.style.elements[styling_element].r = UIMap["red"]._data.ui;
@@ -218,8 +222,12 @@ void updateUIFromWidget(
     UIMap["minimizable"]._data.b = w.minimizable;
     UIMap["scalable"]._data.b = w.scalable;
     UIMap["movable"]._data.b = w.movable;
+    UIMap["has scrollbar"]._data.b = w.has_scrollbar;
 
     UIMap["widget border"]._data.f = w.border_size;
+
+    // show/hide
+    UIMap["visible"]._data.b = !w.hidden;
 
     if (styling_element != -1) {
         UIMap["red"]._data.ui = w.style.elements[styling_element].r;
@@ -240,7 +248,18 @@ extern std::list<std::string> getPaths();
 void processAddOptions(std::string winID) {
     UI_elements_map & UIMap = GUI.UIMaps[winID];
     ui_string_group & widgets_list = *UIMap["widgets list"]._data.usgPtr;
-    
+    ui_string_group & elements_list = *UIMap["elements list"]._data.usgPtr;
+
+    if (UIMap["delete element"]._data.b && elements_list.selected_element != -1) {
+        WIDGET& w = GUI.getWidget(widgets_list.getSelected(), winID);
+        UIMap.deleteElement(elements_list.getSelected(), &w);
+        // delete element from list to avoid errors
+        elements_list.elements.erase(
+            elements_list.elements.begin() + elements_list.selected_element
+        );
+        elements_list.unselect();
+    }
+
     std::string new_element_name = *UIMap["new element name"]._data.strPtr;
     if (new_element_name.size() == 0) return;
 
@@ -284,7 +303,11 @@ void processAddOptions(std::string winID) {
     // add items list, 
     // string input field, 
     // int, uint, float, 
-    // empty space
+    if (UIMap["add empty"]._data.b) {
+        UI_ELEMENT_TYPE t = UI_EMPTY;
+        addElement(widgets_list.getSelected(), winID, new_element_name, t);
+        UIMap[new_element_name].label = new_element_name;
+    }
 };
 
 void checkUIValues(std::string winID) {
@@ -320,7 +343,6 @@ void checkUIValues(std::string winID) {
     if (UIMap["green"]._data.ui > 255)
         UIMap["green"]._data.ui = 255;
     
-
     if (UIMap["blue"]._data.ui > 255)
         UIMap["blue"]._data.ui = 255;
     

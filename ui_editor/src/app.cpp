@@ -71,6 +71,7 @@ extern void createNewWidget(
     bool minimizable,
     bool scalable,
     bool movable,
+    bool has_scrollbar,
     const std::string & winID
 );
 
@@ -311,6 +312,7 @@ int main() {
                         UIMap["minimizable"]._data.b,
                         UIMap["scalable"]._data.b,
                         UIMap["movable"]._data.b,
+                        UIMap["has scrollbar"]._data.b,
                         winID
                     );
 

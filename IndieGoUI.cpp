@@ -69,6 +69,7 @@ void createNewWidget(
     bool minimizable,
     bool scalable,
     bool movable,
+    bool has_scrollbar,
     const std::string & winID
 ) {
     WIDGET newWidget;
@@ -82,6 +83,7 @@ void createNewWidget(
     newWidget.minimizable = minimizable;
     newWidget.scalable = scalable;
     newWidget.movable = movable;
+    newWidget.has_scrollbar = has_scrollbar;
 
     WIDGET & widget = GUI.addWidget(newWidget, winID);
 }
@@ -184,6 +186,7 @@ void Manager::serialize(const std::string & winID, const std::string & path, con
         w->mutable_widget()->set_minimizable(widget.second.minimizable);
         w->mutable_widget()->set_scalable(widget.second.scalable);
         w->mutable_widget()->set_movable(widget.second.movable);
+        w->mutable_widget()->set_has_scrollbar(widget.second.has_scrollbar);
 
         // special props
         w->mutable_widget()->set_border_size(widget.second.border_size);
@@ -349,6 +352,7 @@ void Manager::deserialize(const std::string & winID, const std::string & path) {
             w.widget().minimizable(),
             w.widget().scalable(),
             w.widget().movable(),
+            w.widget().has_scrollbar(),
             winID
         );
 

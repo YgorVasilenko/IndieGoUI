@@ -23,6 +23,7 @@
 #include <iostream>
 #include <fstream>
 #include <algorithm>
+#include <cassert>
 
 #ifndef DEFAULT_WINDOW_NAME
 // If app will maintain sinlge window, designer may define it's defautl name
@@ -468,6 +469,56 @@ namespace IndieGo {
 				// }
 			};
 
+			// true on successfull deletion, false otherwise
+			bool deleteElement(
+				const std::string & elt_name
+			) {
+				if (std::find(widget_elements.begin(), widget_elements.end(), elt_name) == widget_elements.end())
+					return false;
+				widget_elements.erase(
+					std::find(widget_elements.begin(), widget_elements.end(), elt_name)
+				);
+				// 1. delete element from grid
+				bool deleted = false;
+				// if cell conains 0 elements it sould be deleted!
+				// same goes for rows with 0 cells
+				int deleteRow = -1, deleteCell = -1, r = 0, c = 0;
+				for (auto row = layout_grid.begin(); row != layout_grid.end(); row++) {
+					c = 0;
+					for (auto cell = row->cells.begin(); cell != row->cells.end(); cell++) {
+						if (std::find(cell->elements.begin(), cell->elements.end(), elt_name) != cell->elements.end()) {
+							cell->elements.erase(
+								std::find(cell->elements.begin(), cell->elements.end(), elt_name)
+							);
+							deleted = true;
+							if (cell->elements.size() == 0)
+								deleteCell = c;
+							break;
+						}
+						c++;
+					}
+					if (deleted) {
+						if (deleteCell != -1 && (row->cells.size() - 1 ) == 0)
+							deleteRow = r;
+						break;
+					}
+					r++;
+				}
+				if (!deleted) return false;
+
+				// delete cell and row, if chosen
+				if (deleteCell != -1) {
+					layout_grid[r].cells.erase(
+						layout_grid[r].cells.begin() + deleteCell
+					);
+				}
+				if (deleteRow != -1) {
+					layout_grid.erase(
+						layout_grid.begin() + deleteRow
+					);
+				}
+				return true;
+			} 
 			// returns position on layout, that element was eventually added to
 			std::pair<int, int> addElement(
 				const std::string & elt_name, 
@@ -508,7 +559,8 @@ namespace IndieGo {
 
 			// convenience operator
 			UI_element & operator[](const std::string& id){
-				// TODO : add assert(elementExists)
+				// TODO : remove assert in production
+				assert(elements.find(id) != elements.end());
 				return elements[id];
 			}
 
@@ -569,6 +621,21 @@ namespace IndieGo {
 
 			};
 
+			void deleteElement(const std::string & elt_name, WIDGET_BASE * widRef) {
+				// TODO : insert assert(widRef != NULL)
+				if (elements.find(elt_name) == elements.end()) {
+					std::cout << "[DELETE_ELEMENT::ERROR] element " << elt_name << " does not exist!" << std::endl;
+					return;
+				}
+				if (!widRef->deleteElement(elt_name)) {
+					std::cout << "[DELETE_ELEMENT::ERROR] element " << elt_name << " was not found in " << widRef->name << " widget!" << std::endl;
+					return;
+				}
+				elements.erase(
+					elements.find(elt_name)
+				);
+			}
+
 			void loadUI(std::string & ui_file_path){
 				std::ifstream ui_descr(ui_file_path, std::ios::binary);
 				ui_descr.seekg(0, std::ios::end);
@@ -622,7 +689,8 @@ namespace IndieGo {
 			bool title = true;
 			bool movable = true;
 			bool scalable = true;
-
+			bool has_scrollbar = true;
+			
 			color_table style;
 			image_props skinned_style;
 			bool custom_style = true;

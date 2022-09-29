@@ -27,6 +27,7 @@ extern std::string winID;
 
 extern std::string getColorPropName(COLOR_ELEMENTS prop);
 extern std::string getSkinPropName(IMAGE_SKIN_ELEMENT prop);
+
 void initWidgets() {
     // initialize creator widget
     creator_widget.screen_region.x = (float)(WIDTH / 4) / ((float)WIDTH);
@@ -34,6 +35,7 @@ void initWidgets() {
     creator_widget.screen_region.w = 0.3f;
     creator_widget.screen_region.h = 0.3f;
     creator_widget.name = "UI creator";
+    creator_widget.has_scrollbar = false;
 
     WIDGET & c_widget = GUI.addWidget(creator_widget, winID);
     
@@ -67,6 +69,9 @@ void initWidgets() {
     UIMap.addElement("movable", UI_BOOL, &c_widget, to_new_subrow);
     UIMap["movable"].label = "movable";
     UIMap["movable"].height = 0.06f;
+    UIMap.addElement("has scrollbar", UI_BOOL, &c_widget, to_new_subrow);
+    UIMap["has scrollbar"].label = "scrollbar";
+    UIMap["has scrollbar"].height = 0.06f;
 
     // switch to edit widget's elements
     UIMap.addElement("edit widget elements", UI_BUTTON, &c_widget, to_new_subrow);
@@ -99,30 +104,36 @@ void initWidgets() {
     UIMap.addElement("widget border", UI_FLOAT, &c_widget, to_new_subrow);
     UIMap["widget border"].label = "border";
     UIMap["widget border"]._data.f = 1.f;
+    UIMap.addElement("visible", UI_BOOL, &c_widget, to_new_subrow);
+    UIMap["visible"].label = "visible";
 
     // "AddElement" calls with "autowidth" modify width settings, so keep them after all
     // such calls
     // first column and it's elements
-    c_widget.layout_grid[0].cells[0].min_width = 0.5f;
+    // c_widget.layout_grid[0].cells[0].min_width = 0.5f;
+    c_widget.updateColWidth(0, 0, 0.5f);
     UIMap["widgets list"].width = 0.5f;
 
     // second column and it's elements
-    c_widget.layout_grid[0].cells[1].min_width = 0.2f;
+    c_widget.updateColWidth(0, 1, 0.21f);
+
+    // c_widget.layout_grid[0].cells[1].min_width = 0.2f;
     UIMap["new widget name label"].height = 0.08f;
     UIMap["new widget name label"].width = 0.2f;
-    UIMap["add new widget"].width = 0.48f;
+    UIMap["add new widget"].width = 0.493f;
     UIMap["add new widget"].height = 0.07f;
-    UIMap["edit widget elements"].width = 0.48f;
+    UIMap["edit widget elements"].width = 0.493f;
     UIMap["edit widget elements"].height = 0.07f;
-    UIMap["skins and styling"].width = 0.48f;
+    UIMap["skins and styling"].width = 0.493f;
     UIMap["skins and styling"].height = 0.07f;
-    UIMap["save ui"].width = 0.48f;
+    UIMap["save ui"].width = 0.493f;
     UIMap["save ui"].height = 0.07f;
-    UIMap["load ui"].width = 0.48f;
+    UIMap["load ui"].width = 0.493f;
     UIMap["load ui"].height = 0.07f;
 
     // third column and it's elements
-    c_widget.layout_grid[0].cells[2].min_width = 0.2f;
+    c_widget.updateColWidth(0, 2, 0.24f);
+    // c_widget.layout_grid[0].cells[2].min_width = 0.2f;
     UIMap["new widget name"].width = 0.28f;
     UIMap["new widget name"].height = 0.08f;
     UIMap["space fill"].height = 0.07f;
@@ -137,6 +148,8 @@ void initWidgets() {
     UIMap["size y"].height = 0.06f;
     UIMap["widget border"].width = 0.28f;
     UIMap["widget border"].height = 0.06f;
+    UIMap["visible"].width = 0.28f;
+    UIMap["visible"].height = 0.06f;
 
     WIDGET elements_edit;
     elements_edit.screen_region.x = (float)(WIDTH / 4) / ((float)WIDTH);
@@ -147,6 +160,7 @@ void initWidgets() {
     
     WIDGET & e_widget = GUI.addWidget(elements_edit, winID);
     e_widget.hidden = true;
+    e_widget.has_scrollbar = false;
 
     UIMap.addElement("elements list", UI_ITEMS_LIST, &e_widget);
     UIMap["elements list"].label = "elements list";    
@@ -291,6 +305,7 @@ void initWidgets() {
 
     WIDGET & ws_widget = GUI.addWidget(widgets_style, winID);
     ws_widget.hidden = true;
+    ws_widget.has_scrollbar = false;
 
     // skinning:
     // load skin image, skinning elements list, crop settings, apply skin
@@ -368,6 +383,7 @@ void initWidgets() {
 
     WIDGET & es_widget = GUI.addWidget(elements_style, winID);
     es_widget.hidden = true;
+    es_widget.has_scrollbar = false;
 
     // skinning:
     // load skin image, skinning elements list, crop settings, apply skin
@@ -426,6 +442,8 @@ void initWidgets() {
     fonts.name = "Fonts";
 
     WIDGET & fonts_widget = GUI.addWidget(fonts, winID);
+    fonts_widget.has_scrollbar = false;
+
     // Fonts:
     // load button, fonts list, sizes per font list, size on load spec
     UIMap.addElement("load font", UI_BUTTON, &fonts_widget);
