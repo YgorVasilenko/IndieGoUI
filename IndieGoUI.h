@@ -142,6 +142,7 @@ namespace IndieGo {
 		};
 
 		struct ui_string_group {
+			char **arr = NULL;
 			std::vector<std::string> elements;
 
 			// additional vector, used to add additional labels to elements
@@ -205,6 +206,23 @@ namespace IndieGo {
 				}
 				return -1;
 			}
+
+			char ** getCharArrays() {
+				if (arr) delete[] arr;
+				arr = new char*[ elements.size() ];
+				unsigned int idx = 0;
+				for (auto elt : elements) {
+					arr[idx] = new char[ elt.size() ];
+					idx++;
+				}
+				return arr;
+			}
+
+			void disposeCharsArray() {
+				if (!arr) return;
+				delete[] arr;
+				arr = NULL;
+			}
 		};
 
 		enum UI_ELEMENT_TYPE {
@@ -222,7 +240,8 @@ namespace IndieGo {
 			UI_ITEMS_LIST,
 			UI_COLOR_PICKER,
 			UI_IMAGE,
-			UI_PROGRESS
+			UI_PROGRESS,
+			UI_DROPDOWN
 		};
 
 		enum TEXT_ALIGN {
@@ -272,7 +291,8 @@ namespace IndieGo {
 			bool color_picker_unwrapped = false;
 
 			float height = 0.1f; // % from widget's height
-			float width = 0.98f; // % from widget's width
+			//float width = 0.98f; // % from widget's width
+			float width = 0.99f;
 
 			// special properties, that can be called "common"
 			float border = 1.f; 
@@ -927,6 +947,15 @@ namespace IndieGo {
 						prevFocusedWidgets[curr_ui_map] = & widget->second;
 				}
 			};
+
+			void deleteWidget(const std::string & widget_name, const std::string & winID) {
+				// 1. Delete all elements from respective UI map
+				WIDGET * widRef = & widgets[winID][widget_name];
+				std::vector<std::string> widgetElements = widRef->widget_elements;
+				for (auto elt : widgetElements) {
+					UIMaps[winID].deleteElement(elt, widRef);
+				}
+			}
 		};
 	}
 }

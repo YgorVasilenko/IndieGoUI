@@ -67,6 +67,8 @@ struct nk_glfw {
     unsigned int text[NK_GLFW_TEXT_MAX];
     int text_len;
     bool backspace;
+    bool arrow_left;
+    bool arrow_right;
     struct nk_vec2 scroll;
     double last_button_click;
     int is_double_click_down;
@@ -423,6 +425,18 @@ void Manager::key_input(void * window, unsigned int codepoint, bool pressed) {
             glfw->backspace = true;
         }
     }
+
+    if (codepoint == GLFW_KEY_RIGHT && pressed) {
+        if (!glfw->arrow_right) {
+            glfw->arrow_right = true;
+        }
+    }
+
+    if (codepoint == GLFW_KEY_LEFT && pressed) {
+        if (!glfw->arrow_left) {
+            glfw->arrow_left = true;
+        }
+    }
 }
 
 // Memory for string input storage
@@ -594,6 +608,13 @@ void UI_element::callUIfunction(float x, float y, float space_w, float space_h) 
             else
             _data.b = false;
         return;
+    }
+
+    if (type == UI_DROPDOWN) {
+        // allocate memory for items from uiStringGroup
+        // const char **lst = reinterpret_cast<const char **>( _data.usgPtr->getCharArrays() );
+        // _data.usgPtr->selected_element = nk_combo(ctx, lst, NK_LEN(lst), _data.usgPtr->selected_element, 25, nk_vec2(200, 200));
+        // _data.usgPtr->disposeCharsArray();
     }
 
     if (type == UI_COLOR_PICKER) {
@@ -1026,6 +1047,16 @@ void Manager::drawFrameStart(std::string & winID) {
         nk_input_key(ctx, NK_KEY_BACKSPACE, true);
     }
 
+    if (glfw->arrow_right) {
+        glfw->arrow_right = false;
+        nk_input_key(ctx, NK_KEY_RIGHT, true);
+    }
+
+    if (glfw->arrow_left) {
+        glfw->arrow_left = false;
+        nk_input_key(ctx, NK_KEY_LEFT, true);
+    }
+
     nk_input_key(ctx, NK_KEY_UP, glfwGetKey(win, GLFW_KEY_UP) == GLFW_PRESS);
     nk_input_key(ctx, NK_KEY_DOWN, glfwGetKey(win, GLFW_KEY_DOWN) == GLFW_PRESS);
     nk_input_key(ctx, NK_KEY_TEXT_START, glfwGetKey(win, GLFW_KEY_HOME) == GLFW_PRESS);
@@ -1049,8 +1080,8 @@ void Manager::drawFrameStart(std::string & winID) {
         nk_input_key(ctx, NK_KEY_TEXT_LINE_START, glfwGetKey(win, GLFW_KEY_B) == GLFW_PRESS);
         nk_input_key(ctx, NK_KEY_TEXT_LINE_END, glfwGetKey(win, GLFW_KEY_E) == GLFW_PRESS);
     } else {
-        nk_input_key(ctx, NK_KEY_LEFT, glfwGetKey(win, GLFW_KEY_LEFT) == GLFW_PRESS);
-        nk_input_key(ctx, NK_KEY_RIGHT, glfwGetKey(win, GLFW_KEY_RIGHT) == GLFW_PRESS);
+        // nk_input_key(ctx, NK_KEY_LEFT, glfwGetKey(win, GLFW_KEY_LEFT) == GLFW_PRESS);
+        // nk_input_key(ctx, NK_KEY_RIGHT, glfwGetKey(win, GLFW_KEY_RIGHT) == GLFW_PRESS);
         nk_input_key(ctx, NK_KEY_COPY, 0);
         nk_input_key(ctx, NK_KEY_PASTE, 0);
         nk_input_key(ctx, NK_KEY_CUT, 0);

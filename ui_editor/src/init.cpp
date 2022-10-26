@@ -85,8 +85,10 @@ void initWidgets() {
     UIMap["load ui"].label = "load ui";
 
     UIMap.addElement("new widget name", UI_STRING_INPUT, &c_widget, to_new_col);
-    UIMap.addElement("space fill", UI_EMPTY, &c_widget, to_new_subrow);
+    // UIMap.addElement("space fill", UI_EMPTY, &c_widget, to_new_subrow);
 
+    UIMap.addElement("delete widget", UI_BUTTON, &c_widget, to_new_subrow);
+    UIMap["delete widget"].label = "delete widget";
 
     // coordinates of new widget
     UIMap.addElement("location x", UI_FLOAT, &c_widget, to_new_subrow);
@@ -120,7 +122,7 @@ void initWidgets() {
     // c_widget.layout_grid[0].cells[1].min_width = 0.2f;
     UIMap["new widget name label"].height = 0.08f;
     UIMap["new widget name label"].width = 0.2f;
-    UIMap["add new widget"].width = 0.493f;
+    UIMap["add new widget"].width = 0.2f;
     UIMap["add new widget"].height = 0.07f;
     UIMap["edit widget elements"].width = 0.493f;
     UIMap["edit widget elements"].height = 0.07f;
@@ -136,8 +138,8 @@ void initWidgets() {
     // c_widget.layout_grid[0].cells[2].min_width = 0.2f;
     UIMap["new widget name"].width = 0.28f;
     UIMap["new widget name"].height = 0.08f;
-    UIMap["space fill"].height = 0.07f;
-    UIMap["space fill"].width = 0.28f;
+    UIMap["delete widget"].height = 0.07f;
+    UIMap["delete widget"].width = 0.28f;
     UIMap["location x"].width = 0.28f;
     UIMap["location x"].height = 0.06;
     UIMap["location y"].width = 0.28f;
