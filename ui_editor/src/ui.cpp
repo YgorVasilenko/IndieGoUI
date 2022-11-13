@@ -270,6 +270,10 @@ void processAddOptions(std::string winID) {
             elements_list.elements.begin() + elements_list.selected_element
         );
         elements_list.unselect();
+        ui_string_group& rows_list = *UIMap["rows list"]._data.usgPtr;
+        ui_string_group& cols_list = *UIMap["cols list"]._data.usgPtr;
+        rows_list.unselect();
+        cols_list.unselect();
     }
 
     std::string new_element_name = *UIMap["new element name"]._data.strPtr;
