@@ -135,6 +135,18 @@ void updateWidgetFromUI(
         w.style.elements[styling_element].b = UIMap["blue"]._data.ui;
         w.style.elements[styling_element].a = UIMap["alpha"]._data.ui;
     }
+
+    if (UIMap["delete widget"]._data.b) {
+        GUI.deleteWidget(widID, winID);
+        ui_string_group& widgets_list = *UIMap["widgets list"]._data.usgPtr;
+        widgets_list.elements.erase(
+            std::find(
+                widgets_list.elements.begin(), 
+                widgets_list.elements.end(), 
+                widID
+            )
+        );
+    }
 }
 
 void switchUIscreens(std::string winID) {

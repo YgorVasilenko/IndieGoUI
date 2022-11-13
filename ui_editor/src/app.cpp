@@ -353,7 +353,7 @@ int main() {
             }
         }
 
-        if (!elements.hidden) {
+        if (!elements.hidden) { 
             // Widget's elements editng stuff
             if (UIMap["push opt"]._data.b) {
                 if (push_opt == to_new_row) {

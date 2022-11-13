@@ -955,6 +955,11 @@ namespace IndieGo {
 				for (auto elt : widgetElements) {
 					UIMaps[winID].deleteElement(elt, widRef);
 				}
+
+				// 2. delete widget
+				widgets[winID].erase(
+					widgets[winID].find(widget_name)
+				);
 			}
 		};
 	}
