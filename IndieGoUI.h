@@ -800,6 +800,9 @@ namespace IndieGo {
 		struct TexData {
 			unsigned int texID;
 			int w, h, n;
+
+			// used to identify image on loading
+			std::string path;
 		};
 
 		// Main UI's controlling memory struct - contains all possible memory maps and widgets,

@@ -119,7 +119,7 @@ TexData Manager::load_image(std::string path, bool useProjectDir) {
     std::string project_dir = "";
     if (useProjectDir && pd) {
         project_dir = pd;
-        if (path.size() > project_dir.size()) {
+        if ( fs::path(path).is_absolute() ) {
             path = path.substr(
                 project_dir.size(), path.size()
             );
@@ -131,14 +131,15 @@ TexData Manager::load_image(std::string path, bool useProjectDir) {
     }
     // unsigned int tex;
     TexData& td = loaded_textures[path];
+    td.path = path;
     unsigned char *data = stbi_load(
-        useProjectDir ? (project_dir + path).c_str() : path.c_str(), 
+        useProjectDir ? (project_dir + path).c_str() : path.c_str(),
         &td.w, 
         &td.h, 
         &td.n, 
         0
     );
-    
+
     if (!data) {
         std::cout << "[ERROR] failed to load image " << path << std::endl;
         td.texID = UINT_MAX;
@@ -325,9 +326,8 @@ void Manager::deserialize(const std::string & winID, const std::string & path) {
     UI_elements_map & UIMap = GUI.UIMaps[winID];
     
     // load images first, because ui uses them
-    
     for (unsigned int i = 0; i < serialized_ui.images_size(); i++) {
-        Manager::load_image(serialized_ui.images(i));
+        Manager::load_image(serialized_ui.images(i), true);
         if (serialized_ui.has_skinning_image_idx() && i == serialized_ui.skinning_image_idx()) {
             skinning_image = serialized_ui.images(i);
         }
@@ -418,6 +418,13 @@ void Manager::deserialize(const std::string & winID, const std::string & path) {
             
             UIMap[e.name()].label = e.label();
             UIMap[e.name()].text_align = (TEXT_ALIGN)e.text_align();
+
+            // image setup
+            if (UIMap[e.name()].type == UI_IMAGE) {
+                TexData td = Manager::load_image(UIMap[e.name()].label, true);
+                region<float> crop = { 0.f, 0.f, 1.f, 1.f };
+                UIMap[e.name()].initImage(td.texID, td.w, td.h, crop);
+            }
 
             // skinned props
             for (int k = 0; k < e.skinned_props_size(); k++) {

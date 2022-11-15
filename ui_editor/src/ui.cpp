@@ -284,10 +284,11 @@ void processAddOptions(std::string winID) {
         std::list<std::string> paths = getPaths();
         if (paths.size() > 0) {
             std::string img_path = *paths.begin();
-            TexData td = Manager::load_image(img_path.c_str());
+            TexData td = Manager::load_image(img_path.c_str(), true);
             addElement(widgets_list.getSelected(), winID, new_element_name, t);
             region<float> crop = { 0.f, 0.f, 1.f, 1.f };
             UIMap[new_element_name].initImage(td.texID, td.w, td.h, crop);
+            UIMap[new_element_name].label = td.path;
         }
     }
     if (UIMap["add text"]._data.b) {
