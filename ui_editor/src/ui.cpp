@@ -80,6 +80,19 @@ void updateElementFromUI(
     e.height = UIMap["element height"]._data.f / UI_FLT_VAL_SCALE;
 
     e.label = *UIMap["elt label"]._data.strPtr;
+
+    if (UIMap["rename element"]._data.b) {
+        std::string new_name = *UIMap["new element name"]._data.strPtr;
+        if (new_name.size() > 0 && UIMap.elements.find(new_name) == UIMap.elements.end()) {
+            UIMap.elements[new_name] = UIMap[elementName];
+            UIMap.elements.erase(elementName);
+
+            // Widget's element name also should be renamed
+            /*ui_string_group& elements_list = *UIMap["elements list"]._data.usgPtr;
+            auto element = std::find(elements_list.elements.begin(), elements_list.elements.end(), elementName);
+            *element = new_name;*/
+        }
+    }
 }
 
 void updateUIFromElement(
@@ -146,6 +159,21 @@ void updateWidgetFromUI(
                 widID
             )
         );
+    }
+
+    if (UIMap["rename widget"]._data.b) {
+        ui_string_group& widgets_list = *UIMap["widgets list"]._data.usgPtr;
+        std::string new_name = *UIMap["new widget name"]._data.strPtr;
+        if (new_name.size() > 0 && std::count(widgets_list.elements.begin(), widgets_list.elements.end(), new_name) <= 1) {
+            // can't use new name if there aleady is such widget
+            WIDGET & w = GUI.getWidget(widID, winID);
+            auto element = std::find(widgets_list.elements.begin(), widgets_list.elements.end(), w.name);
+            
+            *element = new_name;
+            GUI.widgets[winID][new_name] = w;
+            GUI.widgets[winID][new_name].name = new_name;
+            GUI.widgets[winID].erase(widID);
+        }
     }
 }
 

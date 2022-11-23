@@ -32,8 +32,8 @@ void initWidgets() {
     // initialize creator widget
     creator_widget.screen_region.x = (float)(WIDTH / 4) / ((float)WIDTH);
     creator_widget.screen_region.y = ((float)HEIGHT / 4) / ((float)HEIGHT);
-    creator_widget.screen_region.w = 0.3f;
-    creator_widget.screen_region.h = 0.3f;
+    creator_widget.screen_region.w = 0.4f;
+    creator_widget.screen_region.h = 0.4f;
     creator_widget.name = "UI creator";
     creator_widget.has_scrollbar = false;
 
@@ -52,6 +52,9 @@ void initWidgets() {
     // create new widget button
     UIMap.addElement("add new widget", UI_BUTTON, &c_widget, to_new_subrow);
     UIMap["add new widget"].label = "add widget";
+
+    UIMap.addElement("rename widget", UI_BUTTON, &c_widget, to_new_subrow);
+    UIMap["rename widget"].label = "rename widget";
 
     // different flag settings
     UIMap.addElement("bordered", UI_BOOL, &c_widget, to_new_subrow);
@@ -89,6 +92,8 @@ void initWidgets() {
 
     UIMap.addElement("delete widget", UI_BUTTON, &c_widget, to_new_subrow);
     UIMap["delete widget"].label = "delete widget";
+
+    UIMap.addElement("space fill", UI_EMPTY, &c_widget, to_new_subrow);
 
     // coordinates of new widget
     UIMap.addElement("location x", UI_FLOAT, &c_widget, to_new_subrow);
@@ -156,8 +161,8 @@ void initWidgets() {
     WIDGET elements_edit;
     elements_edit.screen_region.x = (float)(WIDTH / 4) / ((float)WIDTH);
     elements_edit.screen_region.y = ((float)HEIGHT / 4) / ((float)HEIGHT);
-    elements_edit.screen_region.w = 0.3f;
-    elements_edit.screen_region.h = 0.3f;
+    elements_edit.screen_region.w = 0.4f;
+    elements_edit.screen_region.h = 0.4f;
     elements_edit.name = "Edit elements";
     
     WIDGET & e_widget = GUI.addWidget(elements_edit, winID);
@@ -176,6 +181,9 @@ void initWidgets() {
     UIMap.addElement("new element name label", UI_STRING_LABEL, &e_widget, to_new_col);
     UIMap["new element name label"].label = "new element name:";
     
+    UIMap.addElement("switch type", UI_BOOL, &e_widget, to_new_subrow);
+    UIMap["switch type"].label = "switch type";
+
     UIMap.addElement("add button", UI_BUTTON, &e_widget, to_new_subrow);
     UIMap["add button"].label = "add button";
 
@@ -193,6 +201,9 @@ void initWidgets() {
 
     UIMap.addElement("new element name", UI_STRING_INPUT, &e_widget, to_new_col);
     UIMap["new element name"].label = "new element name";
+
+    UIMap.addElement("rename element", UI_BUTTON, &e_widget, to_new_subrow);
+    UIMap["rename element"].label = "rename element";
 
     UIMap.addElement("add image", UI_BUTTON, &e_widget, to_new_subrow);
     UIMap["add image"].label = "add image";
@@ -242,8 +253,8 @@ void initWidgets() {
     UIMap.addElement("keep space", UI_BOOL, &e_widget, to_new_subrow);
     UIMap["keep space"].label = "keep space";
 
-    UIMap.addElement("switch type", UI_BUTTON, &e_widget, to_new_subrow);
-    UIMap["switch type"].label = "switch type";
+    // UIMap.addElement("switch type", UI_BUTTON, &e_widget, to_new_subrow);
+    // UIMap["switch type"].label = "switch type";
 
     UIMap.addElement("push opt", UI_BUTTON, &e_widget, to_new_subrow);
     UIMap["push opt"].label = "push: to new row";
@@ -301,8 +312,8 @@ void initWidgets() {
     WIDGET widgets_style;
     widgets_style.screen_region.x = (float)(WIDTH / 4) / ((float)WIDTH);
     widgets_style.screen_region.y = ((float)HEIGHT / 4) / ((float)HEIGHT);
-    widgets_style.screen_region.w = 0.3f;
-    widgets_style.screen_region.h = 0.3f;
+    widgets_style.screen_region.w = 0.4f;
+    widgets_style.screen_region.h = 0.4f;
     widgets_style.name = "Widgets style";
 
     WIDGET & ws_widget = GUI.addWidget(widgets_style, winID);
@@ -439,8 +450,8 @@ void initWidgets() {
     WIDGET fonts;
     fonts.screen_region.x = 0.7f;
     fonts.screen_region.y = 0.f;
-    fonts.screen_region.w = 0.2f;
-    fonts.screen_region.h = 0.2f;
+    fonts.screen_region.w = 0.25f;
+    fonts.screen_region.h = 0.25f;
     fonts.name = "Fonts";
 
     WIDGET & fonts_widget = GUI.addWidget(fonts, winID);
