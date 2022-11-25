@@ -506,6 +506,9 @@ int main() {
                     style_edit_mode == widget_edit, 
                     style_elements_list.selected_element == prev_selected_style_element ? style_elements_list.selected_element : -1
                 );
+            } else {
+                rows_list.unselect();
+                cols_list.unselect();
             }
         }
 
