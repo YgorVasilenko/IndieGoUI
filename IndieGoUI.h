@@ -489,6 +489,37 @@ namespace IndieGo {
 				// }
 			};
 
+			// true on successfull renaming, false otherwise
+			bool renameElement(const std::string & old_name, const std::string & new_name) {
+				if (std::find(widget_elements.begin(), widget_elements.end(), old_name) == widget_elements.end())
+					return false;
+				
+				// 1. Rename in widget_elements
+				auto element = std::find(widget_elements.begin(), widget_elements.end(), old_name);
+				*element = new_name;
+
+				// 2. Rename in layout_grid
+				bool renamed = false;
+				for (auto row = layout_grid.begin(); row != layout_grid.end(); row++) {
+					for (auto cell = row->cells.begin(); cell != row->cells.end(); cell++) {
+						if (std::find(cell->elements.begin(), cell->elements.end(), old_name) != cell->elements.end()) {
+							auto cell_element = std::find(cell->elements.begin(), cell->elements.end(), old_name);
+							*cell_element = new_name;
+							renamed = true;
+							break;
+						}
+					}
+					if (renamed) break;
+				}
+
+				if (!renamed) {
+					std::cout << "[RENAME_ELEMENT::WARNING] was not able to find " << old_name << " in " << name << " widget layout_grid!" << std::endl;
+					*element = old_name;
+				}
+
+				return renamed;
+			}
+
 			// true on successfull deletion, false otherwise
 			bool deleteElement(
 				const std::string & elt_name
@@ -654,6 +685,24 @@ namespace IndieGo {
 				elements.erase(
 					elements.find(elt_name)
 				);
+			}
+
+			void renameElement(
+				const std::string & old_name, 
+				const std::string & new_name, 
+				WIDGET_BASE * widRef
+			) {
+				if (elements.find(old_name) == elements.end()) {
+					std::cout << "[RENAME_ELEMENT::ERROR] element " << old_name << " does not exist!" << std::endl;
+					return;
+				}
+				if (!widRef->renameElement(old_name, new_name)) {
+					std::cout << "[RENAME_ELEMENT::ERROR] element " << old_name << " was not found in " << widRef->name << " widget!" << std::endl;
+					return;
+				}
+				auto element = elements.extract(old_name);
+				element.key() = new_name;
+				elements.insert(std::move(element)); // { { 1, "banana" }, { 2, "potato" } }
 			}
 
 			void loadUI(std::string & ui_file_path){

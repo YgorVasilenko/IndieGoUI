@@ -84,7 +84,7 @@ extern void updateUIFromWidget(std::string widID, std::string winID, bool do_sty
 extern void switchUIscreens(std::string winID);
 
 // element style <-> UI update functions
-extern void updateElementFromUI(std::string elementName, std::string winID);
+extern void updateElementFromUI(std::string elementName, std::string winID, std::string widID);
 void updateUIFromElement(std::string elementName, std::string winID);
 
 // layout <-> UI update functions
@@ -367,6 +367,34 @@ int main() {
                     UIMap["push opt"].label = "push: to new row";
                 }
             }
+
+            if (elements_list.selected_element == -1)
+                UIMap["switch type"]._data.b = false;
+
+            if (UIMap["switch type"]._data.b) {
+                UIMap["add image"].label = "to image";
+                UIMap["add text"].label = "to text";    
+                UIMap["add label"].label = "to label";
+                UIMap["add progress"].label = "to progress";
+                UIMap["add button"].label = "to button";
+                UIMap["add checkbox"].label = "to checkbox";
+                UIMap["add empty"].label = "to empty";
+                UIMap["add input"].label = "to input";
+                UIMap["add int"].label = "to int";
+                UIMap["add float"].label = "to float";
+            } else {
+                UIMap["add image"].label = "add image";
+                UIMap["add text"].label = "add text";
+                UIMap["add label"].label = "add label";
+                UIMap["add progress"].label = "add progress";
+                UIMap["add button"].label = "add button";
+                UIMap["add checkbox"].label = "add checkbox";
+                UIMap["add empty"].label = "add empty";
+                UIMap["add input"].label = "add input";
+                UIMap["add int"].label = "add int";
+                UIMap["add float"].label = "add float";
+            }
+
             processAddOptions(winID);
             updateUIFromLayout(
                 widgets_list.getSelected(), 
@@ -485,7 +513,8 @@ int main() {
             if (elements_list.selected_element != -1 && prev_selected_element == elements_list.selected_element) {
                 updateElementFromUI(
                     elements_list.getSelected(),
-                    winID
+                    winID,
+                    widgets_list.getSelected()
                 );
             }
             updateLayoutFromUI(

@@ -67,7 +67,8 @@ void updateLayoutFromUI(
 
 void updateElementFromUI(
     std::string elementName, 
-    std::string winID
+    std::string winID,
+    std::string widID // required for element's renaming
 ) {
     UI_elements_map & UIMap = GUI.UIMaps[winID];
     UI_element & e = UIMap[elementName];
@@ -84,13 +85,12 @@ void updateElementFromUI(
     if (UIMap["rename element"]._data.b) {
         std::string new_name = *UIMap["new element name"]._data.strPtr;
         if (new_name.size() > 0 && UIMap.elements.find(new_name) == UIMap.elements.end()) {
-            UIMap.elements[new_name] = UIMap[elementName];
-            UIMap.elements.erase(elementName);
 
-            // Widget's element name also should be renamed
-            /*ui_string_group& elements_list = *UIMap["elements list"]._data.usgPtr;
-            auto element = std::find(elements_list.elements.begin(), elements_list.elements.end(), elementName);
-            *element = new_name;*/
+            UIMap.renameElement(
+                elementName,
+                new_name,
+                & GUI.getWidget(widID, winID)
+            );
         }
     }
 }
@@ -305,7 +305,7 @@ void processAddOptions(std::string winID) {
     }
 
     std::string new_element_name = *UIMap["new element name"]._data.strPtr;
-    if (new_element_name.size() == 0) return;
+    // if (new_element_name.size() == 0) return;
 
     if ( UIMap["add image"]._data.b ) {
         UI_ELEMENT_TYPE t = UI_IMAGE;
@@ -313,45 +313,73 @@ void processAddOptions(std::string winID) {
         if (paths.size() > 0) {
             std::string img_path = *paths.begin();
             TexData td = Manager::load_image(img_path.c_str(), true);
-            addElement(widgets_list.getSelected(), winID, new_element_name, t);
+            if (UIMap["switch type"]._data.b) {
+                new_element_name = elements_list.getSelected();
+            } else {
+                addElement(widgets_list.getSelected(), winID, new_element_name, t);
+            }
             region<float> crop = { 0.f, 0.f, 1.f, 1.f };
             UIMap[new_element_name].initImage(td.texID, td.w, td.h, crop);
             UIMap[new_element_name].label = td.path;
         }
     }
     if (UIMap["add text"]._data.b) {
-        UI_ELEMENT_TYPE t = UI_STRING_TEXT;
-        addElement(widgets_list.getSelected(), winID, new_element_name, t);
-        UIMap[new_element_name].label = new_element_name;
+        if (UIMap["switch type"]._data.b) {
+            UIMap[elements_list.getSelected()].type = UI_STRING_TEXT;
+        } else {
+            UI_ELEMENT_TYPE t = UI_STRING_TEXT;
+            addElement(widgets_list.getSelected(), winID, new_element_name, t);
+            UIMap[new_element_name].label = new_element_name;
+        }
     }
     if (UIMap["add label"]._data.b) {
-        UI_ELEMENT_TYPE t = UI_STRING_LABEL;
-        addElement(widgets_list.getSelected(), winID, new_element_name, t);
-        UIMap[new_element_name].label = new_element_name;
+        if (UIMap["switch type"]._data.b) {
+            UIMap[elements_list.getSelected()].type = UI_STRING_LABEL;
+        } else {
+            UI_ELEMENT_TYPE t = UI_STRING_LABEL;
+            addElement(widgets_list.getSelected(), winID, new_element_name, t);
+            UIMap[new_element_name].label = new_element_name;
+        }
     }
     if (UIMap["add progress"]._data.b) {
-        UI_ELEMENT_TYPE t = UI_PROGRESS;
-        addElement(widgets_list.getSelected(), winID, new_element_name, t);
-        UIMap[new_element_name].modifyable_progress_bar = true; // hard-code for now
+        if (UIMap["switch type"]._data.b) {
+            UIMap[elements_list.getSelected()].type = UI_PROGRESS;
+        } else {
+            UI_ELEMENT_TYPE t = UI_PROGRESS;
+            addElement(widgets_list.getSelected(), winID, new_element_name, t);
+            UIMap[new_element_name].modifyable_progress_bar = true; // hard-code for now
+        }
     }
     if (UIMap["add button"]._data.b) {
-        UI_ELEMENT_TYPE t = UI_BUTTON;
-        addElement(widgets_list.getSelected(), winID, new_element_name, t);
-        UIMap[new_element_name].label = new_element_name;
+        if (UIMap["switch type"]._data.b) {
+            UIMap[elements_list.getSelected()].type = UI_BUTTON;
+        } else {
+            UI_ELEMENT_TYPE t = UI_BUTTON;
+            addElement(widgets_list.getSelected(), winID, new_element_name, t);
+            UIMap[new_element_name].label = new_element_name;
+        }
     }
     if (UIMap["add checkbox"]._data.b) {
-        UI_ELEMENT_TYPE t = UI_BOOL;
-        addElement(widgets_list.getSelected(), winID, new_element_name, t);
-        UIMap[new_element_name].label = new_element_name;
+        if (UIMap["switch type"]._data.b) {
+            UIMap[elements_list.getSelected()].type = UI_BOOL;
+        } else {
+            UI_ELEMENT_TYPE t = UI_BOOL;
+            addElement(widgets_list.getSelected(), winID, new_element_name, t);
+            UIMap[new_element_name].label = new_element_name;
+        }
     }
     // TODO : 
     // add items list, 
     // string input field, 
     // int, uint, float, 
     if (UIMap["add empty"]._data.b) {
-        UI_ELEMENT_TYPE t = UI_EMPTY;
-        addElement(widgets_list.getSelected(), winID, new_element_name, t);
-        UIMap[new_element_name].label = new_element_name;
+        if (UIMap["switch type"]._data.b) {
+            UIMap[elements_list.getSelected()].type = UI_EMPTY;
+        } else {
+            UI_ELEMENT_TYPE t = UI_EMPTY;
+            addElement(widgets_list.getSelected(), winID, new_element_name, t);
+            UIMap[new_element_name].label = new_element_name;
+        }
     }
 };
 
