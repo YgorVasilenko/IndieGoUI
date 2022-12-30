@@ -42,7 +42,8 @@ void WIDGET_BASE::updateRowHeight(unsigned int row, float newHeight) {
     if (!uiMapPtr) 
         // TODO : print warning
         return;
-	layout_grid[row].min_height = newHeight;
+	
+    layout_grid[row].min_height = newHeight;
 	for (auto cell : layout_grid[row].cells) {
 		for (auto elt : cell.elements) {
 			(*uiMapPtr).elements[elt].height = newHeight / cell.elements.size();
@@ -59,6 +60,83 @@ void WIDGET_BASE::updateColWidth(unsigned int row, unsigned int col, float newWi
 	for (auto elt : layout_grid[row].cells[col].elements) {
 		(*uiMapPtr).elements[elt].width = newWidth;
 	}
+}
+
+void WIDGET::copyWidget(const std::string & add_name, WIDGET * other) {
+    if (!uiMapPtr) 
+        // TODO : print warning
+        return;
+
+    movable = other->movable;
+	minimizable = other->minimizable;
+	scalable = other->scalable;
+	title = other->title;
+	style = other->style;
+	has_scrollbar = other->has_scrollbar;
+	screen_region = other->screen_region;
+	border = other->border;
+
+    UI_elements_map & UIMap = *uiMapPtr;
+
+    for (auto row : other->layout_grid) {
+        int c = 0;
+        for (auto cell : row.cells) {
+            int e = 0;
+            for (auto elt : cell.elements) {
+                ELT_PUSH_OPT push_opt = to_new_row;
+                if (e > 0) push_opt = to_new_subrow;
+                else if (c > 0) push_opt = to_new_col;
+                UIMap.addElement(
+                    add_name + elt,
+                    UIMap[elt].type,
+                    this,
+                    push_opt
+                );
+                UIMap[add_name + elt].label = UIMap[elt].label;
+                e++;
+                if (UIMap[elt].type == UI_IMAGE) {
+                    // load image
+                    TexData td = Manager::load_image(UIMap[elt].label, true);
+                    region<float> crop = { 0.f, 0.f, 1.f, 1.f };
+                    UIMap[add_name + elt].initImage(td.texID, td.w, td.h, crop);
+                    UIMap[add_name + elt].label = td.path;
+                }
+                // TODO : copy data for other datatypes
+            }
+            c++;
+        }
+    }
+    copyLayout(other);
+}
+
+void WIDGET_BASE::copyLayout(WIDGET_BASE * other) {
+    if (!uiMapPtr) 
+        // TODO : print warning
+        return;
+    
+    int r = 0;
+    for (auto row : other->layout_grid) {
+        if (r < layout_grid.size()) {
+            layout_grid[r].min_height = row.min_height;
+            int c = 0;
+            for (auto cell : row.cells) {
+                if (c < layout_grid[r].cells.size()) {
+                    layout_grid[r].cells[c].min_width = cell.min_width;
+                    int e = 0;
+                    for (auto elt : cell.elements) {
+                        if (e < layout_grid[r].cells[c].elements.size()) {
+                            (*uiMapPtr)[ layout_grid[r].cells[c].elements[e] ].height = (*uiMapPtr)[elt].height;
+                            (*uiMapPtr)[ layout_grid[r].cells[c].elements[e] ].width = (*uiMapPtr)[elt].width;
+                            (*uiMapPtr)[ layout_grid[r].cells[c].elements[e] ].padding = (*uiMapPtr)[elt].padding;
+                        }
+                        e++;
+                    }
+                }
+                c++;
+            }
+        }
+        r++;
+    }
 }
 
 void createNewWidget(
@@ -112,11 +190,18 @@ void addElement(
     UIMap.addElement(elt_name, type, &w, push_opt);
 }
 
+#ifdef RELEASE_BUILD
+    extern std::string global_home;
+#endif
+
 // helper function lo load image through stbi
 // in other engine parts ImageLoader will do that
 TexData Manager::load_image(std::string path, bool useProjectDir) {
-    char* pd = getenv("PROJECT_DIR");
     std::string project_dir = "";
+#ifdef RELEASE_BUILD
+    project_dir = global_home;
+#else
+    char* pd = getenv("PROJECT_DIR");
     if (useProjectDir && pd) {
         project_dir = pd;
         if ( fs::path(path).is_absolute() ) {
@@ -125,7 +210,7 @@ TexData Manager::load_image(std::string path, bool useProjectDir) {
             );
         }
     }
-
+#endif
     if (loaded_textures.find(path) != loaded_textures.end()) {
         return loaded_textures[path];
     }
@@ -148,8 +233,9 @@ TexData Manager::load_image(std::string path, bool useProjectDir) {
 
     glGenTextures(1, &td.texID);
     glBindTexture(GL_TEXTURE_2D, td.texID);
-    // glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_NEAREST);
-    // glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR_MIPMAP_NEAREST);
+    
+    /*glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_NEAREST);
+    glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR_MIPMAP_NEAREST);*/
 
     glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
     glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);

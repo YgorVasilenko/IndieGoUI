@@ -381,6 +381,16 @@ void processAddOptions(std::string winID) {
             UIMap[new_element_name].label = new_element_name;
         }
     }
+
+    if (UIMap["add input"]._data.b) {
+        if (UIMap["switch type"]._data.b) {
+            UIMap[elements_list.getSelected()].type = UI_STRING_INPUT;
+        } else {
+            UI_ELEMENT_TYPE t = UI_STRING_INPUT;
+            addElement(widgets_list.getSelected(), winID, new_element_name, t);
+            UIMap[new_element_name].label = new_element_name;
+        }
+    }
 };
 
 void checkUIValues(std::string winID) {

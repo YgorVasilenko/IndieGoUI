@@ -488,14 +488,6 @@ int main() {
                     std::to_string(size)
                 );
             }
-             // font_sizes_list.selected_element = prev_selected_font_size;
-             // switch global font abd size to selected font and size
-             /*GUI.main_font = available_fonts_list.getSelected();
-             if (font_sizes_list.selected_element != -1) {
-                 GUI.main_font_size = std::stof(
-                     font_sizes_list.getSelected()
-                 );
-             }*/
         }
 
         if (widgets_list.selected_element != -1) {
@@ -520,6 +512,10 @@ int main() {
                     widgets_list.getSelected()
                 );
             }
+
+            if (prev_selected_row != rows_list.selected_element)
+                cols_list.unselect();
+
             updateLayoutFromUI(
                 widgets_list.getSelected(), 
                 winID,

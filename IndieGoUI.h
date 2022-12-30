@@ -273,6 +273,8 @@ namespace IndieGo {
 				std::string * strPtr;
 			} _data;
 
+
+			bool rmb_click = false;
 			// Nuklear does not have options for buttons usage,
 			// so this is a workaround
 			bool hovered_by_keys = false;
@@ -421,14 +423,8 @@ namespace IndieGo {
 			UI_elements_map* uiMapPtr = NULL;
 			void updateRowHeight(unsigned int row, float newHeight);
 			void updateColWidth(unsigned int row, unsigned int col, float newWidth);
-			// {
-			// 	layout_grid[row].min_height = newHeight;
-			// 	for (auto cell : layout_grid[row].cells) {
-			// 		for (auto elt : cell.elements) {
-			// 			(*uiMapPtr).elements[elt].height = newHeight / cell.elements.size();
-			// 		}
-			// 	}
-			// }
+			void copyLayout(WIDGET_BASE * other);
+			// void copyWidget(const std::string & add_name, WIDGET_BASE * other);
 
 			// True, if element successfully added to folding group
 			bool addElementToGroup(const std::string & elt_name, const std::string & group_name) {
@@ -723,6 +719,7 @@ namespace IndieGo {
 			// widget's size and location on screen, in percentage with 0% 0% top-left
 			region<float> screen_region;
 			region_size<unsigned int> screen_size;
+			region_size<int> scroll_offsets = { 0, 0 };
 
 			bool hidden = false;
 
@@ -733,6 +730,9 @@ namespace IndieGo {
 			// true, if this widget is currently active (was clicked on)
 			bool focused = false;
 			
+			// true if widget is minimized
+			bool minimized = false;
+
 			// true, if cursor is hovered over this widget
 			bool hasCursor = false;
 
@@ -740,6 +740,8 @@ namespace IndieGo {
 			virtual void callImmediateBackend(UI_elements_map & UIMap);
 			virtual void allocateRow(unsigned int cols, float min_height, bool in_pixels);
 			virtual void endRow();
+
+			void copyWidget(const std::string & add_name, WIDGET * other);
 			// virtual void allocateEmptySpace(unsigned int fill_count = 1);
 			// virtual void allocateGroupStart(elements_group & group, float min_height);
 			// virtual void allocateGroupEnd();
@@ -764,7 +766,15 @@ namespace IndieGo {
 			image_props skinned_style;
 			bool custom_style = true;
 			friend struct Manager;
+
+			void updateScrollPos(int xOffset = -1, unsigned int yOffset = -1) {
+				updateScrollPosReq = true;
+				scroll_offsets.w = xOffset;
+				scroll_offsets.h = yOffset;
+			}
 		private:
+
+			bool updateScrollPosReq = false;
 
 			// required for serialization
 			virtual region<float> getImgCrop(IMAGE_SKIN_ELEMENT elt);

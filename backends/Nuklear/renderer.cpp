@@ -574,6 +574,8 @@ void UI_element::callUIfunction(float x, float y, float space_w, float space_h) 
             ks.focused = true;
         }*/
         //if (nk_button_label(ctx, label.c_str(), &ks))
+        /*nk_button_behavior
+        nk_button_set_behavior();*/
         if (nk_button_label(ctx, label.c_str()))
             _data.b = true;
         else
@@ -581,6 +583,18 @@ void UI_element::callUIfunction(float x, float y, float space_w, float space_h) 
 
         if (selected_by_keys)
             _data.b = true;
+
+        if (nk_widget_is_mouse_clicked(ctx, NK_BUTTON_RIGHT)) {
+            rmb_click = true;
+        } else {
+            rmb_click = false;
+        }
+        struct nk_rect button_rect = nk_widget_bounds(ctx);
+
+        std::cout << button_rect.h << std::endl;
+        std::cout << button_rect.w << std::endl;
+        std::cout << button_rect.x << std::endl;
+        std::cout << button_rect.y << std::endl;
         return;
     }
 
@@ -636,7 +650,6 @@ void UI_element::callUIfunction(float x, float y, float space_w, float space_h) 
     }
     
     if (type == UI_IMAGE) {
-        // TODO : add skinning
         if (_data.i != -1)
             nk_image(ctx, images[_data.i][cropId].first);
     }
@@ -897,6 +910,9 @@ void WIDGET::callImmediateBackend(UI_elements_map & UIMap){
     ctx->style.window.padding = nk_vec2(padding.h, padding.w);
     ctx->style.window.border = border_size;
 
+    // region_size<unsigned int>
+    //nk_window_set_scroll(ctx, scroll_offsets.w, scroll_offsets.h);
+
     if (font != "None") {
         nk_style_set_font(
             ctx,
@@ -917,10 +933,41 @@ void WIDGET::callImmediateBackend(UI_elements_map & UIMap){
             flags 
         )
     ) {
-        focused = nk_window_has_focus(ctx);
-        hasCursor = nk_window_is_hovered(ctx);
+        if (has_scrollbar && updateScrollPosReq) {
+            unsigned int X, Y;
+            nk_window_get_scroll(ctx, &X, &Y);
+            if (scroll_offsets.w != -1) {
+                /*unsigned int upd = (100.f / (float)scroll_offsets.w) * (screen_region.x - screen_region.w) * screen_size.w;
+                upd += screen_region.x * screen_size.w;
+                nk_window_set_scroll(ctx, upd, Y);*/
+            }
+
+            if (scroll_offsets.h != -1) {
+                float scroll_percent = ((float)scroll_offsets.h / 100.f);
+                float offset_region_from_widget_persent = scroll_percent * screen_region.h;
+                float final_scroll = ( offset_region_from_widget_persent + screen_region.y) * screen_size.h + screen_size.h * screen_region.h;
+                unsigned int upd = final_scroll;
+                nk_window_set_scroll(ctx, X, upd);
+                
+            }
+            updateScrollPosReq = false;
+        }
+        
         callWidgetUI(UIMap);
+        minimized = false;
+    } else {
+        minimized = true;
     }
+    if (has_scrollbar) {
+        unsigned int X, Y;
+        nk_window_get_scroll(ctx, &X, &Y);
+        scroll_offsets.h = Y;
+        scroll_offsets.w = X;
+    }
+
+    focused = nk_window_has_focus(ctx);
+    hasCursor = nk_window_is_hovered(ctx);
+
     if (movable || scalable) {
         // update screen_region with current bounds, if those are changed by user
         struct nk_rect updBounds = nk_window_get_bounds(ctx);
