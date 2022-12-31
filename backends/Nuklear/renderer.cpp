@@ -390,7 +390,6 @@ void Manager::mouse_move(void * window, double x, double y) {
 
 
 void Manager::mouse_button(void * window, int button, int action, int mods){
-    //GLFWwindow * glfw_win = reinterpret_cast<GLFWwindow*>(window);
     std::string glfw_win = *reinterpret_cast<std::string*>(window);
     struct nk_glfw * glfw = glfw_storage[glfw_win];
 
@@ -591,10 +590,10 @@ void UI_element::callUIfunction(float x, float y, float space_w, float space_h) 
         }
         struct nk_rect button_rect = nk_widget_bounds(ctx);
 
-        std::cout << button_rect.h << std::endl;
+        /*std::cout << button_rect.h << std::endl;
         std::cout << button_rect.w << std::endl;
         std::cout << button_rect.x << std::endl;
-        std::cout << button_rect.y << std::endl;
+        std::cout << button_rect.y << std::endl;*/
         return;
     }
 
@@ -808,6 +807,12 @@ void UI_element::callUIfunction(float x, float y, float space_w, float space_h) 
             }
         }
     }
+
+    struct nk_rect wid_rect = nk_widget_bounds(ctx);
+    layout_border.x = wid_rect.x; 
+    layout_border.y = wid_rect.y;
+    layout_border.w = wid_rect.w;
+    layout_border.h = wid_rect.h;
 }
 
 void UI_element::initImage(unsigned int texID, unsigned int w, unsigned int h, region<float> crop) {

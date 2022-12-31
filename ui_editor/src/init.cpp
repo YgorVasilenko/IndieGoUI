@@ -27,6 +27,7 @@ extern std::string winID;
 
 extern std::string getColorPropName(COLOR_ELEMENTS prop);
 extern std::string getSkinPropName(IMAGE_SKIN_ELEMENT prop);
+std::vector<std::string> editorWidgets = {};
 
 void initWidgets() {
     // initialize creator widget
@@ -35,6 +36,7 @@ void initWidgets() {
     creator_widget.screen_region.w = 0.4f;
     creator_widget.screen_region.h = 0.4f;
     creator_widget.name = "UI creator";
+    editorWidgets.push_back(creator_widget.name);
     creator_widget.has_scrollbar = false;
 
     WIDGET & c_widget = GUI.addWidget(creator_widget, winID);
@@ -164,7 +166,8 @@ void initWidgets() {
     elements_edit.screen_region.w = 0.4f;
     elements_edit.screen_region.h = 0.4f;
     elements_edit.name = "Edit elements";
-    
+    editorWidgets.push_back(elements_edit.name);
+
     WIDGET & e_widget = GUI.addWidget(elements_edit, winID);
     e_widget.hidden = true;
     e_widget.has_scrollbar = false;
@@ -315,6 +318,7 @@ void initWidgets() {
     widgets_style.screen_region.w = 0.4f;
     widgets_style.screen_region.h = 0.4f;
     widgets_style.name = "Widgets style";
+    editorWidgets.push_back(widgets_style.name);
 
     WIDGET & ws_widget = GUI.addWidget(widgets_style, winID);
     ws_widget.hidden = true;
@@ -393,6 +397,7 @@ void initWidgets() {
     elements_style.screen_region.w = 0.3f;
     elements_style.screen_region.h = 0.3f;
     elements_style.name = "Elements style";
+    editorWidgets.push_back(elements_style.name);
 
     WIDGET & es_widget = GUI.addWidget(elements_style, winID);
     es_widget.hidden = true;
@@ -453,6 +458,7 @@ void initWidgets() {
     fonts.screen_region.w = 0.25f;
     fonts.screen_region.h = 0.25f;
     fonts.name = "Fonts";
+    editorWidgets.push_back(fonts.name);
 
     WIDGET & fonts_widget = GUI.addWidget(fonts, winID);
     fonts_widget.has_scrollbar = false;

@@ -301,6 +301,7 @@ namespace IndieGo {
 			float rounding = 1.f;
 			region_size<float> padding = { 0.01f, 0.01f };
 
+			region<float> layout_border;
 			float font_height = 0.023f;
 			std::string font = "None";
 			float font_size = 16.f;
@@ -807,41 +808,7 @@ namespace IndieGo {
 						}
 						row_indent += cell.min_width * screen_size.w * screen_region.w;
 					}
-					// cell_indent += row.min_height * screen_size.h * screen_region.h;
 					endRow();
-					// std::string & first_elt = row.cells[0];
-					// // check, if first element in row starts group - in such case don't allocate row
-					// curr_group = find_if(elements_groups.begin(), elements_groups.end(), [&first_elt ](elements_group & g){ return g.start == first_elt; });
-					// if (curr_group == elements_groups.end()){
-					// 	// TODO : allocate row only for visible elements
-					// 	allocateRow(row.cells.size(), row.min_height, row.in_pixels);
-					// }
-					// for (auto elt : row.cells){
-					// 	// check, if element starts drawing group
-					// 	// curr_group = find_if(elements_groups.begin(), elements_groups.end(), [&elt](elements_group & g){ return g.start == elt; });
-					// 	// if (curr_group != elements_groups.end()){
-					// 	// 	allocateGroupStart(*curr_group, row.min_height);
-					// 	// 	curr_group_folded = !curr_group->unfolded;
-					// 	// }
-					// 	if (!curr_group_folded) {
-					// 		if (UIMap.elements.find(elt) != UIMap.elements.end() && !UIMap.elements[elt].hidden){
-					// 			UIMap.elements[elt].callUIfunction();
-					// 		} else {
-					// 			// TODO : seems like very strange behavior. Need to investigate
-					// 			// if (UIMap.elements[elt].takeSpaceIfHidden)
-					// 			// 	allocateEmptySpace();
-					// 			// if (UIMap.elements[elt].type == UI_COLOR_PICKER)
-					// 			// 	UIMap.elements[elt].color_picker_unwrapped = false;
-					// 		}
-					// 	}
-					// 	// also check, if element ends group
-					// 	// curr_group = find_if(elements_groups.begin(), elements_groups.end(), [&elt](elements_group & g){ return g.end == elt; });
-					// 	// if (curr_group != elements_groups.end()){
-					// 	// 	if (!curr_group_folded)
-					// 	// 		allocateGroupEnd();
-					// 	// 	curr_group_folded = false;
-					// 	// }
-					// }
 				}
 			};
 		};

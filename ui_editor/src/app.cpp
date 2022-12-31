@@ -20,6 +20,8 @@
 #include <chrono>
 #include <list>
 #include <filesystem>
+#include <editor_structs.h>
+
 namespace fs = std::filesystem;
 
 // Plain simple code for window creation
@@ -32,6 +34,14 @@ Manager GUI;
 WIDGET creator_widget;
 WIDGET styling_widget;
 std::string winID = "OpenGL_Nuklear UI";
+
+LayoutRect testRect = {
+    0., 0., 0.5, 0.5
+};
+
+void loadShader();
+void initBuffers();
+void drawLayout(LayoutRect element);
 
 // [widID] = current_line
 std::map<std::string, unsigned int> widgets_fill;
@@ -155,7 +165,25 @@ std::pair<std::string, std::string> getResourcesPath() {
 
 extern ELT_PUSH_OPT push_opt;
 
+#ifdef _WIN32 // it seems there is no cpp cross-platform way to get executable path
+#include <windows.h>
+#endif
+
+fs::path binary_path = "";
+std::string home_dir = "";
+
+extern std::vector<std::string> editorWidgets;
+
 int main() {
+    // Get current application path
+#ifdef _WIN32
+    TCHAR binary_path_[MAX_PATH] = { 0 };
+    GetModuleFileName(NULL, binary_path_, MAX_PATH);
+    binary_path = std::string(binary_path_);
+#else
+    home_dir = fs::current_path();
+#endif
+    home_dir = binary_path.parent_path().string();
 
   	glfwInit();
 	glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 3);
@@ -176,6 +204,10 @@ int main() {
     glfwSetKeyCallback(screen, key_callback);
 
     glViewport(0, 0, WIDTH, HEIGHT);
+
+    initBuffers();
+    loadShader();
+
     GUI.init(winID, screen);
     GUI.screen_size.w = WIDTH;
     GUI.screen_size.h = HEIGHT;
@@ -441,6 +473,50 @@ int main() {
         GUI.displayWidgets(winID);
         GUI.drawFrameEnd(winID);
         
+        // draw layout of each widget
+        for (auto widget : GUI.widgets[winID]) {
+            std::string widID = widget.first;
+            if (!std::any_of(editorWidgets.begin(), editorWidgets.end(), [widID](const std::string & elt) { return widID == elt; }) ) {
+                float row_bias = 0.f;
+                unsigned int curr_row = 0;
+                for (auto row : widget.second.layout_grid) {
+                    LayoutRect widget_layout;
+                    // row defines height and yPos
+                    widget_layout.height = row.min_height * widget.second.screen_region.h * 2.f;
+                    widget_layout.y = ((row_bias * 0.5f + widget.second.screen_region.y + widget_layout.height * 0.25f) * 2.f - 1.f) * -1.f;
+                    row_bias += widget_layout.height;
+                    float cell_bias = 0.f;
+                    if (rows_list.selected_element == curr_row) {
+                        widget_layout.green = 0.f;
+                        widget_layout.blue = 0.f;
+                    }
+                    unsigned int curr_cell = 0;
+                    for (auto cell : row.cells) {
+                        // cell defines width and xPos
+                        widget_layout.width = cell.min_width * widget.second.screen_region.w * 2.f;
+                        widget_layout.x = (cell_bias * 0.5f + widget.second.screen_region.x + widget_layout.width * 0.25f) * 2.f - 1.f;
+                        cell_bias += widget_layout.width;
+                        if (cols_list.selected_element == curr_cell) {
+                            widget_layout.green = 1.f;
+                        } else {
+                            widget_layout.green = 0.f;
+                        }
+                        drawLayout(widget_layout);
+                        curr_cell++;
+                        /*for (auto elt : cell.elements) {
+                            LayoutRect elt_layout;
+                            elt_layout.x = ((UIMap[elt].layout_border.x + UIMap[elt].layout_border.w * 0.5f) / widget.second.screen_size.w) * 2.f - 1.f;
+                            elt_layout.y = (((UIMap[elt].layout_border.y + UIMap[elt].layout_border.h * 0.5f) / widget.second.screen_size.h) * 2.f - 1.f) * -1.f;
+                            elt_layout.width = (UIMap[elt].layout_border.w / widget.second.screen_size.w) * 2.f;
+                            elt_layout.height = (UIMap[elt].layout_border.h / widget.second.screen_size.h) * 2.f;
+                            drawLayout(elt_layout);
+                        }*/
+                    }
+                    curr_row++;
+                }
+            }
+        }
+
         // back updates of widgets from ui selection
         checkUIValues(winID);
         switchUIscreens(winID);
