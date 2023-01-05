@@ -344,6 +344,10 @@ namespace IndieGo {
 		struct grid_row {
 			std::vector<row_cell> cells;
 			float min_height = 0.1f;
+
+			// TODO : parametrize member addition
+			float allocated_height = 0.f;
+
 			bool in_pixels = false;
 			row_cell & operator[](unsigned int idx) {
 				return cells[idx];
@@ -739,7 +743,10 @@ namespace IndieGo {
 
 			// provide implementation with actual drawing calls
 			virtual void callImmediateBackend(UI_elements_map & UIMap);
-			virtual void allocateRow(unsigned int cols, float min_height, bool in_pixels);
+
+			// returns actually allocated space for row
+			virtual float allocateRow(unsigned int cols, float min_height, bool in_pixels);
+
 			virtual void endRow();
 
 			void copyWidget(const std::string & add_name, WIDGET * other);
@@ -767,6 +774,7 @@ namespace IndieGo {
 			image_props skinned_style;
 			bool custom_style = true;
 			friend struct Manager;
+			float header_height = 0.f;
 
 			void updateScrollPos(int xOffset = -1, unsigned int yOffset = -1) {
 				updateScrollPosReq = true;
@@ -786,12 +794,12 @@ namespace IndieGo {
 				bool curr_group_folded = false;
 				std::vector<elements_group>::iterator curr_group;
 				// float cell_indent = 0.f; // get cell indent + for each drawn row top-to-bottom
-				for (auto row : layout_grid) {
-					if (row.cells.size() == 0) continue;
+				for (auto row = layout_grid.begin(); row != layout_grid.end(); row++) {
+					if (row->cells.size() == 0) continue;
 					// make sure min_height 
-					allocateRow(row.cells.size(), row.min_height, row.in_pixels);
+					row->allocated_height = allocateRow(row->cells.size(), row->min_height, row->in_pixels);
 					float row_indent = 0.f; // get row indent + for each drawn element left-to-right
-					for (auto cell : row.cells) {
+					for (auto cell : row->cells) {
 						float subcell_indent = 0.f; // get subcell indent for each drawn element in same cell top-to-bottom
 						for (auto elt : cell.elements){
 							if (UIMap.elements.find(elt) != UIMap.elements.end() && !UIMap.elements[elt].hidden) {

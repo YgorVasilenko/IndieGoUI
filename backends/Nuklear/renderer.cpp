@@ -858,14 +858,16 @@ IndieGo::UI::region<float> UI_element::getImgCrop(IndieGo::UI::IMAGE_SKIN_ELEMEN
 //-------------------------------------------------------
 void WIDGET::callImmediateBackend(UI_elements_map & UIMap){
     nk_flags flags = 0;
+    header_height = 0.f;
     if (border)
         flags = flags | NK_WINDOW_BORDER;
 
     if (minimizable)
         flags = flags | NK_WINDOW_MINIMIZABLE;
 
-    if (title)
+    if (title) {
         flags = flags | NK_WINDOW_TITLE;
+    }
 
     if (movable)
         flags = flags | NK_WINDOW_MOVABLE;
@@ -958,6 +960,9 @@ void WIDGET::callImmediateBackend(UI_elements_map & UIMap){
             updateScrollPosReq = false;
         }
         
+        if (title || movable || minimizable)
+            header_height = ctx->current->layout->header_height;
+
         callWidgetUI(UIMap);
         minimized = false;
     } else {
@@ -1029,7 +1034,7 @@ IndieGo::UI::region<float> WIDGET::getImgCrop(IndieGo::UI::IMAGE_SKIN_ELEMENT el
 
 // TODO : calculate elements count in row
 // so far - 64 == max
-void WIDGET::allocateRow(unsigned int cols, float min_height, bool in_pixels) {
+float WIDGET::allocateRow(unsigned int cols, float min_height, bool in_pixels) {
     float height = in_pixels ? min_height : screen_size.h * screen_region.h * min_height;
     nk_layout_space_begin(
         ctx, 
@@ -1037,6 +1042,9 @@ void WIDGET::allocateRow(unsigned int cols, float min_height, bool in_pixels) {
         height,
         64
     );
+    struct nk_rect total_space = nk_layout_space_bounds(ctx);
+    // std::cout << total_space.h << std::endl;
+    return total_space.h;
 }
 
 void WIDGET::endRow() {

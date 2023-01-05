@@ -441,25 +441,30 @@ int main() {
         
 
         if (UIMap["save ui"]._data.b) {
-            std::pair<std::string, std::string> save_items = getResourcesPath();
-            GUI.serialize(
-                winID,
-                save_items.first + "/ui_" + save_items.second + ".indg",
-                skip_save_widgets
-            );
+            std::list<std::string> paths = getPaths();
+            if (paths.size() > 0) {
+                GUI.serialize(
+                    winID,
+                    paths.front(),
+                    skip_save_widgets
+                );
+            }
         }
 
         if (UIMap["load ui"]._data.b) {
-            std::string load_path = *getPaths().begin();
-            GUI.deserialize(winID, load_path);
-            for (auto widget : GUI.widgets[winID]) {
-                if (std::find(skip_save_widgets.begin(), skip_save_widgets.end(), widget.first) != skip_save_widgets.end())
-                    continue;
-                widgets_list.elements.push_back(widget.first);
-            }
-            for (auto font : GUI.loaded_fonts) {
-                if (font.first == GUI.main_font) continue;
-                fonts_list.elements.push_back(font.first);
+            std::list<std::string> paths = getPaths();
+            if (paths.size() > 0) {
+                // std::string load_path = *getPaths().begin();
+                GUI.deserialize(winID, paths.front());
+                for (auto widget : GUI.widgets[winID]) {
+                    if (std::find(skip_save_widgets.begin(), skip_save_widgets.end(), widget.first) != skip_save_widgets.end())
+                        continue;
+                    widgets_list.elements.push_back(widget.first);
+                }
+                for (auto font : GUI.loaded_fonts) {
+                    if (font.first == GUI.main_font) continue;
+                    fonts_list.elements.push_back(font.first);
+                }
             }
         }
 
@@ -472,50 +477,6 @@ int main() {
         GUI.drawFrameStart(winID);
         GUI.displayWidgets(winID);
         GUI.drawFrameEnd(winID);
-        
-        // draw layout of each widget
-        for (auto widget : GUI.widgets[winID]) {
-            std::string widID = widget.first;
-            if (!std::any_of(editorWidgets.begin(), editorWidgets.end(), [widID](const std::string & elt) { return widID == elt; }) ) {
-                float row_bias = 0.f;
-                unsigned int curr_row = 0;
-                for (auto row : widget.second.layout_grid) {
-                    LayoutRect widget_layout;
-                    // row defines height and yPos
-                    widget_layout.height = row.min_height * widget.second.screen_region.h * 2.f;
-                    widget_layout.y = ((row_bias * 0.5f + widget.second.screen_region.y + widget_layout.height * 0.25f) * 2.f - 1.f) * -1.f;
-                    row_bias += widget_layout.height;
-                    float cell_bias = 0.f;
-                    if (rows_list.selected_element == curr_row) {
-                        widget_layout.green = 0.f;
-                        widget_layout.blue = 0.f;
-                    }
-                    unsigned int curr_cell = 0;
-                    for (auto cell : row.cells) {
-                        // cell defines width and xPos
-                        widget_layout.width = cell.min_width * widget.second.screen_region.w * 2.f;
-                        widget_layout.x = (cell_bias * 0.5f + widget.second.screen_region.x + widget_layout.width * 0.25f) * 2.f - 1.f;
-                        cell_bias += widget_layout.width;
-                        if (cols_list.selected_element == curr_cell) {
-                            widget_layout.green = 1.f;
-                        } else {
-                            widget_layout.green = 0.f;
-                        }
-                        drawLayout(widget_layout);
-                        curr_cell++;
-                        /*for (auto elt : cell.elements) {
-                            LayoutRect elt_layout;
-                            elt_layout.x = ((UIMap[elt].layout_border.x + UIMap[elt].layout_border.w * 0.5f) / widget.second.screen_size.w) * 2.f - 1.f;
-                            elt_layout.y = (((UIMap[elt].layout_border.y + UIMap[elt].layout_border.h * 0.5f) / widget.second.screen_size.h) * 2.f - 1.f) * -1.f;
-                            elt_layout.width = (UIMap[elt].layout_border.w / widget.second.screen_size.w) * 2.f;
-                            elt_layout.height = (UIMap[elt].layout_border.h / widget.second.screen_size.h) * 2.f;
-                            drawLayout(elt_layout);
-                        }*/
-                    }
-                    curr_row++;
-                }
-            }
-        }
 
         // back updates of widgets from ui selection
         checkUIValues(winID);
@@ -567,6 +528,60 @@ int main() {
         }
 
         if (widgets_list.selected_element != -1) {
+            // draw layout of currently selected widget
+            std::string widID = widgets_list.getSelected();
+            if (!std::any_of(editorWidgets.begin(), editorWidgets.end(), [widID](const std::string & elt) { return widID == elt; }) ) {
+                float row_bias = 0.f;
+                unsigned int curr_row = 0;
+                for (auto row : GUI.widgets[winID][widID].layout_grid) {
+                    LayoutRect widget_layout;
+                    // row defines height and yPos
+                    // widget_layout.height = ( row.allocated_height / GUI.widgets[winID][widID].screen_size.h ) * GUI.widgets[winID][widID].screen_region.h * 2.f;
+                    widget_layout.height = (row.allocated_height / GUI.widgets[winID][widID].screen_size.h) * 2.f;
+                    widget_layout.y = ((GUI.widgets[winID][widID].header_height / GUI.widgets[winID][widID].screen_size.h + row_bias * 0.5f + GUI.widgets[winID][widID].screen_region.y + widget_layout.height * 0.25f) * 2.f - 1.f) * -1.f;
+                    row_bias += widget_layout.height;
+                    float cell_bias = 0.f;
+                    unsigned int curr_cell = 0;
+                    for (auto cell : row.cells) {
+                        // cell defines width and xPos
+                        widget_layout.width = cell.min_width * GUI.widgets[winID][widID].screen_region.w * 2.f;
+                        widget_layout.x = (cell_bias * 0.5f + GUI.widgets[winID][widID].screen_region.x + widget_layout.width * 0.25f) * 2.f - 1.f;
+                        cell_bias += widget_layout.width;
+                        if (cols_list.selected_element == curr_cell && rows_list.selected_element == curr_row) {
+                            widget_layout.red = 1.f;
+                            widget_layout.green = 1.f;
+                            widget_layout.blue = 0.f;
+                        } else if (rows_list.selected_element == curr_row) {
+                            widget_layout.red = 1.f;
+                            widget_layout.green = 0.f;
+                            widget_layout.blue = 0.f;
+                        } else {
+                            widget_layout.red = 1.f;
+                            widget_layout.green = 1.f;
+                            widget_layout.blue = 1.f;
+                        }
+                        drawLayout(widget_layout);
+                        curr_cell++;
+                        if (elements_list.selected_element != -1 && std::find(cell.elements.begin(), cell.elements.end(), elements_list.getSelected()) != cell.elements.end()) {
+                            LayoutRect elt_layout;
+                            elt_layout.x = ((UIMap[elements_list.getSelected()].layout_border.x + UIMap[elements_list.getSelected()].layout_border.w * 0.5f) / GUI.widgets[winID][widID].screen_size.w) * 2.f - 1.f;
+                            elt_layout.y = (((UIMap[elements_list.getSelected()].layout_border.y + UIMap[elements_list.getSelected()].layout_border.h * 0.5f) / GUI.widgets[winID][widID].screen_size.h) * 2.f - 1.f) * -1.f;
+                            elt_layout.width = (UIMap[elements_list.getSelected()].layout_border.w / GUI.widgets[winID][widID].screen_size.w) * 2.f;
+                            elt_layout.height = (UIMap[elements_list.getSelected()].layout_border.h / GUI.widgets[winID][widID].screen_size.h) * 2.f;
+
+                            elt_layout.red = 0.f;
+                            elt_layout.green = 1.f;
+                            elt_layout.blue = 0.f;
+
+                            drawLayout(elt_layout);
+                        }
+                    }
+                    curr_row++;
+                }
+            }
+
+
+
             if (prev_selected_widget == widgets_list.selected_element) {
                 updateWidgetFromUI(
                     widgets_list.getSelected(), 
