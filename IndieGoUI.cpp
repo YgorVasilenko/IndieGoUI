@@ -201,16 +201,16 @@ TexData Manager::load_image(std::string path, bool useProjectDir) {
 #ifdef RELEASE_BUILD
     project_dir = global_home;
 #else
-    char* pd = getenv("PROJECT_DIR");
-    if (useProjectDir && pd) {
-        project_dir = pd;
-        if ( fs::path(path).is_absolute() ) {
-            path = path.substr(
-                project_dir.size(), path.size()
-            );
-        }
-    }
+    project_dir = GUI.project_dir;
+    if (fs::exists(fs::path(GUI.project_dir)))
+        project_dir = GUI.project_dir;
+    else
+        project_dir = "";
 #endif
+    if (fs::path(path).is_absolute() && project_dir != "") {
+        path = fs::relative(fs::path(path), fs::path(project_dir)).string();
+    }
+
     if (loaded_textures.find(path) != loaded_textures.end()) {
         return loaded_textures[path];
     }
@@ -218,7 +218,7 @@ TexData Manager::load_image(std::string path, bool useProjectDir) {
     TexData& td = loaded_textures[path];
     td.path = path;
     unsigned char *data = stbi_load(
-        useProjectDir ? (project_dir + path).c_str() : path.c_str(),
+        (project_dir + "/" + path).c_str(),
         &td.w, 
         &td.h, 
         &td.n, 
@@ -227,6 +227,7 @@ TexData Manager::load_image(std::string path, bool useProjectDir) {
 
     if (!data) {
         std::cout << "[ERROR] failed to load image " << path << std::endl;
+        std::cout << "PROJECT_DIR: " << project_dir << std::endl;
         td.texID = UINT_MAX;
         return td;
     }

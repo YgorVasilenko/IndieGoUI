@@ -498,28 +498,28 @@ void UI_element::callUIfunction(float x, float y, float space_w, float space_h) 
         //nk_checkbox_label(ctx, label.c_str(), &nk_val, &ks);
         nk_checkbox_label(ctx, label.c_str(), &nk_val);
         _data.b = nk_val;
-        return;
+        // return;
     }
 
     if (type == UI_FLOAT) {
         // TODO : add skinning
         full_name = "#" + label + ":";
         nk_property_float(ctx, full_name.c_str(), -300000.0f, &_data.f, 300000.0f, 1, 0.5f);
-        return;
+        // return;
     }
 
     if (type == UI_INT) {
         // TODO : add skinning
         full_name = "#" + label + ":";
         nk_property_int(ctx, full_name.c_str(), -1024, &_data.i, 1024, 1, 0.5f);
-        return;
+        // return;
     }
 
     if (type == UI_UINT) {
         // TODO : add skinning
         full_name = "#" + label + ":";
         nk_property_int(ctx, full_name.c_str(), 0, &_data.i, 2040, 1, 0.5f);
-        return;
+        // return;
     }
 
     if (type == UI_STRING_INPUT) {
@@ -528,14 +528,12 @@ void UI_element::callUIfunction(float x, float y, float space_w, float space_h) 
         stringToText(stringRef);
         nk_edit_string(ctx, NK_EDIT_SIMPLE, text, &text_len, 512, nk_filter_default);
         textToString(stringRef);
-        return;
+        // return;
     }
 
     if (type == UI_BUTTON) {
-        // TODO : add skinning
         ctx->style.button.border = border;
         ctx->style.button.rounding = rounding;
-        // ctx->style.button.
         if (skinned_style.props[normal].first != -1) {
             ctx->style.button.normal = nk_style_item_image(
                 images[skinned_style.props[normal].first][skinned_style.props[normal].second].first
@@ -588,13 +586,6 @@ void UI_element::callUIfunction(float x, float y, float space_w, float space_h) 
         } else {
             rmb_click = false;
         }
-        struct nk_rect button_rect = nk_widget_bounds(ctx);
-
-        /*std::cout << button_rect.h << std::endl;
-        std::cout << button_rect.w << std::endl;
-        std::cout << button_rect.x << std::endl;
-        std::cout << button_rect.y << std::endl;*/
-        return;
     }
 
     if (type == UI_EMPTY) {
@@ -620,7 +611,7 @@ void UI_element::callUIfunction(float x, float y, float space_w, float space_h) 
                 _data.b = true;
             else
             _data.b = false;
-        return;
+        // return;
     }
 
     if (type == UI_DROPDOWN) {
@@ -1051,20 +1042,6 @@ void WIDGET::endRow() {
     nk_layout_space_end(ctx);
 }
 
-// void WIDGET::allocateEmptySpace(unsigned int fill_count){
-//     nk_spacing(ctx, fill_count);
-// }
-
-// void WIDGET::allocateGroupStart(elements_group & g, float min_height){
-//     g.unfolded = nk_tree_push(ctx, NK_TREE_TAB, g.name.c_str(), NK_MINIMIZED);
-//     if (g.unfolded)
-//         nk_layout_row_dynamic(ctx, min_height, g.row_items_count);
-// }
-
-// void WIDGET::allocateGroupEnd(){
-//     nk_tree_pop(ctx);
-// }
-
 #define NK_GLFW_GL3_MOUSE_GRABBING
 
 void Manager::drawFrameStart(std::string & winID) {
@@ -1181,8 +1158,7 @@ void Manager::drawFrameEnd(std::string & winID) {
     nk_glfw3_render(glfw, NK_ANTI_ALIASING_ON, MAX_VERTEX_BUFFER, MAX_ELEMENT_BUFFER);
 }
 
-void Manager::init(std::string winID, void * initData){
-    // NuklearInitData * initPtr = reinterpret_cast<NuklearInitData*>(initData);
+void Manager::init(std::string winID, void * initData) {
     prepareUIRenderer((GLFWwindow*)initData, winID);
 }
 
@@ -1194,7 +1170,9 @@ void Manager::removeWindow(std::string winID, void * winData) {
 
 }
 
+// std::string project_dir = "None";
 void * img_data = NULL;
+
 void Manager::loadFont(std::string path, const std::string & winID, float font_size, bool useProjectDir, bool cutProjDirFromPath) {
     std::string font_name = fs::path(path).stem().string();
     if (std::find(loaded_fonts[font_name].sizes.begin(), loaded_fonts[font_name].sizes.end(), font_size) != loaded_fonts[font_name].sizes.end())
@@ -1206,19 +1184,14 @@ void Manager::loadFont(std::string path, const std::string & winID, float font_s
     nk_font_atlas_begin(&atlas);
 
     loaded_fonts[ font_name ].sizes.push_back(font_size);
-    char * pd = getenv("PROJECT_DIR");
-    std::string project_dir = "";
-    if (useProjectDir && pd) {
-        project_dir = pd;
-        if (!cutProjDirFromPath) {
-            loaded_fonts[fs::path(path).stem().string()].path = path;
-        } else {
-            loaded_fonts[fs::path(path).stem().string()].path = path.substr(
-                project_dir.size(), path.size()
-            );
-        }
-    } else {
-        loaded_fonts[ fs::path(path).stem().string() ].path = path;
+    std::string pdir = project_dir;
+    if (fs::exists(fs::path(project_dir)))
+        pdir = project_dir;
+    else
+        pdir = "";
+
+    if (fs::path(path).is_absolute() && pdir != "") {
+        loaded_fonts[ font_name ].path = fs::relative(fs::path(path), fs::path(pdir)).string();
     }
 
     backend_loaded_fonts.clear();
@@ -1232,7 +1205,7 @@ void Manager::loadFont(std::string path, const std::string & winID, float font_s
             else
                 backend_loaded_fonts[font.first][font_size] = nk_font_atlas_add_from_file(
                     &atlas, 
-                    useProjectDir ? (project_dir + font.second.path).c_str() :font.second.path.c_str(),
+                    (pdir + font.second.path).c_str(),
                     font_size, 
                     &cfg
                 );

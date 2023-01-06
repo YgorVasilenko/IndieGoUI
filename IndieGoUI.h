@@ -843,6 +843,7 @@ namespace IndieGo {
 		// adds new ones and removes old, makes calls to Immediate-Mode backends
 		struct Manager {
 
+			std::string project_dir = "";
 			region_size<unsigned int> screen_size;
 
 			// [win_id] = ui_map

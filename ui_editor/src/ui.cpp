@@ -20,6 +20,8 @@
 
 #include <vector>
 #include <list>
+#include <filesystem>
+namespace fs = std::filesystem;
 
 using namespace IndieGo::UI;
 
@@ -283,7 +285,12 @@ extern void addElement(
     std::string elt_name, 
     UI_ELEMENT_TYPE type
 );
-extern std::list<std::string> getPaths();
+
+std::vector<std::string> getPaths(
+    bool single_item = false,
+    bool select_folders = false,
+    std::string start_folder = "None"
+);
 
 void processAddOptions(std::string winID) {
     UI_elements_map & UIMap = GUI.UIMaps[winID];
@@ -309,7 +316,7 @@ void processAddOptions(std::string winID) {
 
     if ( UIMap["add image"]._data.b ) {
         UI_ELEMENT_TYPE t = UI_IMAGE;
-        std::list<std::string> paths = getPaths();
+        std::vector<std::string> paths = getPaths(true, false, GUI.project_dir);
         if (paths.size() > 0) {
             std::string img_path = *paths.begin();
             TexData td = Manager::load_image(img_path.c_str(), true);
@@ -532,15 +539,31 @@ std::string getSkinPropName(IMAGE_SKIN_ELEMENT prop) {
 // #ifdef WIN32
 #include <windows.h>
 #include <shobjidl.h> 
+#include <shlobj.h> 
 // #endif
 // #include <list>
 
-#include <list>
+// #include <list>
 #include <string>
 
-std::list<std::string> getPaths() {
+std::string getStringFromWSTR(PWSTR wstrPtr) {
+	std::string ret_string;
+	int path_size = wcslen(wstrPtr);
+	wchar_t* wstr_pointer = (wchar_t*)wstrPtr;
+	for (int i = 0; i < path_size; i++) {
+		ret_string += *wstr_pointer;
+		wstr_pointer++;
+	}
+	return ret_string;
+}
+
+std::vector<std::string> getPaths(
+	bool single_item, 
+	bool select_folders,
+	std::string start_folder
+) {
 	std::string selected_path;
-	std::list<std::string> selected_paths;
+	std::vector<std::string> selected_paths;
 
 	HRESULT hr = CoInitializeEx(NULL, COINIT_APARTMENTTHREADED | COINIT_DISABLE_OLE1DDE);
 
@@ -557,20 +580,39 @@ std::list<std::string> getPaths() {
         );
 
 		if (SUCCEEDED(hr)) {
-			hr = pFileOpen->SetOptions(FOS_FORCEFILESYSTEM | FOS_ALLOWMULTISELECT);
+            FILEOPENDIALOGOPTIONS fos = FOS_FORCEFILESYSTEM;
+            if (!single_item)
+                fos = fos | FOS_ALLOWMULTISELECT;
+            
+            if (select_folders)
+                fos = fos | FOS_PICKFOLDERS;
+
+			hr = pFileOpen->SetOptions(fos);
+			if (start_folder != "None") {
+                std::replace(start_folder.begin(), start_folder.end(), '/', '\\');
+                //start_folder = "C:\\";
+				PIDLIST_ABSOLUTE pidl;
+				HRESULT hresult = SHParseDisplayName((PCWSTR)start_folder.c_str(), 0, &pidl, SFGAO_FOLDER, 0);
+				if (SUCCEEDED(hresult)) {
+					IShellItem* psi;
+					hresult = SHCreateShellItem(NULL, NULL, pidl, &psi);
+					if (SUCCEEDED(hresult)) {
+						pFileOpen->SetFolder(psi);
+					}
+					ILFree(pidl);
+				}
+			}
+
 			// Show the Open dialog box.
 			hr = pFileOpen->Show(NULL);
 
 			// Get the file name from the dialog box.
 			if (SUCCEEDED(hr)) {
-				//IShellItem* pItem;
 				IShellItemArray* pItem;
 				hr = pFileOpen->GetResults(&pItem);
 				if (SUCCEEDED(hr)) {
 					PWSTR pszFilePath;
 					DWORD dwNumItems = 0; // number of items in multiple selection
-					//std::wstring strSelected; // will hold file paths of selected items
-					std::string strSelected;
 
 					hr = pItem->GetCount(&dwNumItems);  // get number of selected items
 					for (DWORD i = 0; i < dwNumItems; i++) {
@@ -579,14 +621,7 @@ std::list<std::string> getPaths() {
 						if (SUCCEEDED(hr)) {
 							hr = psi->GetDisplayName(SIGDN_FILESYSPATH, &pszFilePath);
 							if (SUCCEEDED(hr)) {
-								strSelected.clear();
-								int path_size = wcslen(pszFilePath);
-								wchar_t* path_pointer = (wchar_t*)pszFilePath;
-								for (int i = 0; i < path_size; i++) {
-									strSelected += *path_pointer;
-									path_pointer++;
-								}
-								selected_paths.push_back(strSelected);
+								selected_paths.push_back(getStringFromWSTR(pszFilePath));
  								CoTaskMemFree(pszFilePath);
 							}
 							psi->Release();

@@ -34,7 +34,7 @@ void initWidgets() {
     creator_widget.screen_region.x = (float)(WIDTH / 4) / ((float)WIDTH);
     creator_widget.screen_region.y = ((float)HEIGHT / 4) / ((float)HEIGHT);
     creator_widget.screen_region.w = 0.4f;
-    creator_widget.screen_region.h = 0.4f;
+    creator_widget.screen_region.h = 0.45f;
     creator_widget.name = "UI creator";
     editorWidgets.push_back(creator_widget.name);
     creator_widget.has_scrollbar = false;
@@ -61,22 +61,22 @@ void initWidgets() {
     // different flag settings
     UIMap.addElement("bordered", UI_BOOL, &c_widget, to_new_subrow);
     UIMap["bordered"].label = "bordered";
-    UIMap["bordered"].height = 0.06f;
+    UIMap["bordered"].height = 0.055f;
     UIMap.addElement("titled", UI_BOOL, &c_widget, to_new_subrow);
     UIMap["titled"].label = "titled";
-    UIMap["titled"].height = 0.06f;
+    UIMap["titled"].height = 0.055f;
     UIMap.addElement("minimizable", UI_BOOL, &c_widget, to_new_subrow);
     UIMap["minimizable"].label = "minimizable";
-    UIMap["minimizable"].height = 0.06f;
+    UIMap["minimizable"].height = 0.055f;
     UIMap.addElement("scalable", UI_BOOL, &c_widget, to_new_subrow);
     UIMap["scalable"].label = "scalable";
-    UIMap["scalable"].height = 0.06f;
+    UIMap["scalable"].height = 0.055f;
     UIMap.addElement("movable", UI_BOOL, &c_widget, to_new_subrow);
     UIMap["movable"].label = "movable";
-    UIMap["movable"].height = 0.06f;
+    UIMap["movable"].height = 0.055f;
     UIMap.addElement("has scrollbar", UI_BOOL, &c_widget, to_new_subrow);
     UIMap["has scrollbar"].label = "scrollbar";
-    UIMap["has scrollbar"].height = 0.06f;
+    UIMap["has scrollbar"].height = 0.055f;
 
     // switch to edit widget's elements
     UIMap.addElement("edit widget elements", UI_BUTTON, &c_widget, to_new_subrow);
@@ -116,10 +116,24 @@ void initWidgets() {
     UIMap.addElement("visible", UI_BOOL, &c_widget, to_new_subrow);
     UIMap["visible"].label = "visible";
 
+    UIMap.addElement("project_dir_label", UI_STRING_LABEL, &c_widget, to_new_row);
+    UIMap["project_dir_label"].label = "PROJECT_DIR :";
+
+    UIMap.addElement("project_dir_path", UI_STRING_INPUT, &c_widget, to_new_col);
+    UIMap["project_dir_path"].label = "None";
+
+    UIMap.addElement("select_project_dir", UI_BUTTON, &c_widget, to_new_col);
+    UIMap["select_project_dir"].label = "Select PROJECT_DIR";
+
+    // UIMap["project_dir_label"].width = 0.2f;
+    c_widget.updateColWidth(1, 0, 0.15f);
+    c_widget.updateColWidth(1, 1, 0.6f);
+    c_widget.updateColWidth(1, 2, 0.24f);
+    c_widget.updateRowHeight(1, 0.07f);
+
     // "AddElement" calls with "autowidth" modify width settings, so keep them after all
     // such calls
     // first column and it's elements
-    // c_widget.layout_grid[0].cells[0].min_width = 0.5f;
     c_widget.updateColWidth(0, 0, 0.5f);
     UIMap["widgets list"].width = 0.5f;
 
@@ -127,38 +141,41 @@ void initWidgets() {
     c_widget.updateColWidth(0, 1, 0.21f);
 
     // c_widget.layout_grid[0].cells[1].min_width = 0.2f;
-    UIMap["new widget name label"].height = 0.08f;
+    UIMap["new widget name label"].height = 0.065f;
     UIMap["new widget name label"].width = 0.2f;
     UIMap["add new widget"].width = 0.2f;
-    UIMap["add new widget"].height = 0.07f;
+    UIMap["add new widget"].height = 0.065f;
+    UIMap["rename widget"].height = 0.065f;
+    UIMap["rename widget"].width = 0.2f;
     UIMap["edit widget elements"].width = 0.493f;
-    UIMap["edit widget elements"].height = 0.07f;
+    UIMap["edit widget elements"].height = 0.065f;
     UIMap["skins and styling"].width = 0.493f;
-    UIMap["skins and styling"].height = 0.07f;
+    UIMap["skins and styling"].height = 0.065f;
     UIMap["save ui"].width = 0.493f;
-    UIMap["save ui"].height = 0.07f;
+    UIMap["save ui"].height = 0.065f;
     UIMap["load ui"].width = 0.493f;
-    UIMap["load ui"].height = 0.07f;
+    UIMap["load ui"].height = 0.065f;
 
     // third column and it's elements
     c_widget.updateColWidth(0, 2, 0.24f);
-    // c_widget.layout_grid[0].cells[2].min_width = 0.2f;
+
     UIMap["new widget name"].width = 0.28f;
-    UIMap["new widget name"].height = 0.08f;
-    UIMap["delete widget"].height = 0.07f;
+    UIMap["new widget name"].height = 0.065f;
+    UIMap["delete widget"].height = 0.065f;
     UIMap["delete widget"].width = 0.28f;
+    UIMap["space fill"].height = 0.065f;
     UIMap["location x"].width = 0.28f;
-    UIMap["location x"].height = 0.06;
+    UIMap["location x"].height = 0.055f;
     UIMap["location y"].width = 0.28f;
-    UIMap["location y"].height = 0.06;
+    UIMap["location y"].height = 0.055f;
     UIMap["size x"].width = 0.28f;
-    UIMap["size x"].height = 0.06f;
+    UIMap["size x"].height = 0.055f;
     UIMap["size y"].width = 0.28f;
-    UIMap["size y"].height = 0.06f;
+    UIMap["size y"].height = 0.055f;
     UIMap["widget border"].width = 0.28f;
-    UIMap["widget border"].height = 0.06f;
+    UIMap["widget border"].height = 0.055f;
     UIMap["visible"].width = 0.28f;
-    UIMap["visible"].height = 0.06f;
+    UIMap["visible"].height = 0.055f;
 
     WIDGET elements_edit;
     elements_edit.screen_region.x = (float)(WIDTH / 4) / ((float)WIDTH);
@@ -262,6 +279,9 @@ void initWidgets() {
     UIMap.addElement("push opt", UI_BUTTON, &e_widget, to_new_subrow);
     UIMap["push opt"].label = "push: to new row";
 
+    UIMap.addElement("layout borders", UI_BOOL, &e_widget, to_new_subrow);
+    UIMap["layout borders"].label = "layout borders";
+
     UIMap.addElement("elt label label", UI_STRING_LABEL, &e_widget, to_new_col);
     UIMap["elt label label"].label = "label:";
 
@@ -270,6 +290,9 @@ void initWidgets() {
 
     UIMap.addElement("back to widgets", UI_BUTTON, &e_widget, to_new_subrow);
     UIMap["back to widgets"].label = "back to widgets";
+
+    UIMap.addElement("element borders", UI_BOOL, &e_widget, to_new_subrow);
+    UIMap["element borders"].label = "element borders";
 
     UIMap.addElement("elt label", UI_STRING_INPUT, &e_widget, to_new_col);
 
@@ -505,4 +528,19 @@ void initWidgets() {
 
     // Comment out this line to use dafule backend's font
     GUI.loadFont(font_path, winID, 14.f);
+}
+
+extern std::string home_dir;
+
+void initProjectDir() {
+    char* pd = getenv("PROJECT_DIR");
+    if (pd) {
+        GUI.project_dir = pd;
+        std::cout << "PROJECT_DIR initialized from env var with: " << GUI.project_dir << std::endl;
+        std::cout << "All paths to resources will be saved relative to " << GUI.project_dir << std::endl;
+    } else {
+        GUI.project_dir = home_dir;
+        std::cout << "PROJECT_DIR initialized with current home folder: " << GUI.project_dir << std::endl;
+        std::cout << "All paths to resources will be saved relative to " << GUI.project_dir << std::endl;
+    }
 }

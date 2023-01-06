@@ -41,6 +41,7 @@ LayoutRect testRect = {
 
 void loadShader();
 void initBuffers();
+void initProjectDir();
 void drawLayout(LayoutRect element);
 
 // [widID] = current_line
@@ -101,7 +102,12 @@ void updateUIFromElement(std::string elementName, std::string winID);
 extern void updateUIFromLayout(std::string widID, std::string winID, bool upd_row = false, bool upd_col = false);
 extern void updateLayoutFromUI(std::string widID, std::string winID, bool upd_row = false, bool upd_col = false);
 
-extern std::list<std::string> getPaths();
+// extern std::list<std::string> getPaths();
+extern std::vector<std::string> getPaths(
+    bool single_item = false,
+    bool select_folders = false,
+    std::string start_folder = "None"
+);
 
 extern void initWidgets();
 
@@ -213,7 +219,9 @@ int main() {
     GUI.screen_size.h = HEIGHT;
 
     initWidgets();
+    initProjectDir();
     UI_elements_map & UIMap = GUI.UIMaps[winID];
+    *UIMap["project_dir_path"]._data.strPtr = GUI.project_dir;
 
     // listst of data
     ui_string_group & widgets_list = *UIMap["widgets list"]._data.usgPtr;
@@ -279,10 +287,9 @@ int main() {
         cols_list.unselect();
 
         if (UIMap["e load skin image"]._data.b || UIMap["w load skin image"]._data.b) {
-            std::list<std::string> paths = getPaths();
+            std::vector<std::string> paths = getPaths(false, false, GUI.project_dir);
             if (paths.size() > 0) {
                 std::string skinning_img_path = *paths.begin();
-                // TODO : account for PROJECT_DIR variable
                 TexData skin_tex = Manager::load_image(skinning_img_path.c_str());
                 UIMap["w skin image path"].label = skinning_img_path;
                 UIMap["e skin image path"].label = skinning_img_path;
@@ -441,7 +448,7 @@ int main() {
         
 
         if (UIMap["save ui"]._data.b) {
-            std::list<std::string> paths = getPaths();
+            std::vector<std::string> paths = getPaths(true, false, GUI.project_dir);
             if (paths.size() > 0) {
                 GUI.serialize(
                     winID,
@@ -452,10 +459,9 @@ int main() {
         }
 
         if (UIMap["load ui"]._data.b) {
-            std::list<std::string> paths = getPaths();
-            if (paths.size() > 0) {
-                // std::string load_path = *getPaths().begin();
-                GUI.deserialize(winID, paths.front());
+            std::vector<std::string> paths = getPaths(false, false, GUI.project_dir);
+            for (auto path : paths) {
+                GUI.deserialize(winID, path);
                 for (auto widget : GUI.widgets[winID]) {
                     if (std::find(skip_save_widgets.begin(), skip_save_widgets.end(), widget.first) != skip_save_widgets.end())
                         continue;
@@ -474,6 +480,14 @@ int main() {
         GUI.screen_size.w = width;
         GUI.screen_size.h = height;
 
+        if (UIMap["select_project_dir"]._data.b) {
+            std::vector<std::string> paths = getPaths(true, true);
+            if (paths.size() > 0) {
+                GUI.project_dir = paths[0];
+                *UIMap["project_dir_path"]._data.strPtr = GUI.project_dir;
+            }
+        }
+
         GUI.drawFrameStart(winID);
         GUI.displayWidgets(winID);
         GUI.drawFrameEnd(winID);
@@ -483,8 +497,9 @@ int main() {
         switchUIscreens(winID);
 
         if (UIMap["load font"]._data.b) {
+            std::vector<std::string> paths = getPaths(false, false, GUI.project_dir);
             GUI.loadFont(
-                *getPaths().begin(), 
+                *getPaths().begin(),
                 winID, 
                 UIMap["load size"]._data.f,
                 true
@@ -535,45 +550,51 @@ int main() {
                 unsigned int curr_row = 0;
                 for (auto row : GUI.widgets[winID][widID].layout_grid) {
                     LayoutRect widget_layout;
-                    // row defines height and yPos
-                    // widget_layout.height = ( row.allocated_height / GUI.widgets[winID][widID].screen_size.h ) * GUI.widgets[winID][widID].screen_region.h * 2.f;
-                    widget_layout.height = (row.allocated_height / GUI.widgets[winID][widID].screen_size.h) * 2.f;
-                    widget_layout.y = ((GUI.widgets[winID][widID].header_height / GUI.widgets[winID][widID].screen_size.h + row_bias * 0.5f + GUI.widgets[winID][widID].screen_region.y + widget_layout.height * 0.25f) * 2.f - 1.f) * -1.f;
-                    row_bias += widget_layout.height;
+                    if (UIMap["layout borders"]._data.b) {
+                        // row defines height and yPos
+                        // widget_layout.height = ( row.allocated_height / GUI.widgets[winID][widID].screen_size.h ) * GUI.widgets[winID][widID].screen_region.h * 2.f;
+                        widget_layout.height = (row.allocated_height / GUI.widgets[winID][widID].screen_size.h) * 2.f;
+                        widget_layout.y = ((GUI.widgets[winID][widID].header_height / GUI.widgets[winID][widID].screen_size.h + row_bias * 0.5f + GUI.widgets[winID][widID].screen_region.y + widget_layout.height * 0.25f) * 2.f - 1.f) * -1.f;
+                        row_bias += widget_layout.height;
+                    }
                     float cell_bias = 0.f;
                     unsigned int curr_cell = 0;
                     for (auto cell : row.cells) {
-                        // cell defines width and xPos
-                        widget_layout.width = cell.min_width * GUI.widgets[winID][widID].screen_region.w * 2.f;
-                        widget_layout.x = (cell_bias * 0.5f + GUI.widgets[winID][widID].screen_region.x + widget_layout.width * 0.25f) * 2.f - 1.f;
-                        cell_bias += widget_layout.width;
-                        if (cols_list.selected_element == curr_cell && rows_list.selected_element == curr_row) {
-                            widget_layout.red = 1.f;
-                            widget_layout.green = 1.f;
-                            widget_layout.blue = 0.f;
-                        } else if (rows_list.selected_element == curr_row) {
-                            widget_layout.red = 1.f;
-                            widget_layout.green = 0.f;
-                            widget_layout.blue = 0.f;
-                        } else {
-                            widget_layout.red = 1.f;
-                            widget_layout.green = 1.f;
-                            widget_layout.blue = 1.f;
+                        if (UIMap["layout borders"]._data.b) {
+                            // cell defines width and xPos
+                            widget_layout.width = cell.min_width * GUI.widgets[winID][widID].screen_region.w * 2.f;
+                            widget_layout.x = (cell_bias * 0.5f + GUI.widgets[winID][widID].screen_region.x + widget_layout.width * 0.25f) * 2.f - 1.f;
+                            cell_bias += widget_layout.width;
+                            if (cols_list.selected_element == curr_cell && rows_list.selected_element == curr_row) {
+                                widget_layout.red = 1.f;
+                                widget_layout.green = 1.f;
+                                widget_layout.blue = 0.f;
+                            } else if (rows_list.selected_element == curr_row) {
+                                widget_layout.red = 1.f;
+                                widget_layout.green = 0.f;
+                                widget_layout.blue = 0.f;
+                            } else {
+                                widget_layout.red = 1.f;
+                                widget_layout.green = 1.f;
+                                widget_layout.blue = 1.f;
+                            }
+                            drawLayout(widget_layout);
                         }
-                        drawLayout(widget_layout);
                         curr_cell++;
                         if (elements_list.selected_element != -1 && std::find(cell.elements.begin(), cell.elements.end(), elements_list.getSelected()) != cell.elements.end()) {
-                            LayoutRect elt_layout;
-                            elt_layout.x = ((UIMap[elements_list.getSelected()].layout_border.x + UIMap[elements_list.getSelected()].layout_border.w * 0.5f) / GUI.widgets[winID][widID].screen_size.w) * 2.f - 1.f;
-                            elt_layout.y = (((UIMap[elements_list.getSelected()].layout_border.y + UIMap[elements_list.getSelected()].layout_border.h * 0.5f) / GUI.widgets[winID][widID].screen_size.h) * 2.f - 1.f) * -1.f;
-                            elt_layout.width = (UIMap[elements_list.getSelected()].layout_border.w / GUI.widgets[winID][widID].screen_size.w) * 2.f;
-                            elt_layout.height = (UIMap[elements_list.getSelected()].layout_border.h / GUI.widgets[winID][widID].screen_size.h) * 2.f;
+                            if (UIMap["element borders"]._data.b) {
+                                LayoutRect elt_layout;
+                                elt_layout.x = ((UIMap[elements_list.getSelected()].layout_border.x + UIMap[elements_list.getSelected()].layout_border.w * 0.5f) / GUI.widgets[winID][widID].screen_size.w) * 2.f - 1.f;
+                                elt_layout.y = (((UIMap[elements_list.getSelected()].layout_border.y + UIMap[elements_list.getSelected()].layout_border.h * 0.5f) / GUI.widgets[winID][widID].screen_size.h) * 2.f - 1.f) * -1.f;
+                                elt_layout.width = (UIMap[elements_list.getSelected()].layout_border.w / GUI.widgets[winID][widID].screen_size.w) * 2.f;
+                                elt_layout.height = (UIMap[elements_list.getSelected()].layout_border.h / GUI.widgets[winID][widID].screen_size.h) * 2.f;
 
-                            elt_layout.red = 0.f;
-                            elt_layout.green = 1.f;
-                            elt_layout.blue = 0.f;
+                                elt_layout.red = 0.f;
+                                elt_layout.green = 1.f;
+                                elt_layout.blue = 0.f;
 
-                            drawLayout(elt_layout);
+                                drawLayout(elt_layout);
+                            }
                         }
                     }
                     curr_row++;
