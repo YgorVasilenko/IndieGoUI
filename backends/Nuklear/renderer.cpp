@@ -1180,6 +1180,13 @@ void Manager::loadFont(std::string path, const std::string & winID, float font_s
 
     const void *image; int w, h;
     struct nk_font_config cfg = nk_font_config(0);
+    /*cfg.oversample_h = 1;
+    cfg.oversample_v = 1;
+    
+    cfg.padding[0] = 255;
+    cfg.padding[1] = 255;
+    cfg.padding[2] = 255;*/
+
     nk_font_atlas_init_default(&atlas);
     nk_font_atlas_begin(&atlas);
 
@@ -1192,6 +1199,8 @@ void Manager::loadFont(std::string path, const std::string & winID, float font_s
 
     if (fs::path(path).is_absolute() && pdir != "") {
         loaded_fonts[ font_name ].path = fs::relative(fs::path(path), fs::path(pdir)).string();
+    } else {
+        loaded_fonts[font_name].path = path;
     }
 
     backend_loaded_fonts.clear();

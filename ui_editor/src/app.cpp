@@ -465,6 +465,9 @@ int main() {
                 for (auto widget : GUI.widgets[winID]) {
                     if (std::find(skip_save_widgets.begin(), skip_save_widgets.end(), widget.first) != skip_save_widgets.end())
                         continue;
+                    // don't add already added elements
+                    if (std::find(widgets_list.elements.begin(), widgets_list.elements.end(), widget.first) != widgets_list.elements.end())
+                        continue;
                     widgets_list.elements.push_back(widget.first);
                 }
                 for (auto font : GUI.loaded_fonts) {
