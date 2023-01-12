@@ -1180,6 +1180,7 @@ void Manager::loadFont(std::string path, const std::string & winID, float font_s
 
     const void *image; int w, h;
     struct nk_font_config cfg = nk_font_config(0);
+    cfg.range = nk_font_cyrillic_glyph_ranges();
     /*cfg.oversample_h = 1;
     cfg.oversample_v = 1;
     
@@ -1214,7 +1215,7 @@ void Manager::loadFont(std::string path, const std::string & winID, float font_s
             else
                 backend_loaded_fonts[font.first][font_size] = nk_font_atlas_add_from_file(
                     &atlas, 
-                    (pdir + font.second.path).c_str(),
+                    fs::path(pdir).append(font.second.path).string().c_str(),
                     font_size, 
                     &cfg
                 );

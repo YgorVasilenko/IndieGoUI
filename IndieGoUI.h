@@ -294,7 +294,7 @@ namespace IndieGo {
 
 			float height = 0.1f; // % from widget's height
 			//float width = 0.98f; // % from widget's width
-			float width = 0.99f;
+			float width = 1.f;
 
 			// special properties, that can be called "common"
 			float border = 1.f; 
@@ -664,9 +664,9 @@ namespace IndieGo {
 				if (autowidth) {
 					// for (auto cell = layout_grid.back().cells.begin(); cell != layout_grid.back().cells.end(); cell++) {
 					for (auto cell = widRef->layout_grid.back().cells.begin(); cell != widRef->layout_grid.back().cells.end(); cell++) {
-						cell->min_width = (0.98f) / (float)(widRef->layout_grid.back().cells.size());
+						cell->min_width = (1.f) / (float)(widRef->layout_grid.back().cells.size());
 						for (auto elt : cell->elements) {
-							elements[elt].width = (0.98f) / (float)(widRef->layout_grid.back().cells.size());
+							elements[elt].width = (1.f) / (float)(widRef->layout_grid.back().cells.size());
 						}
 					}
 				}
@@ -898,6 +898,7 @@ namespace IndieGo {
 			std::map<std::string, WIDGET*> hoveredWidgets = {};
 
 			WIDGET & getWidget(const std::string & widget_name, const std::string & win_name = DEFAULT_WINDOW_NAME){
+				assert(widgets[win_name].find(widget_name) != widgets[win_name].end());
 				return widgets[win_name][widget_name];
 			};
 

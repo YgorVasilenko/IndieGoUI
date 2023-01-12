@@ -372,7 +372,7 @@ int main() {
         }
 
         UIMap["selected for font update"].label = "selected: " + selected_for_font_update;
-        if (UIMap["apply font"]._data.b) {
+        if (UIMap["apply font"]._data.b && fonts_list.selected_element != -1 && font_sizes_list.selected_element != -1) {
             if (selected_for_font_update != "None") {
                 if (update_widget_font) {
                     WIDGET& w = GUI.getWidget(selected_for_font_update, winID);
@@ -471,7 +471,12 @@ int main() {
                     widgets_list.elements.push_back(widget.first);
                 }
                 for (auto font : GUI.loaded_fonts) {
-                    if (font.first == GUI.main_font) continue;
+                    if (font.first == GUI.main_font) 
+                        continue;
+
+                    if (std::find(fonts_list.elements.begin(), fonts_list.elements.end(), font) != fonts_list.elements.end())
+                        continue;
+
                     fonts_list.elements.push_back(font.first);
                 }
             }
@@ -501,17 +506,19 @@ int main() {
 
         if (UIMap["load font"]._data.b) {
             std::vector<std::string> paths = getPaths(false, false, GUI.project_dir);
-            GUI.loadFont(
-                *getPaths().begin(),
-                winID, 
-                UIMap["load size"]._data.f,
-                true
-            );
-            // update fonts list
-            fonts_list.elements.clear();
-            for (auto font_path : GUI.loaded_fonts) {
-                if (fs::path(font_path.first).stem().string() == GUI.main_font) continue; // don't display main font
-                fonts_list.elements.push_back( fs::path(font_path.first).stem().string() );
+            if (paths.size() > 0) {
+                GUI.loadFont(
+                    paths[0],
+                    winID, 
+                    UIMap["load size"]._data.f,
+                    true
+                );
+                // update fonts list
+                fonts_list.elements.clear();
+                for (auto font_path : GUI.loaded_fonts) {
+                    if (fs::path(font_path.first).stem().string() == GUI.main_font) continue; // don't display main font
+                    fonts_list.elements.push_back( fs::path(font_path.first).stem().string() );
+                }
             }
         }
 
