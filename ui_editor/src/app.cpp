@@ -474,7 +474,7 @@ int main() {
                     if (font.first == GUI.main_font) 
                         continue;
 
-                    if (std::find(fonts_list.elements.begin(), fonts_list.elements.end(), font) != fonts_list.elements.end())
+                    if (std::find(fonts_list.elements.begin(), fonts_list.elements.end(), font.first) != fonts_list.elements.end())
                         continue;
 
                     fonts_list.elements.push_back(font.first);
