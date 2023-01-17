@@ -322,12 +322,14 @@ void processAddOptions(std::string winID) {
             TexData td = Manager::load_image(img_path.c_str(), true);
             if (UIMap["switch type"]._data.b) {
                 new_element_name = elements_list.getSelected();
+                UIMap[new_element_name].type = t;
             } else {
                 addElement(widgets_list.getSelected(), winID, new_element_name, t);
             }
             region<float> crop = { 0.f, 0.f, 1.f, 1.f };
             UIMap[new_element_name].initImage(td.texID, td.w, td.h, crop);
             UIMap[new_element_name].label = td.path;
+            *UIMap["elt label"]._data.strPtr = UIMap[new_element_name].label;
         }
     }
     if (UIMap["add text"]._data.b) {

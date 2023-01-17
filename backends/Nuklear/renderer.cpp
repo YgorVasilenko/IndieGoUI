@@ -841,6 +841,8 @@ IndieGo::UI::region<float> UI_element::getImgCrop(IndieGo::UI::IMAGE_SKIN_ELEMEN
     return images[ skinned_style.props[elt].first ][ skinned_style.props[elt].second ].second;
 }
 
+extern Manager GUI;
+
 //--------------------------------------------------------
 //
 //            Widget display function. May use
@@ -915,6 +917,12 @@ void WIDGET::callImmediateBackend(UI_elements_map & UIMap){
         nk_style_set_font(
             ctx,
             &backend_loaded_fonts[font][font_size]->handle
+        );
+    } else {
+        // use main font 
+        nk_style_set_font(
+            ctx,
+            &backend_loaded_fonts[GUI.main_font][GUI.main_font_size]->handle
         );
     }
 

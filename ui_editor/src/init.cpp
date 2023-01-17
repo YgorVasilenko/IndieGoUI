@@ -524,10 +524,10 @@ void initWidgets() {
 
     std::string font_path = home_dir.substr(
         0, home_dir.find("ui_editor")
-    ) + "ui_editor/editor_font/ProggyClean.ttf";
+    ) + "ui_editor/editor_font/Roboto-Regular_main.ttf";
 
     // Comment out this line to use dafule backend's font
-    GUI.loadFont(font_path, winID, 14.f);
+    GUI.loadFont(font_path, winID, 18.f);
 }
 
 extern std::string home_dir;
