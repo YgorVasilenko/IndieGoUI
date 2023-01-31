@@ -39,7 +39,7 @@ LayoutRect testRect = {
     0., 0., 0.5, 0.5
 };
 
-void loadShader();
+void loadShader(const std::string & name);
 void initBuffers();
 void initProjectDir();
 void drawLayout(LayoutRect element);
@@ -150,6 +150,10 @@ std::vector<std::string> skip_save_widgets = {
     "Fonts"
 };
 
+std::vector<float> font_load_sizes = {
+    16., 18., 20., 24., 30., 36., 42., 48., 60., 72.
+};
+
 // load_items.first -> resources path
 // load_items.second -> project name
 std::pair<std::string, std::string> getResourcesPath() {
@@ -212,7 +216,8 @@ int main() {
     glViewport(0, 0, WIDTH, HEIGHT);
 
     initBuffers();
-    loadShader();
+    loadShader("layout_shader");
+    loadShader("skinning_shader");
 
     GUI.init(winID, screen);
     GUI.screen_size.w = WIDTH;
@@ -507,6 +512,16 @@ int main() {
         if (UIMap["load font"]._data.b) {
             std::vector<std::string> paths = getPaths(false, false, GUI.project_dir);
             if (paths.size() > 0) {
+                // load several sizes
+                for (auto size : font_load_sizes) {
+                    GUI.loadFont(
+                        paths[0],
+                        winID, 
+                        size,
+                        true
+                    );
+                }
+                // additionally load specified font
                 GUI.loadFont(
                     paths[0],
                     winID, 
@@ -516,7 +531,8 @@ int main() {
                 // update fonts list
                 fonts_list.elements.clear();
                 for (auto font_path : GUI.loaded_fonts) {
-                    if (fs::path(font_path.first).stem().string() == GUI.main_font) continue; // don't display main font
+                    if (fs::path(font_path.first).stem().string() == GUI.main_font) 
+                        continue; // don't display main font
                     fonts_list.elements.push_back( fs::path(font_path.first).stem().string() );
                 }
             }

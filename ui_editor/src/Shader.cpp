@@ -95,7 +95,7 @@ void Shader::setAttributes() {
     // sizes
 	glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, 8 * sizeof(float), (void*)(2 * sizeof(float)));
     glEnableVertexAttribArray(1);
-    // color
+    // color/tex_coords
     glVertexAttribPointer(2, 4, GL_FLOAT, GL_FALSE, 8 * sizeof(float), (void*)(4 * sizeof(float)));
     glEnableVertexAttribArray(2);
 }

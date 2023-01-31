@@ -6,6 +6,7 @@
 struct Shader {
 
     unsigned int ID = 0;
+    bool skinning = false;
 
     void load(const char* vertexPath, const char* fragmentPath, const char* geometryPath = 0);
 

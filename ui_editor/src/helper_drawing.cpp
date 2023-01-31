@@ -14,11 +14,12 @@ unsigned int VBO = 0;
 unsigned int EBO = 0;
 
 Shader layoutShader;
+Shader skinningShader;
 extern std::string home_dir;
 
-void loadShader() {
+void loadShader(const std::string & name) {
     std::string vertex = "", geometry = "", fragment = "";
-    std::string load_path = home_dir + "/../../layout_shader";
+    std::string load_path = home_dir + "/../../" + name;
     for (auto f : fs::directory_iterator(load_path)) {
         if ( f.symlink_status().type() == fs::file_type::regular ) {
             // filter non-glsl files
@@ -35,8 +36,12 @@ void loadShader() {
             }
         }
     }
-
-    layoutShader.load(vertex.c_str(), fragment.c_str(), geometry.c_str());
+    if (name == "layout_shader")
+        layoutShader.load(vertex.c_str(), fragment.c_str(), geometry.c_str());
+    else {
+        skinningShader.load(vertex.c_str(), fragment.c_str(), geometry.c_str());
+        skinningShader.skinning = true;
+    }
 };
 
 void initBuffers() {
@@ -56,6 +61,17 @@ void drawLayout(LayoutRect element) {
     glBindBuffer(GL_ARRAY_BUFFER, VBO);
 
 	layoutShader.use();
+    
+	glBufferData( GL_ARRAY_BUFFER, sizeof(LayoutRect), &element, GL_DYNAMIC_DRAW );
+	glDrawArrays( GL_POINTS, 0, 1 );
+}
+
+void drawSkinImage(LayoutRect element) {
+    glBindFramebuffer(GL_FRAMEBUFFER, 0);
+	glBindVertexArray(VAO);
+    glBindBuffer(GL_ARRAY_BUFFER, VBO);
+
+	skinningShader.use();
     
 	glBufferData( GL_ARRAY_BUFFER, sizeof(LayoutRect), &element, GL_DYNAMIC_DRAW );
 	glDrawArrays( GL_POINTS, 0, 1 );

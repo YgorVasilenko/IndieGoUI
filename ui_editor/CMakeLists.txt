@@ -51,7 +51,7 @@ add_executable(
     src/app.cpp
     src/ui.cpp
     src/init.cpp
-    src/layout_drawing.cpp
+    src/helper_drawing.cpp
     src/Shader.cpp
     src/glad.c
     ../IndieGoUI.cpp
