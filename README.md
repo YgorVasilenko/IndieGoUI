@@ -99,7 +99,7 @@ cmake --build build
 ## Running:
 ```
 .\env.ps1
-build\Debug\GUI_test.exe
+build\Debug\GUI_example.exe
 ```
 
 ## TODO:

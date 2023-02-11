@@ -82,14 +82,14 @@ int main() {
 
     // PROJECT_DIR should contain created ui
     std::string path = getenv("PROJECT_DIR");
-
-    GUI.deserialize(winID, path + "/ui_example_app.indg");
+    GUI.project_dir = path;
+    GUI.deserialize(winID, path + "/ui_test_skinning_2.indg");
 
     // get reference for UIMap
     UI_elements_map & UIMap = GUI.UIMaps[winID];
 
     // Update text so it will be align to left border
-    UIMap["FPS counter"].text_align = LEFT;
+    // UIMap["FPS counter"].text_align = LEFT;
 
 	// set initial time to zero
 	glfwSetTime(0.0);
@@ -100,7 +100,7 @@ int main() {
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT | GL_STENCIL_BUFFER_BIT);
 
         // Check ui element state
-        if (UIMap["press me"]._data.b) {
+        if (UIMap["test_b"]._data.b) {
 
             // Do stuff
             std::cout << "[INFO] button pressed!" << std::endl;
@@ -122,7 +122,7 @@ int main() {
         fps_counter++;
         if (glfwGetTime() >= 1.f) {
             glfwSetTime(0.0);
-            UIMap["FPS counter"].label = "FPS: " + std::to_string(fps_counter);
+            // UIMap["FPS counter"].label = "FPS: " + std::to_string(fps_counter);
             fps_counter = 0;
         }
     }
