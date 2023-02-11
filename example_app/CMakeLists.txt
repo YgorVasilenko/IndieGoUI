@@ -48,20 +48,20 @@ message("RENDERER_SRC: ${RENDERER_SRC}")
 message("RENDERER_INCLUDES: ${RENDERER_INCLUDES}")
 
 add_executable(
-    GUI_test
+    GUI_example
     src/app.cpp
     src/glad.c
     ${RENDERER_SRC}
 )
 
 target_include_directories(
-    GUI_test
+    GUI_example
     PUBLIC 
     ${RENDERER_INCLUDES}
 )
 
 target_link_libraries(
-    GUI_test
+    GUI_example
     PUBLIC "../lib/glfw3"
 
     # serialization
