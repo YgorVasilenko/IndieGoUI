@@ -1,4 +1,4 @@
-# structure for saving state of Immediate-mode backend UI elements. Allows getting data from Immediate-mode backend and store it.
+# structure for saving state of Immediate-mode backend UI elements.
 
 Easily embed GUI control elements into C++ application - no need to pre-build complex dependencies and add it to project.
 Use any Immediate-mode gui - see [Nuklear backend](https://github.com/YgorVasilenko/IndieGoUI/blob/main/backends/Nuklear/renderer.cpp), [App-side inclulde](https://github.com/YgorVasilenko/IndieGoUI/blob/main/IndieGoUI.h) for what required to be implemented.<br>
