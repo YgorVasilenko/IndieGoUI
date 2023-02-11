@@ -122,35 +122,12 @@ int main() {
     UIMap["test text"].height = 0.2f;
     
     UIMap.addElement("test image 1", UI_IMAGE, &test_widget_h);
-    TexData tex;
-    tex = Manager::load_image("C:\\Users\\Public\\GobbyIsland\\Sprites\\magic_bar_3_parts.png");
-    region<float> crop;
-    crop.x = 0.f;
-    crop.y = 0.f;
-    crop.w = 0.5f;
-    crop.h = 1.f;
-    UIMap["test image 1"].initImage(tex.texID, tex.w, tex.h, crop);
     test_widget_h.updateRowHeight(test_widget_h.layout_grid.size() - 1, 0.5f);
 
     UIMap.addElement("test button 3", UI_BUTTON, &test_widget_h, to_new_col);
     UIMap["test button 3"].label = "TEST BUTTON";
     UIMap["test button 3"].height = 0.1f;
     UIMap["test button 3"].rounding = 10.f;
-
-    UIMap.addElement("test image 2", UI_IMAGE, &test_widget_h, to_new_subrow);
-    crop.x = 0.5f;
-    crop.y = 0.f;
-    crop.w = 0.5f;
-    crop.h = 1.f;
-    UIMap["test image 2"].initImage(tex.texID, tex.w, tex.h, crop);
-    UIMap["test image 2"].height = 0.4f;
-
-    crop.x = 0.f;
-    crop.y = 0.f;
-    crop.w = 1.f;
-    crop.h = 1.f;
-    test_widget_h.useSkinImage( tex.texID, tex.w, tex.h, crop, background );
-
 
     WIDGET technical_data_widget;
     technical_data_widget.screen_region.h = 0.1f;
