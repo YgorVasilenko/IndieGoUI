@@ -356,26 +356,6 @@ void initWidgets() {
     ws_widget.hidden = true;
     ws_widget.has_scrollbar = false;
 
-    // skinning:
-    // load skin image, skinning elements list, crop settings, apply skin
-    // UIMap.addElement("w load skin image", UI_BUTTON, &ws_widget);
-    // UIMap["w load skin image"].label = "load skin image";
-
-    // UIMap.addElement("w skin image path", UI_STRING_TEXT, &ws_widget, to_new_subrow);
-    // UIMap["w skin image path"].label = "skin image path: None";
-
-    // UIMap.addElement("w crop x", UI_FLOAT, &ws_widget, to_new_subrow);
-    // UIMap["w crop x"].label = "crop x";
-    // UIMap.addElement("w crop y", UI_FLOAT, &ws_widget, to_new_subrow);
-    // UIMap["w crop y"].label = "crop y";
-    // UIMap.addElement("w crop w", UI_FLOAT, &ws_widget, to_new_subrow);
-    // UIMap["w crop w"].label = "crop w";
-    // UIMap.addElement("w crop h", UI_FLOAT, &ws_widget, to_new_subrow);
-    // UIMap["w crop h"].label = "crop h";
-
-    // UIMap.addElement("w apply skin", UI_BUTTON, &ws_widget, to_new_subrow);
-    // UIMap["w apply skin"].label = "apply skin";
-
     // styling:
     // elements list for style update, rgba values
     UIMap.addElement("styling elements", UI_ITEMS_LIST, &ws_widget);

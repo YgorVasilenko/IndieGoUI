@@ -1,3 +1,21 @@
+/*  runtime state-saving Map for Immediate-mode libraries
+    Copyright (C) 2022  Igor Vasilenko
+
+    This program is free software: you can redistribute it and/or modify
+    it under the terms of the GNU General Public License as published by
+    the Free Software Foundation, either version 3 of the License, or
+    (at your option) any later version.
+
+    This program is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+    GNU General Public License for more details.
+
+    You should have received a copy of the GNU General Public License
+    along with this program.  If not, see <https://www.gnu.org/licenses/>.*/
+
+// Shader implementation taken from https://learnopengl.com/code_viewer_gh.php?code=includes/learnopengl/shader_s.h
+
 #include <Shader.h>
 #include <sstream>
 #include <fstream>
@@ -9,12 +27,6 @@
 
 #include <iostream>
 
-// compiled with integration to IndieGo* systems. may use main Window log
-// Can't use shaders w/o display anyway!
-// #include <IndieGoWindow.h>
-// using namespace IndieGo::Win;
-// extern Window *mainWinRef;
-
 void Shader::load(const char* vertexPath, const char* fragmentPath, const char* geometryPath) {
     // 1. retrieve the vertex/fragment source code from filePath
     std::cout << "Vertex shader path: " + std::string(vertexPath) << std::endl;
@@ -24,7 +36,6 @@ void Shader::load(const char* vertexPath, const char* fragmentPath, const char* 
     std::string fragmentCode = loadShaderFile(fragmentPath);
     std::string geometryCode;
     if (geometryPath != nullptr){
-        // mainWinRef->printInLog("Geometry shader path: " + std::string(geometryPath));
         std::cout << "Geometry shader path: " + std::string(geometryPath) << std::endl;
         geometryCode = loadShaderFile(geometryPath);
     }

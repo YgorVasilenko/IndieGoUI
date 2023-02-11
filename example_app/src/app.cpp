@@ -81,15 +81,15 @@ int main() {
     GUI.screen_size.h = HEIGHT;
 
     // PROJECT_DIR should contain created ui
-    std::string path = getenv("PROJECT_DIR");
+    std::string path = getenv("PROJECT_DIR");    
     GUI.project_dir = path;
     GUI.deserialize(winID, path + "/ui_test_skinning_2.indg");
 
     // get reference for UIMap
     UI_elements_map & UIMap = GUI.UIMaps[winID];
 
-    // Update text so it will be align to left border
-    // UIMap["FPS counter"].text_align = LEFT;
+    // Update text so it will be aligned to left border
+    UIMap["FPS counter"].text_align = LEFT;
 
 	// set initial time to zero
 	glfwSetTime(0.0);
@@ -122,7 +122,7 @@ int main() {
         fps_counter++;
         if (glfwGetTime() >= 1.f) {
             glfwSetTime(0.0);
-            // UIMap["FPS counter"].label = "FPS: " + std::to_string(fps_counter);
+            UIMap["FPS counter"].label = "FPS: " + std::to_string(fps_counter);
             fps_counter = 0;
         }
     }

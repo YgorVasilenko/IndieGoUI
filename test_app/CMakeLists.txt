@@ -51,12 +51,12 @@ target_include_directories(
 
 # link glfw library
 target_link_libraries(
-    GUI_test
+    GUI_exaple
     PUBLIC "../lib/glfw3"
 )
 
 target_compile_definitions(
-    GUI_test PUBLIC
+    GUI_example PUBLIC
     WIDTH=1920
     HEIGHT=1080
     NO_SERIALIZATION=1
