@@ -107,9 +107,14 @@ namespace IndieGo {
 
 		enum IMAGE_SKIN_ELEMENT {
 			background,
-			normal,
-			hover,
-			active,
+			button_normal,
+			button_hover,
+			button_active,
+			
+			progress_normal,
+			progress_hover,
+			progress_active,
+
 			cursor_normal,
 			cursor_hover,
 			cursor_active,
@@ -128,9 +133,12 @@ namespace IndieGo {
 			// IMAGE_SKIN_ELEMENT : <idx in vector of global images, loaded by backend> : <index of crop from that image>
 			std::map<IMAGE_SKIN_ELEMENT, std::pair<int, int>> props = {
 				{ background, { -1, -1 } },
-				{ normal, { -1, -1 } },
-				{ hover, { -1, -1 } },
-				{ active, { -1, -1 } },
+				{ button_normal, { -1, -1 } },
+				{ button_hover, { -1, -1 } },
+				{ button_active, { -1, -1 } },
+				{ progress_normal, { -1, -1 } },
+				{ progress_hover, { -1, -1 } },
+				{ progress_active, { -1, -1 } },
 				{ cursor_normal, { -1, -1 } },
 				{ cursor_hover, { -1, -1 } },
 				{ cursor_active, { -1, -1 } },
@@ -290,10 +298,11 @@ namespace IndieGo {
 
 			// in case of UI_IMAGE this is used as a path to loaded image
 			std::string label = "";
+			int ui_button_image = -1;
+			float flt_px_incr = 0.5f;
 			bool color_picker_unwrapped = false;
 
 			float height = 0.1f; // % from widget's height
-			//float width = 0.98f; // % from widget's width
 			float width = 1.f;
 
 			// special properties, that can be called "common"
@@ -803,6 +812,7 @@ namespace IndieGo {
 						float subcell_indent = 0.f; // get subcell indent for each drawn element in same cell top-to-bottom
 						for (auto elt : cell.elements){
 							if (UIMap.elements.find(elt) != UIMap.elements.end() && !UIMap.elements[elt].hidden) {
+								UIMap.elements[elt].skinned_style = skinned_style;
 								UIMap.elements[elt].callUIfunction(
 									row_indent,
 									subcell_indent,//cell_indent + subcell_indent,

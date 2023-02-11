@@ -21,6 +21,8 @@
 #include <list>
 #include <filesystem>
 #include <editor_structs.h>
+#include <Shader.h>
+// #include <editor_data.pb.h>
 
 namespace fs = std::filesystem;
 
@@ -43,11 +45,17 @@ void loadShader(const std::string & name);
 void initBuffers();
 void initProjectDir();
 void drawLayout(LayoutRect element);
+// void drawSkinImage(LayoutRect element);
+
+extern void serializeCropsData(const std::string & path);
+extern void deserializeCropsData(const std::string & path);
 
 // [widID] = current_line
 std::map<std::string, unsigned int> widgets_fill;
+extern Shader skinningShader;
+extern Shader layoutShader;
 
-// Window input callbacks
+// Window callbacks
 void cursor_position_callback(GLFWwindow* window, double xpos, double ypos) {
 	GUI.mouse_move( &winID, xpos, ypos);
 }
@@ -68,11 +76,26 @@ void key_callback(GLFWwindow* window, int key, int scancode, int action, int mod
     GUI.key_input( &winID, key, glfwGetKey(window, key) == GLFW_PRESS);
 }
 
+void window_size_callback(GLFWwindow* window, int width, int height) {
+    skinningShader.viewWidth = width;
+    skinningShader.viewHeight = height;
+    skinningShader.updateProj();
+
+    layoutShader.viewWidth = width;
+    layoutShader.viewHeight = height;
+    layoutShader.updateProj();
+}
+
 unsigned int buttons_count = 1;
 
 double curr_time = 0.0, prev_time = 0.0;
 unsigned int frames = 0;
 
+// Global skinning image draw data
+// ---------------------------------------
+extern LayoutRect skin_img_rect;
+extern LayoutRect crop_img_rect;
+// ---------------------------------------
 
 extern void createNewWidget(
     std::string newWidName, 
@@ -110,6 +133,7 @@ extern std::vector<std::string> getPaths(
 );
 
 extern void initWidgets();
+extern void processSkinning(int prev_selected_crop = -1);
 
 enum STYLE_EDIT_MODE {
     widget_edit, element_edit
@@ -147,7 +171,8 @@ std::vector<std::string> skip_save_widgets = {
     "Edit elements", 
     "Widgets style", 
     "Elements style",
-    "Fonts"
+    "Fonts",
+    "Skinning"
 };
 
 std::vector<float> font_load_sizes = {
@@ -212,6 +237,7 @@ int main() {
     glfwSetScrollCallback(screen, scroll_callback);
     glfwSetCharCallback(screen, char_callback);
     glfwSetKeyCallback(screen, key_callback);
+    glfwSetWindowSizeCallback(screen, window_size_callback);
 
     glViewport(0, 0, WIDTH, HEIGHT);
 
@@ -237,6 +263,8 @@ int main() {
     ui_string_group & fonts_list = *UIMap["loaded fonts"]._data.usgPtr;
     ui_string_group & font_sizes_list = *UIMap["font sizes"]._data.usgPtr;
 
+    ui_string_group & skin_crops_list = *UIMap["w skin crops list"]._data.usgPtr;
+
     ui_string_group & style_elements_list = *UIMap["styling elements"]._data.usgPtr;
     ui_string_group & w_skinning_props_list = *UIMap["w skinning properties"]._data.usgPtr;
     ui_string_group & e_skinning_props_list = *UIMap["e skinning properties"]._data.usgPtr;
@@ -253,9 +281,31 @@ int main() {
     int prev_selected_style_element = -1;
     int prev_selected_row = -1;
     int prev_selected_col = -1;
+    int prev_selected_crop = -1;
     int width, height;
     std::string selected_for_font_update = "None";
     bool update_widget_font = false;
+
+    // Skinning data initialization
+    // -------------------------------
+    skin_img_rect.x = 0.f;
+    skin_img_rect.y = 0.f;
+    skin_img_rect.width = 1.f;
+    skin_img_rect.height = 1.f;
+    skin_img_rect.red = 1.f;
+    skin_img_rect.green = 1.f;
+    skin_img_rect.blue = 0.f;
+    skin_img_rect.alpha = 0.f;
+    // -------------------------------
+    crop_img_rect.x = 0.25f;
+    crop_img_rect.y = 0.25f;
+    crop_img_rect.width = 0.5f;
+    crop_img_rect.height = 0.5f;
+    crop_img_rect.red = 1.f;
+    crop_img_rect.green = 1.f;
+    crop_img_rect.blue = 1.f;
+    crop_img_rect.alpha = 0.f;
+    // -------------------------------
 
     while (!glfwWindowShouldClose(screen)) {
         glClearColor(0.2f, 0.3f, 0.3f, 1.0f);
@@ -291,15 +341,17 @@ int main() {
         cols_list.elements.clear();
         cols_list.unselect();
 
-        if (UIMap["e load skin image"]._data.b || UIMap["w load skin image"]._data.b) {
+        /*if (UIMap["e load skin image"]._data.b || UIMap["w load skin image"]._data.b) {
             std::vector<std::string> paths = getPaths(false, false, GUI.project_dir);
             if (paths.size() > 0) {
                 std::string skinning_img_path = *paths.begin();
                 TexData skin_tex = Manager::load_image(skinning_img_path.c_str());
                 UIMap["w skin image path"].label = skinning_img_path;
                 UIMap["e skin image path"].label = skinning_img_path;
+                skinningShader.skin_tex_id = skin_tex.texID;
+                skin_img_rect.height = (float)skin_tex.h / (float)skin_tex.w;
             }
-        }
+        }*/
 
         if (widgets_list.selected_element != -1) {
             updateUIFromWidget(
@@ -460,6 +512,9 @@ int main() {
                     paths.front(),
                     skip_save_widgets
                 );
+                std::string editor_file_name = fs::path( paths.front() ).stem().string();
+                std::string editor_file = fs::path( paths.front() ).parent_path().append(editor_file_name + "_editor.ui").string();
+                serializeCropsData(editor_file);
             }
         }
 
@@ -467,13 +522,21 @@ int main() {
             std::vector<std::string> paths = getPaths(false, false, GUI.project_dir);
             for (auto path : paths) {
                 GUI.deserialize(winID, path);
-                for (auto widget : GUI.widgets[winID]) {
-                    if (std::find(skip_save_widgets.begin(), skip_save_widgets.end(), widget.first) != skip_save_widgets.end())
+                std::string editor_file_name = fs::path( paths.front() ).stem().string();
+                std::string editor_file = fs::path( paths.front() ).parent_path().append(editor_file_name + "_editor.ui").string();
+                if (fs::exists(editor_file)) {
+                    deserializeCropsData(editor_file);
+                }
+                
+                for (auto widget = GUI.widgets[winID].begin(); widget != GUI.widgets[winID].end(); widget++) {
+                    if (std::find(skip_save_widgets.begin(), skip_save_widgets.end(), widget->first) != skip_save_widgets.end())
                         continue;
+                    
+                    widget->second.hidden = true;
                     // don't add already added elements
-                    if (std::find(widgets_list.elements.begin(), widgets_list.elements.end(), widget.first) != widgets_list.elements.end())
+                    if (std::find(widgets_list.elements.begin(), widgets_list.elements.end(), widget->first) != widgets_list.elements.end())
                         continue;
-                    widgets_list.elements.push_back(widget.first);
+                    widgets_list.elements.push_back(widget->first);
                 }
                 for (auto font : GUI.loaded_fonts) {
                     if (font.first == GUI.main_font) 
@@ -483,6 +546,13 @@ int main() {
                         continue;
 
                     fonts_list.elements.push_back(font.first);
+                }
+                // set skinning image texID if loaded, populate crops list 
+                if (GUI.skinning_image != "None") {
+                    TexData skin_tex = Manager::load_image(GUI.skinning_image);
+                    skinningShader.skin_tex_id = skin_tex.texID;
+                    skin_img_rect.width = 1.f;
+                    skin_img_rect.height = (float)skin_tex.h / (float)skin_tex.w;
                 }
             }
         }
@@ -500,6 +570,10 @@ int main() {
                 *UIMap["project_dir_path"]._data.strPtr = GUI.project_dir;
             }
         }
+
+        processSkinning(prev_selected_crop);
+
+        prev_selected_crop = skin_crops_list.selected_element;
 
         GUI.drawFrameStart(winID);
         GUI.displayWidgets(winID);
@@ -536,27 +610,6 @@ int main() {
                     fonts_list.elements.push_back( fs::path(font_path.first).stem().string() );
                 }
             }
-        }
-
-        if (w_skinning_props_list.selected_element != -1 && UIMap["w apply skin"]._data.b) {
-            TexData td = Manager::load_image(UIMap["w skin image path"].label, true);
-            GUI.skinning_image = UIMap["e skin image path"].label;
-            WIDGET & w = GUI.getWidget(
-                widgets_list.getSelected(), 
-                winID
-            );
-            region<float> crop;
-            crop.x = UIMap["w crop x"]._data.f / UI_FLT_VAL_SCALE;
-            crop.y = UIMap["w crop y"]._data.f / UI_FLT_VAL_SCALE;
-            crop.w = UIMap["w crop w"]._data.f / UI_FLT_VAL_SCALE;
-            crop.h = UIMap["w crop h"]._data.f / UI_FLT_VAL_SCALE;
-            w.useSkinImage(
-                td.texID, 
-                td.w, 
-                td.h, 
-                crop, 
-                (IMAGE_SKIN_ELEMENT)w_skinning_props_list.selected_element
-            );
         }
 
         font_sizes_list.elements.clear();

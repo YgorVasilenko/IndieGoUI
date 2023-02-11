@@ -36,11 +36,13 @@ void loadShader(const std::string & name) {
             }
         }
     }
-    if (name == "layout_shader")
+    if (name == "layout_shader") {
         layoutShader.load(vertex.c_str(), fragment.c_str(), geometry.c_str());
-    else {
+        layoutShader.updateProj();
+    } else {
         skinningShader.load(vertex.c_str(), fragment.c_str(), geometry.c_str());
         skinningShader.skinning = true;
+        skinningShader.updateProj();
     }
 };
 
@@ -74,5 +76,8 @@ void drawSkinImage(LayoutRect element) {
 	skinningShader.use();
     
 	glBufferData( GL_ARRAY_BUFFER, sizeof(LayoutRect), &element, GL_DYNAMIC_DRAW );
+    GLuint err = glGetError();
 	glDrawArrays( GL_POINTS, 0, 1 );
+    err = glGetError();
+    assert(err == 0);
 }

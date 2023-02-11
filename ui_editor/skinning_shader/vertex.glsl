@@ -7,9 +7,11 @@ out vec2 sizes;
 out vec4 texture;
 
 uniform float scale;
+uniform mat4 projection;
 
 void main() {
-    gl_Position = vec4(position, 0.f, 0.0);
+    gl_Position = projection * vec4(position, 0.f, 1.0);
+    // gl_Position = vec4(position, 0.f, 1.0);
     sizes = size * scale;
     texture = tex;
 }

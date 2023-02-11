@@ -296,15 +296,24 @@ void initWidgets() {
 
     UIMap.addElement("elt label", UI_STRING_INPUT, &e_widget, to_new_col);
 
-    UIMap.addElement("skins", UI_BUTTON, &e_widget, to_new_subrow);
-    UIMap["skins"].label = "skins";
+    UIMap.addElement("init button img", UI_BUTTON, &e_widget, to_new_subrow);
+    UIMap["init button img"].label = "init button img";
+
+    UIMap.addElement("crop as img", UI_BOOL, &e_widget, to_new_subrow);
+    UIMap["crop as img"].label = "use crop as img";
+
+    UIMap.addElement("crop to img", UI_BUTTON, &e_widget, to_new_subrow);
+    UIMap["crop to img"].label = "apply crop";
 
     e_widget.layout_grid.back().cells[2].min_width = 0.22f;
     UIMap["elt label"].width = 0.2f;
     UIMap["elt label"].height = 0.09f;
 
-    UIMap["skins"].width = 0.2f;
-    UIMap["skins"].height = 0.09f;
+    UIMap["init button img"].width = 0.2f;
+    UIMap["init button img"].height = 0.07f;
+    UIMap["back to widgets"].width = 0.2f;
+    UIMap["crop to img"].width = 0.2f;
+    UIMap["crop to img"].height = 0.07f;
 
     e_widget.layout_grid.back().cells[0].min_width = 0.28f;
     UIMap["elements list"].height = 0.5f;
@@ -349,49 +358,35 @@ void initWidgets() {
 
     // skinning:
     // load skin image, skinning elements list, crop settings, apply skin
-    UIMap.addElement("w load skin image", UI_BUTTON, &ws_widget);
-    UIMap["w load skin image"].label = "load skin image";
+    // UIMap.addElement("w load skin image", UI_BUTTON, &ws_widget);
+    // UIMap["w load skin image"].label = "load skin image";
 
-    UIMap.addElement("w skin image path", UI_STRING_TEXT, &ws_widget, to_new_subrow);
-    UIMap["w skin image path"].label = "skin image path: None";
+    // UIMap.addElement("w skin image path", UI_STRING_TEXT, &ws_widget, to_new_subrow);
+    // UIMap["w skin image path"].label = "skin image path: None";
 
-    UIMap.addElement("w crop x", UI_FLOAT, &ws_widget, to_new_subrow);
-    UIMap["w crop x"].label = "crop x";
-    UIMap.addElement("w crop y", UI_FLOAT, &ws_widget, to_new_subrow);
-    UIMap["w crop y"].label = "crop y";
-    UIMap.addElement("w crop w", UI_FLOAT, &ws_widget, to_new_subrow);
-    UIMap["w crop w"].label = "crop w";
-    UIMap.addElement("w crop h", UI_FLOAT, &ws_widget, to_new_subrow);
-    UIMap["w crop h"].label = "crop h";
+    // UIMap.addElement("w crop x", UI_FLOAT, &ws_widget, to_new_subrow);
+    // UIMap["w crop x"].label = "crop x";
+    // UIMap.addElement("w crop y", UI_FLOAT, &ws_widget, to_new_subrow);
+    // UIMap["w crop y"].label = "crop y";
+    // UIMap.addElement("w crop w", UI_FLOAT, &ws_widget, to_new_subrow);
+    // UIMap["w crop w"].label = "crop w";
+    // UIMap.addElement("w crop h", UI_FLOAT, &ws_widget, to_new_subrow);
+    // UIMap["w crop h"].label = "crop h";
 
-    UIMap.addElement("w apply skin", UI_BUTTON, &ws_widget, to_new_subrow);
-    UIMap["w apply skin"].label = "apply skin";
+    // UIMap.addElement("w apply skin", UI_BUTTON, &ws_widget, to_new_subrow);
+    // UIMap["w apply skin"].label = "apply skin";
 
-    UIMap.addElement("w skinning properties", UI_ITEMS_LIST, &ws_widget, to_new_col);
-    UIMap["w skinning properties"].label = "skinning properties";
-
-    ui_string_group & w_skinning_props_list = *UIMap["w skinning properties"]._data.usgPtr;
-    for (int i = background; i != hover_active; i++) {
-        w_skinning_props_list.elements.push_back(
-            getSkinPropName((IMAGE_SKIN_ELEMENT)i)
-        );
-    }
-    ws_widget.updateRowHeight(0, 0.4f);
-    
     // styling:
     // elements list for style update, rgba values
     UIMap.addElement("styling elements", UI_ITEMS_LIST, &ws_widget);
     UIMap["styling elements"].label = "styling elements";
-
     ui_string_group & style_elements_list = *UIMap["styling elements"]._data.usgPtr;
-
     for (int i = UI_COLOR_TEXT; i != UI_COLOR_TAB_HEADER; i++) {
         style_elements_list.elements.push_back(
             getColorPropName((COLOR_ELEMENTS)i)
         );
     }
-
-    UIMap.addElement("red", UI_UINT, &ws_widget, to_new_col);
+    UIMap.addElement("red", UI_UINT, &ws_widget, to_new_subrow);
     UIMap["red"].label = "red";
     UIMap.addElement("green", UI_UINT, &ws_widget, to_new_subrow);
     UIMap["green"].label = "green";
@@ -405,14 +400,25 @@ void initWidgets() {
 
     UIMap.addElement("style selected widget", UI_STRING_LABEL, &ws_widget, to_new_subrow);
     UIMap["style selected widget"].label = "selected widget: None";
+    
 
-    ws_widget.updateRowHeight(1, 0.4f);
-
+    UIMap["styling elements"].height = 0.57f;
     UIMap["red"].height = 0.05f;
     UIMap["green"].height = 0.05f;
     UIMap["blue"].height = 0.05f;
     UIMap["alpha"].height = 0.05f;
     UIMap["to widgets from style"].height = 0.05f;
+
+    UIMap.addElement("w skinning properties", UI_ITEMS_LIST, &ws_widget, to_new_col);
+    UIMap["w skinning properties"].label = "skinning properties";
+
+    ui_string_group & w_skinning_props_list = *UIMap["w skinning properties"]._data.usgPtr;
+    for (int i = background; i != hover_active; i++) {
+        w_skinning_props_list.elements.push_back(
+            getSkinPropName((IMAGE_SKIN_ELEMENT)i)
+        );
+    }
+    UIMap["w skinning properties"].height = 0.9f;
     
     WIDGET elements_style;
     elements_style.screen_region.x = (float)(WIDTH / 4) / ((float)WIDTH);
@@ -515,6 +521,98 @@ void initWidgets() {
     UIMap["load size"].height = 0.1f;
     UIMap["apply font"].height = 0.1f;
   
+
+    // Skinning elements widget:
+    // load skin image button and path, display image, selected skinning property coords, image scale and location on screen
+    WIDGET skinning;
+    skinning.screen_region.x = 0.7f;
+    skinning.screen_region.y = 0.5f;
+    skinning.screen_region.w = 0.12f;
+    skinning.screen_region.h = 0.7f;
+    skinning.name = "Skinning";
+    editorWidgets.push_back(skinning.name);
+
+    WIDGET & skinning_widget = GUI.addWidget(skinning, winID);
+    skinning_widget.has_scrollbar = false;
+
+    UIMap.addElement("w load skin image", UI_BUTTON, &skinning_widget);
+    UIMap["w load skin image"].label = "load skin image";
+
+    UIMap.addElement("w display skin image", UI_BOOL, &skinning_widget, to_new_row);
+    UIMap["w display skin image"].label = "show skin image";
+
+    UIMap.addElement("w skin image scale", UI_FLOAT, &skinning_widget, to_new_row);
+    UIMap["w skin image scale"].label = "skin image scale";
+    UIMap["w skin image scale"]._data.f = 1000.f;
+
+    UIMap.addElement("w skin image x", UI_FLOAT, &skinning_widget, to_new_row);
+    UIMap["w skin image x"].label = "skin image loc x";
+    UIMap["w skin image x"]._data.f = 0.f;
+    UIMap.addElement("w skin image y", UI_FLOAT, &skinning_widget, to_new_row);
+    UIMap["w skin image y"].label = "skin image loc y";
+    UIMap["w skin image y"]._data.f = 0.f;
+
+    UIMap.addElement("w crop x", UI_FLOAT, &skinning_widget, to_new_row);
+    UIMap["w crop x"].label = "crop x";
+    UIMap["w crop x"]._data.f = 0.25f * UI_FLT_VAL_SCALE;
+    UIMap["w crop x"].flt_px_incr = 0.005f;
+
+    UIMap.addElement("w crop y", UI_FLOAT, &skinning_widget, to_new_row);
+    UIMap["w crop y"].label = "crop y";
+    UIMap["w crop y"]._data.f = 0.25f * UI_FLT_VAL_SCALE;
+    UIMap["w crop y"].flt_px_incr = 0.005f;
+
+    UIMap.addElement("w crop w", UI_FLOAT, &skinning_widget, to_new_row);
+    UIMap["w crop w"].label = "crop w";
+    UIMap["w crop w"]._data.f = 0.5f * UI_FLT_VAL_SCALE;
+    UIMap["w crop w"].flt_px_incr = 0.005f;
+
+    UIMap.addElement("w crop h", UI_FLOAT, &skinning_widget, to_new_row);
+    UIMap["w crop h"].label = "crop h";
+    UIMap["w crop h"]._data.f = 0.5f * UI_FLT_VAL_SCALE;
+    UIMap["w crop h"].flt_px_incr = 0.005f;
+
+    UIMap.addElement("w new crop", UI_BUTTON, &skinning_widget, to_new_row);
+    UIMap["w new crop"].label = "new crop";
+
+    UIMap.addElement("w new crop name", UI_STRING_INPUT, &skinning_widget, to_new_row);
+
+    UIMap.addElement("w reset crop", UI_BUTTON, &skinning_widget, to_new_row);
+    UIMap["w reset crop"].label = "w reset crop";
+
+    UIMap.addElement("w skin image path", UI_STRING_TEXT, &skinning_widget, to_new_row);
+    UIMap["w skin image path"].label = "skin image path: None";
+
+    UIMap.addElement("w skin crops list", UI_ITEMS_LIST, &skinning_widget, to_new_row);
+    UIMap["w skin crops list"].label = "crops list";
+    
+    UIMap.addElement("w apply crop", UI_BUTTON, &skinning_widget, to_new_row);
+    UIMap["w apply crop"].label = "apply crop";
+
+    UIMap.addElement("w selected prop", UI_STRING_LABEL, &skinning_widget, to_new_row);
+    UIMap["w selected prop"].label = "selected property: None";
+
+    UIMap.addElement("w selected widget", UI_STRING_LABEL, &skinning_widget, to_new_row);
+    UIMap["w selected widget"].label = "selected widget: None";
+
+    skinning_widget.updateRowHeight(0, 0.03f);
+    skinning_widget.updateRowHeight(1, 0.03f);
+    skinning_widget.updateRowHeight(2, 0.03f);
+    skinning_widget.updateRowHeight(3, 0.03f);
+    skinning_widget.updateRowHeight(4, 0.03f);
+    skinning_widget.updateRowHeight(5, 0.03f);
+    skinning_widget.updateRowHeight(6, 0.03f);
+    skinning_widget.updateRowHeight(7, 0.03f);
+    skinning_widget.updateRowHeight(8, 0.03f);
+    skinning_widget.updateRowHeight(9, 0.03f);
+    skinning_widget.updateRowHeight(10, 0.03f);
+    skinning_widget.updateRowHeight(11, 0.03f);
+    skinning_widget.updateRowHeight(12, 0.03f);
+    skinning_widget.updateRowHeight(13, 0.4f); // crops list height
+    skinning_widget.updateRowHeight(14, 0.03f);
+    skinning_widget.updateRowHeight(15, 0.03f);
+    skinning_widget.updateRowHeight(16, 0.03f);
+
     std::string home_dir = fs::current_path().string();
     if (home_dir.find("ui_editor") == std::string::npos) {
         std::cout << "[WARNING] cwd does not contain 'ui_editor'! Can't find default font" << std::endl;

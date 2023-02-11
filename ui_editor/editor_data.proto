@@ -1,0 +1,44 @@
+/*  runtime state-saving Map for Immediate-mode libraries
+    Copyright (C) 2022  Igor Vasilenko
+
+    This program is free software: you can redistribute it and/or modify
+    it under the terms of the GNU General Public License as published by
+    the Free Software Foundation, either version 3 of the License, or
+    (at your option) any later version.
+
+    This program is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+    GNU General Public License for more details.
+
+    You should have received a copy of the GNU General Public License
+    along with this program.  If not, see <https://www.gnu.org/licenses/>.*/
+
+// [START declaration]
+syntax = "proto3";
+package editor_serialization;
+
+
+// UI data
+// ---------------------------------------------------------
+message region {
+    float x = 1;
+    float y = 2;
+    float w = 3;
+    float h = 4;
+}
+
+message CropsData {
+    string crop_name = 1;
+    region crop = 2;
+}
+
+// Binary file to serialize ui to
+message SerializedCropsData {
+    // main manager loads fonts
+    // font.name here records path
+    // similar paths could be saved, just specifying font size
+    repeated CropsData data = 1;
+}
+
+// [END messages]

@@ -523,19 +523,18 @@ void Manager::deserialize(const std::string & winID, const std::string & path) {
 
             // skinned props
             for (int k = 0; k < e.skinned_props_size(); k++) {
-                const ui_serialization::SkinnedProperty & sp = e.skinned_props(j);
+                const ui_serialization::SkinnedProperty & sp = e.skinned_props(k);
                 region<float> crop_region;
                 crop_region.h = sp.crop().h();
                 crop_region.w = sp.crop().w();
                 crop_region.y = sp.crop().y();
                 crop_region.x = sp.crop().x();
                 TexData td = Manager::load_image(skinning_image);
-                UIMap[e.name()].useSkinImage(
+                UIMap[e.name()].initImage(
                     td.texID,
                     td.w,
                     td.h,
-                    crop_region,
-                    (IMAGE_SKIN_ELEMENT)sp.prop_type()
+                    crop_region
                 );
             }
             // color styled props

@@ -28,7 +28,7 @@ else()
     message(FATAL_ERROR "Only Windows currently supported!")
 endif()
 
-set(RENDERER_INCLUDES src .. ../os ${PROTOBUF_SRC})
+set(RENDERER_INCLUDES src . .. ../os ${PROTOBUF_SRC})
 
 if (DEFINED BACKEND)
     message("BACKEND: ${BACKEND}")
@@ -52,10 +52,12 @@ add_executable(
     src/ui.cpp
     src/init.cpp
     src/helper_drawing.cpp
+    src/skinning.cpp
     src/Shader.cpp
     src/glad.c
     ../IndieGoUI.cpp
     ../IndieGoUI.pb.cc
+    editor_data.pb.cc
     ${RENDERER_SRC}
 )
 

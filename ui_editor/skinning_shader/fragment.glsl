@@ -3,7 +3,7 @@ out vec4 FragColor;
 
 uniform sampler2D skin_image;
 
-in vec4 texCoords;
+in vec2 texCoords;
 
 void main() {
     FragColor = texture(skin_image, texCoords);

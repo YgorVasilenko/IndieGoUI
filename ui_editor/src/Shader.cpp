@@ -78,13 +78,39 @@ void Shader::use() {
     glUseProgram(ID);
     shader_error = glGetError();
 
+    if (skinning) {
+        // todo : use skinning texture
+        glActiveTexture(GL_TEXTURE0);
+        shader_error = glGetError();
+		glBindTexture(GL_TEXTURE_2D, skin_tex_id);
+    }
+
     assert(shader_error == 0);
     setUniforms();
     setAttributes();
 }
 
+// ------------------------------------------------------------------------
+void Shader::setInt(const std::string& name, int value) {
+    glUniform1i(glGetUniformLocation(ID, name.c_str()), value);
+}
+
+// ------------------------------------------------------------------------
+void Shader::setFloat(const std::string& name, float value) {
+    glUniform1f(glGetUniformLocation(ID, name.c_str()), value);
+}
+
+// ------------------------------------------------------------------------
+void Shader::setMat4(const std::string& name, const glm::mat4& mat) {
+    glUniformMatrix4fv(glGetUniformLocation(ID, name.c_str()), 1, GL_FALSE, &mat[0][0]);
+}
 
 void Shader::setUniforms() {
+    if (skinning) {
+        setInt("skin_image", 0);
+        setFloat("scale", scale);
+    }
+    setMat4("projection", orthogonal_proj);
 }
 
 void Shader::setAttributes() {

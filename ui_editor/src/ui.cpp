@@ -213,13 +213,14 @@ void switchUIscreens(std::string winID) {
             elements.hidden = true;
             widgets.screen_region = elements.screen_region;
             UIMap["back to widgets"]._data.b = false;
-        } else if (UIMap["skins"]._data.b && elements_list.selected_element != -1) {
-            elements.hidden = true;
-            elements_style.hidden = false;
-            elements_style.screen_region = elements.screen_region;
-            UIMap["skins"]._data.b = false;
-            UIMap["e selected element"].label = "selected element: " + elements_list.getSelected();
         }
+        // } else if (UIMap["skins"]._data.b && elements_list.selected_element != -1) {
+        //     elements.hidden = true;
+        //     elements_style.hidden = false;
+        //     elements_style.screen_region = elements.screen_region;
+        //     UIMap["skins"]._data.b = false;
+        //     UIMap["e selected element"].label = "selected element: " + elements_list.getSelected();
+        // }
     }
 
     if (!widgets_style.hidden) {
@@ -316,20 +317,29 @@ void processAddOptions(std::string winID) {
 
     if ( UIMap["add image"]._data.b ) {
         UI_ELEMENT_TYPE t = UI_IMAGE;
-        std::vector<std::string> paths = getPaths(true, false, GUI.project_dir);
-        if (paths.size() > 0) {
-            std::string img_path = *paths.begin();
-            TexData td = Manager::load_image(img_path.c_str(), true);
+        if (UIMap["crop as img"]._data.b) {
             if (UIMap["switch type"]._data.b) {
                 new_element_name = elements_list.getSelected();
                 UIMap[new_element_name].type = t;
             } else {
                 addElement(widgets_list.getSelected(), winID, new_element_name, t);
             }
-            region<float> crop = { 0.f, 0.f, 1.f, 1.f };
-            UIMap[new_element_name].initImage(td.texID, td.w, td.h, crop);
-            UIMap[new_element_name].label = td.path;
-            *UIMap["elt label"]._data.strPtr = UIMap[new_element_name].label;
+        } else {
+            std::vector<std::string> paths = getPaths(true, false, GUI.project_dir);
+            if (paths.size() > 0) {
+                std::string img_path = *paths.begin();
+                TexData td = Manager::load_image(img_path.c_str(), true);
+                if (UIMap["switch type"]._data.b) {
+                    new_element_name = elements_list.getSelected();
+                    UIMap[new_element_name].type = t;
+                } else {
+                    addElement(widgets_list.getSelected(), winID, new_element_name, t);
+                }
+                region<float> crop = { 0.f, 0.f, 1.f, 1.f };
+                UIMap[new_element_name].initImage(td.texID, td.w, td.h, crop);
+                UIMap[new_element_name].label = td.path;
+                *UIMap["elt label"]._data.strPtr = UIMap[new_element_name].label;
+            }
         }
     }
     if (UIMap["add text"]._data.b) {
@@ -534,9 +544,15 @@ std::string getColorPropName(COLOR_ELEMENTS prop) {
 
 std::string getSkinPropName(IMAGE_SKIN_ELEMENT prop) {
     if (prop == background) return "background";
-    if (prop == normal) return "normal";
-    if (prop == hover) return "hover";
-    if (prop == active) return "active";
+    
+    if (prop == button_normal) return "button_normal";
+    if (prop == button_hover) return "button_hover";
+    if (prop == button_active) return "button_active";
+    
+    if (prop == progress_normal) return "progress_normal";
+    if (prop == progress_hover) return "progress_hover";
+    if (prop == progress_active) return "progress_active";
+
     if (prop == cursor_normal) return "cursor_normal";
     if (prop == cursor_hover) return "cursor_hover";
     if (prop == cursor_active) return "cursor_active";

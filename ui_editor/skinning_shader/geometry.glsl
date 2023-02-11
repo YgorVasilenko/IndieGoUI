@@ -6,7 +6,11 @@ layout (triangle_strip, max_vertices = 6) out;
 // width and height of sprite
 in vec2 sizes[];
 in vec4 texture[];
+
 out vec4 fragColor;
+out vec2 texCoords;
+
+uniform mat4 projection;
 
 vec4 buf;
 
@@ -18,8 +22,7 @@ void main() {
     buf.z = 0.f; 
     buf.w = 1.f;
     buf = projection * buf;
-    //gl_Position = transform * (gl_in[0].gl_Position + vec4(offset[0], 0.f)) + buf; 
-    gl_Position =  (gl_in[0].gl_Position + vec4(offset[0], 0.f)) + buf; 
+    gl_Position =  gl_in[0].gl_Position + buf; 
     gl_Position.w = 1.f;
     // tex coord for BOTTOM-left
     texCoords.x = texture[0].x;
@@ -32,8 +35,7 @@ void main() {
     buf.z = 0.f; 
     buf.w = 1.f;
     buf = projection * buf;
-    //gl_Position = transform * (gl_in[0].gl_Position + vec4(offset[0], 0.f)) + buf; 
-    gl_Position = (gl_in[0].gl_Position + vec4(offset[0], 0.f)) + buf; 
+    gl_Position = gl_in[0].gl_Position + buf; 
     gl_Position.w = 1.f;
     // text coord for TOP-left
     texCoords.x = texture[0].x;
@@ -46,8 +48,7 @@ void main() {
     buf.z = 0.f; 
     buf.w = 1.f;
     buf = projection * buf;
-    //gl_Position = transform * (gl_in[0].gl_Position + vec4(offset[0], 0.f)) + buf; 
-    gl_Position = (gl_in[0].gl_Position + vec4(offset[0], 0.f)) + buf; 
+    gl_Position = gl_in[0].gl_Position + buf; 
     gl_Position.w = 1.f;
     // tex coord for TOP-right
     texCoords.x = texture[0].z;
@@ -62,8 +63,7 @@ void main() {
     buf.z = 0.f; 
     buf.w = 1.f;
     buf = projection * buf;
-    //gl_Position = transform * (gl_in[0].gl_Position + vec4(offset[0], 0.f)) + buf; 
-    gl_Position = (gl_in[0].gl_Position + vec4(offset[0], 0.f)) + buf; 
+    gl_Position = gl_in[0].gl_Position + buf; 
     gl_Position.w = 1.f;
     // tex coord for TOP-right
     texCoords.x = texture[0].z;
@@ -76,8 +76,7 @@ void main() {
     buf.z = 0.f; 
     buf.w = 1.f;
     buf = projection * buf;
-    //gl_Position = transform * (gl_in[0].gl_Position + vec4(offset[0], 0.f)) + buf; 
-    gl_Position = (gl_in[0].gl_Position + vec4(offset[0], 0.f)) + buf; 
+    gl_Position = gl_in[0].gl_Position + buf; 
     gl_Position.w = 1.f;
     // tex coord for BOTTOM-right
     texCoords.x = texture[0].z;
@@ -90,8 +89,7 @@ void main() {
     buf.z = 0.f; 
     buf.w = 1.f;
     buf = projection * buf;
-    //gl_Position = transform * (gl_in[0].gl_Position + vec4(offset[0], 0.f)) + buf; 
-    gl_Position = (gl_in[0].gl_Position + vec4(offset[0], 0.f)) + buf; 
+    gl_Position = gl_in[0].gl_Position + buf; 
     gl_Position.w = 1.f;
     // coord for BOTTOM-left
     texCoords.x = texture[0].x;
