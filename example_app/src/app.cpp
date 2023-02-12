@@ -17,6 +17,9 @@
 #include <IndieGoUI.h>
 #include <glad/glad.h>
 #include <GLFW/glfw3.h>
+#include <filesystem>
+
+namespace fs = std::filesystem;
 
 // Plain simple code for window creation
 // Created window will hold loaded widget
@@ -81,9 +84,21 @@ int main() {
     GUI.screen_size.h = HEIGHT;
 
     // PROJECT_DIR should contain created ui
-    std::string path = getenv("PROJECT_DIR");    
+    char * p = getenv("PROJECT_DIR");
+    if (!p) {
+        std::cout << "[ERROR] PROJECT_DIR env var is not set! Please, run <IndieGoUI dir>\\env.ps1 and start this app from same terminal," << std::endl;
+        std::cout << "Or set as system environment variable. PROJECT_DIR should point to <IndieGoUI dir>\\example_app" << std::endl;
+        return -1;
+    }
+    std::string path = p;
+    if (!fs::exists(path + "/ui_example_app.indg")) {
+        std::cout << "[ERROR] " << path << "is not <IndieGoUI dir>\\example_app or ui_example_app.indg was deleted!" << std::endl;
+        std::cout << "Please, make sure PROJECT_DIR env var points to <IndieGoUI dir>\\example_app and ui_example_app.indg exists." << std::endl;
+        return -1;
+    }
+
     GUI.project_dir = path;
-    GUI.deserialize(winID, path + "/ui_test_skinning_2.indg");
+    GUI.deserialize(winID, path + "/ui_example_app.indg");
 
     // get reference for UIMap
     UI_elements_map & UIMap = GUI.UIMaps[winID];
@@ -100,7 +115,7 @@ int main() {
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT | GL_STENCIL_BUFFER_BIT);
 
         // Check ui element state
-        if (UIMap["test_b"]._data.b) {
+        if (UIMap["press me"]._data.b) {
 
             // Do stuff
             std::cout << "[INFO] button pressed!" << std::endl;

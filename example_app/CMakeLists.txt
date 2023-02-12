@@ -69,7 +69,7 @@ target_link_libraries(
 )
 
 target_compile_definitions(
-    GUI_test PUBLIC
+    GUI_example PUBLIC
     WIDTH=1920
     HEIGHT=1080
 )
