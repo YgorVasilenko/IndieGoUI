@@ -1,6 +1,6 @@
 # structure for saving state of Immediate-mode backend UI elements.
 
-Easily embed GUI control elements into C++ application - no need to pre-build complex dependencies and add it to project.
+Quick embedding GUI control elements into C++ application. Singletone UI object, for which element state can be accessed anywhere in the app.
 Use any Immediate-mode gui - see [Nuklear backend](https://github.com/YgorVasilenko/IndieGoUI/blob/main/backends/Nuklear/renderer.cpp), [App-side inclulde](https://github.com/YgorVasilenko/IndieGoUI/blob/main/IndieGoUI.h) for what required to be implemented.<br>
 <br>
 
