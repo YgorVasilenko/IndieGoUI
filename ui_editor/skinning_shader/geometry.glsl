@@ -41,7 +41,7 @@ void main() {
     gl_Position =  gl_in[0].gl_Position + buf; 
     gl_Position.w = 1.f;
     // tex coord for BOTTOM-left
-    texCoords.x = texture[0].x;
+    texCoords.x = -texture[0].x;
     texCoords.y = texture[0].w;
     EmitVertex();
 
@@ -54,7 +54,7 @@ void main() {
     gl_Position = gl_in[0].gl_Position + buf; 
     gl_Position.w = 1.f;
     // text coord for TOP-left
-    texCoords.x = texture[0].x;
+    texCoords.x = -texture[0].x;
     texCoords.y = texture[0].y;
     EmitVertex();
 
@@ -108,7 +108,7 @@ void main() {
     gl_Position = gl_in[0].gl_Position + buf; 
     gl_Position.w = 1.f;
     // coord for BOTTOM-left
-    texCoords.x = texture[0].x;
+    texCoords.x = -texture[0].x;
     texCoords.y = texture[0].w;
     EmitVertex();
     EndPrimitive();
