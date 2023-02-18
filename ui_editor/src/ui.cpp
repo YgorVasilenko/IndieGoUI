@@ -161,6 +161,8 @@ void updateWidgetFromUI(
                 widID
             )
         );
+        widgets_list.selected_element = -1;
+        return;
     }
 
     if (UIMap["rename widget"]._data.b) {
@@ -174,7 +176,7 @@ void updateWidgetFromUI(
             *element = new_name;
             GUI.widgets[winID][new_name] = w;
             GUI.widgets[winID][new_name].name = new_name;
-            GUI.widgets[winID].erase(widID);
+            GUI.widgets[winID].erase(widID);        
         }
     }
 }
