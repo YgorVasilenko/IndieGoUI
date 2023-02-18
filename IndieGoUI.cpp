@@ -524,7 +524,7 @@ void Manager::deserialize(const std::string & winID, const std::string & path) {
             }
 
             // skinned props
-            for (int k = 0; k < e.skinned_props_size(); k++) {
+            /*for (int k = 0; k < e.skinned_props_size(); k++) {
                 const ui_serialization::SkinnedProperty & sp = e.skinned_props(k);
                 region<float> crop_region;
                 crop_region.h = sp.crop().h();
@@ -538,7 +538,7 @@ void Manager::deserialize(const std::string & winID, const std::string & path) {
                     td.h,
                     crop_region
                 );
-            }
+            }*/
             // color styled props
             for (int k = 0; k < 28; k++) {
                 const ui_serialization::StyleColor & sc = e.styled_props(k);
