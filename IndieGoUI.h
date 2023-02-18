@@ -861,7 +861,8 @@ namespace IndieGo {
 			
 			// required for serialization
 			std::string skinning_image = "None";
-			
+			region_size<unsigned int> skin_img_size;
+
 			// paths of fonts, used by widgets and vector of available sizes
 			std::string main_font = "None";
 			float main_font_size = 16.f;

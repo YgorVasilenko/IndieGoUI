@@ -422,9 +422,11 @@ void Manager::deserialize(const std::string & winID, const std::string & path) {
     
     // load images first, because ui uses them
     for (unsigned int i = 0; i < serialized_ui.images_size(); i++) {
-        Manager::load_image(serialized_ui.images(i), true);
+        TexData td = Manager::load_image(serialized_ui.images(i), true);
         if (serialized_ui.has_skinning_image_idx() && i == serialized_ui.skinning_image_idx()) {
             skinning_image = serialized_ui.images(i);
+            skin_img_size.w = td.w;
+            skin_img_size.h = td.h;
         }
     }
 

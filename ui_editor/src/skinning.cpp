@@ -43,6 +43,8 @@ void processSkinning(int prev_selected_crop = -1) {
             skinningShader.skin_tex_id = skin_tex.texID;
             skin_img_rect.height = (float)skin_tex.h / (float)skin_tex.w;
             GUI.skinning_image = skin_tex.path;
+            GUI.skin_img_size.w = skin_tex.w;
+            GUI.skin_img_size.h = skin_tex.h;
         }
     }
 
@@ -92,7 +94,7 @@ void processSkinning(int prev_selected_crop = -1) {
         crop_img_rect.height = UIMap["w crop h"]._data.f / UI_FLT_VAL_SCALE;
 
         LayoutRect draw_rect = crop_img_rect;
-        // TODO : fix
+
         draw_rect.width = skin_img_rect.width * crop_img_rect.width;
         draw_rect.height = skin_img_rect.height * crop_img_rect.height;
 
@@ -145,6 +147,9 @@ void processSkinning(int prev_selected_crop = -1) {
         WIDGET & w = GUI.getWidget(widgets_list.getSelected(), winID);
         TexData td =  skin_crops[skin_crops_list.getSelected()].first;
         region<float> crop = skin_crops[skin_crops_list.getSelected()].second;
+        td.texID = skinningShader.skin_tex_id;
+        td.w = GUI.skin_img_size.w;
+        td.h = GUI.skin_img_size.h;
         w.useSkinImage(
             td.texID,
             td.w,
