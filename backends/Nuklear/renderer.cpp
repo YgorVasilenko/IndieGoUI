@@ -526,6 +526,7 @@ void UI_element::callUIfunction(float x, float y, float space_w, float space_h) 
         // TODO : add skinning
         std::string& stringRef = *_data.strPtr;
         stringToText(stringRef);
+        // ctx->style.edit.normal
         nk_edit_string(ctx, NK_EDIT_SIMPLE, text, &text_len, 512, nk_filter_default);
         textToString(stringRef);
         // return;
@@ -570,6 +571,12 @@ void UI_element::callUIfunction(float x, float y, float space_w, float space_h) 
         } else {
             button_state = nk_button_label(ctx, label.c_str());
         }
+        nk_bool button_hovered = nk_widget_is_hovered(ctx);
+        if (button_hovered) {
+            isHovered = true;
+        } else {
+            isHovered = false;
+        }
 
         if (button_state)
             _data.b = true;
@@ -593,8 +600,33 @@ void UI_element::callUIfunction(float x, float y, float space_w, float space_h) 
     }
 
     if (type == UI_BUTTON_SWITCH) {
-        // TODO : add skinning
+        if (skinned_style.props[button_normal].first != -1) {
+            ctx->style.button.normal = nk_style_item_image(
+                images[skinned_style.props[button_normal].first][skinned_style.props[button_normal].second].first
+            );
+        }
+        if (skinned_style.props[button_hover].first != -1) {
+            ctx->style.button.hover = nk_style_item_image(
+                images[skinned_style.props[button_hover].first][skinned_style.props[button_hover].second].first
+            );
+        }
+        if (skinned_style.props[button_active].first != -1) {
+            ctx->style.button.active = nk_style_item_image(
+                images[skinned_style.props[button_active].first][skinned_style.props[button_active].second].first
+            );
+        }
+
         if (_data.b) {
+            // use "active" skin for normal and hover properties
+            if (skinned_style.props[button_active].first != -1) {
+                ctx->style.button.normal = nk_style_item_image(
+                    images[skinned_style.props[button_active].first][skinned_style.props[button_active].second].first
+                );
+                ctx->style.button.hover = nk_style_item_image(
+                    images[skinned_style.props[button_active].first][skinned_style.props[button_active].second].first
+                );
+            } else {
+                // default styling options
                 struct nk_style_button button;
                 button = ctx->style.button;
                 ctx->style.button.normal = nk_style_item_color(nk_rgb(40, 40, 40));
@@ -605,11 +637,13 @@ void UI_element::callUIfunction(float x, float y, float space_w, float space_h) 
                 ctx->style.button.text_normal = nk_rgb(60, 60, 60);
                 ctx->style.button.text_hover = nk_rgb(60, 60, 60);
                 ctx->style.button.text_active = nk_rgb(60, 60, 60);
-                nk_button_label(ctx, label.c_str());
                 ctx->style.button = button;
-            } else if (nk_button_label(ctx, label.c_str()))
-                _data.b = true;
-            else
+            }
+            if (nk_button_label(ctx, label.c_str()))
+                _data.b = false;
+        } else if (nk_button_label(ctx, label.c_str()))
+            _data.b = true;
+        else
             _data.b = false;
         // return;
     }
@@ -912,7 +946,7 @@ void WIDGET::callImmediateBackend(UI_elements_map & UIMap){
     ctx->style.window.spacing = nk_vec2(spacing.h, spacing.w);
     ctx->style.window.padding = nk_vec2(padding.h, padding.w);
     ctx->style.window.border = border_size;
-
+    
     if (font != "None") {
         nk_style_set_font(
             ctx,

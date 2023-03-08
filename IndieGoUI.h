@@ -281,7 +281,7 @@ namespace IndieGo {
 				std::string * strPtr;
 			} _data;
 
-
+			bool isHovered = false;
 			bool rmb_click = false;
 			// Nuklear does not have options for buttons usage,
 			// so this is a workaround
