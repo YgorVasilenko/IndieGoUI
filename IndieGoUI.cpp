@@ -75,9 +75,13 @@ void WIDGET::copyWidget(const std::string & add_name, WIDGET * other) {
 	has_scrollbar = other->has_scrollbar;
 	screen_region = other->screen_region;
 	border = other->border;
+    custom_style = other->custom_style;
+    style = other->style;
+    skinned_style = other->skinned_style;
+    font = other->font;
+    font_size = other->font_size;
 
     UI_elements_map & UIMap = *uiMapPtr;
-
     for (auto row : other->layout_grid) {
         int c = 0;
         for (auto cell : row.cells) {
