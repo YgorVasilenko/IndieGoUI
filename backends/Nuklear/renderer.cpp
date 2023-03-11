@@ -100,7 +100,6 @@ std::map<unsigned int, std::vector<std::pair<struct nk_image, IndieGo::UI::regio
 // context should be same for respective winID
 std::map<std::string, struct nk_glfw*> glfw_storage;
 
-
 std::map<std::string, struct nk_font> fonts;
 
 // TODO - struct for several atlases loading
@@ -365,6 +364,7 @@ void prepareUIRenderer(GLFWwindow* window, std::string & winID) {
 }
 
 using namespace IndieGo::UI;
+void (*Manager::buttonClickCallback)(void*) = NULL;
 
 void Manager::scroll(void * window, double xoff, double yoff) {
     std::string glfw_win = *reinterpret_cast<std::string*>(window);
@@ -578,10 +578,14 @@ void UI_element::callUIfunction(float x, float y, float space_w, float space_h) 
             isHovered = false;
         }
 
-        if (button_state)
+        if (button_state) {
             _data.b = true;
-        else
+            if (Manager::buttonClickCallback) {
+                Manager::buttonClickCallback(NULL);
+            }
+        } else {
             _data.b = false;
+        }
 
         if (selected_by_keys)
             _data.b = true;
