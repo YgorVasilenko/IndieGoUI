@@ -852,7 +852,8 @@ namespace IndieGo {
 		// Main UI's controlling memory struct - contains all possible memory maps and widgets,
 		// adds new ones and removes old, makes calls to Immediate-Mode backends
 		struct Manager {
-
+			
+			static void (*buttonClickCallback)(void*);
 			std::string project_dir = "";
 			region_size<unsigned int> screen_size;
 
@@ -1014,4 +1015,5 @@ namespace IndieGo {
 		};
 	}
 }
+
 #endif
