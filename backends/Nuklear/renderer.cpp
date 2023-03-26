@@ -368,8 +368,13 @@ void (*Manager::buttonClickCallback)(void*) = NULL;
 
 void Manager::scroll(void * window, double xoff, double yoff) {
     std::string glfw_win = *reinterpret_cast<std::string*>(window);
-    struct nk_glfw * glfw = glfw_storage[glfw_win];
-
+    struct nk_glfw* glfw = glfw_storage[glfw_win];
+    if (!guiHasCursor(glfw_win)) {
+        glfw->scroll.x += 0.f;
+        glfw->scroll.y += 0.f;
+        return;
+    }
+    
     (void)xoff;
     glfw->scroll.x += (float)xoff;
     glfw->scroll.y += (float)yoff;
@@ -463,7 +468,6 @@ void textToString(std::string & str) {
 // callUIfunction abstracts away different UI elements.
 //
 //-------------------------------------------------------
-
 void UI_element::callUIfunction(float x, float y, float space_w, float space_h) {
 
     if (font != "None") {
@@ -598,7 +602,6 @@ void UI_element::callUIfunction(float x, float y, float space_w, float space_h) 
     }
 
     // nk_button_image_label
-
     if (type == UI_EMPTY) {
         nk_spacing(ctx, 1);
     }
@@ -1091,6 +1094,19 @@ void WIDGET::endRow() {
 }
 
 #define NK_GLFW_GL3_MOUSE_GRABBING
+
+char uncode_to_char(unsigned int codepoint) {
+    nk_rune u = codepoint;
+    char c;
+    nk_utf_encode(u, &c, 1);
+    return c;
+}
+
+unsigned int char_to_uncode(char c) {
+    nk_rune u;
+    nk_utf_decode((const char*)&c, &u, 2);
+    return (unsigned int)u;
+}
 
 void Manager::drawFrameStart(std::string & winID) {
     struct nk_glfw * glfw = glfw_storage[winID];
