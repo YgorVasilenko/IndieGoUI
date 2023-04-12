@@ -20,6 +20,7 @@
 #include <string>
 #include <vector>
 #include <map>
+#include <functional>
 #include <iostream>
 #include <fstream>
 #include <algorithm>
@@ -287,6 +288,18 @@ namespace IndieGo {
 			// so this is a workaround
 			bool hovered_by_keys = false;
 			bool selected_by_keys = false;
+
+			// interaction callbacks
+			std::vector<std::function<void(void*)>> activeCallbacks;
+			std::vector<void *> activeDatas;
+
+			void setActiveCallback(
+				void (*callbackPtr)(void*), 
+				void * dataPtr = NULL
+			) {
+				activeCallbacks.push_back(callbackPtr);
+				activeDatas.push_back(dataPtr);
+			};
 
 			bool modifyable_progress_bar = false;
 

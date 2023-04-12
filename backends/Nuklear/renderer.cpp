@@ -599,6 +599,15 @@ void UI_element::callUIfunction(float x, float y, float space_w, float space_h) 
         } else {
             rmb_click = false;
         }
+
+        if (_data.b) {
+            // evoke callbacks
+            unsigned int cbIdx = 0;
+            for (auto callback : activeCallbacks) {
+                callback(activeDatas[cbIdx]);
+                cbIdx++;
+            }
+        }
     }
 
     // nk_button_image_label
