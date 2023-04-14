@@ -231,6 +231,7 @@ void initWidgets() {
     // --------------------------------------------------------
     UIMap.addElement("new element name label", UI_STRING_LABEL, &e_widget, to_new_col);
     UIMap["new element name label"].label = "new element name:";
+    UIMap["new element name label"].text_align = IndieGo::UI::TEXT_ALIGN::LEFT;
     
     UIMap.addElement("new element name", UI_STRING_INPUT, &e_widget, to_new_subrow);
     UIMap["new element name"].label = "new element name";
@@ -595,6 +596,7 @@ void initWidgets() {
 
     UIMap.addElement("elt label label", UI_STRING_LABEL, &elt_props_widget);
     UIMap["elt label label"].label = "label:";
+    UIMap["elt label label"].text_align = IndieGo::UI::TEXT_ALIGN::LEFT;
 
     UIMap.addElement("elt label", UI_STRING_INPUT, &elt_props_widget);
 
@@ -609,13 +611,18 @@ void initWidgets() {
 
     UIMap.addElement("elt name label", UI_STRING_LABEL, &elt_props_widget);
     UIMap["elt name label"].label = "name:";
+    UIMap["elt name label"].text_align = IndieGo::UI::TEXT_ALIGN::LEFT;
 
     UIMap.addElement("elt name", UI_STRING_INPUT, &elt_props_widget);
 
     UIMap.addElement("rename element", UI_BUTTON, &elt_props_widget);
     UIMap["rename element"].label = "rename element";
-    for (int i = 0; i < 14; i++) {
-        elt_props_widget.updateRowHeight(i, 0.06f);
+    
+    UIMap.addElement("element text align", UI_BUTTON, &elt_props_widget);
+    UIMap["element text align"].label = "text align: left";
+
+    for (int i = 0; i < 15; i++) {
+        elt_props_widget.updateRowHeight(i, 0.055f);
     }
 
     std::string home_dir = fs::current_path().string();
