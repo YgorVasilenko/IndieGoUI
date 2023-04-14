@@ -478,8 +478,8 @@ void initWidgets() {
     // Skinning elements widget:
     // load skin image button and path, display image, selected skinning property coords, image scale and location on screen
     WIDGET skinning;
-    skinning.screen_region.x = 0.7f;
-    skinning.screen_region.y = 0.5f;
+    skinning.screen_region.x = 0.83f;
+    skinning.screen_region.y = 0.29f;
     skinning.screen_region.w = 0.12f;
     skinning.screen_region.h = 0.7f;
     skinning.name = "Skinning";
@@ -570,9 +570,9 @@ void initWidgets() {
     // all things for element live here
     WIDGET element_props;
     element_props.screen_region.x = 0.7f;
-    element_props.screen_region.y = 0.5f;
+    element_props.screen_region.y = 0.29f;
     element_props.screen_region.w = 0.12f;
-    element_props.screen_region.h = 0.4f;
+    element_props.screen_region.h = 0.5f;
     element_props.name = "Element properties";
     editorWidgets.push_back(element_props.name);
 
