@@ -46,6 +46,7 @@ void initWidgets() {
 
     UIMap.addElement("widgets list", UI_ITEMS_LIST, &c_widget);
     UIMap["widgets list"].label = "widgets list";
+    UIMap["widgets list"].text_align = IndieGo::UI::TEXT_ALIGN::LEFT;
     c_widget.updateRowHeight(c_widget.layout_grid.size() - 1, 0.8f);
 
     UIMap.addElement("new widget name label", UI_STRING_LABEL, &c_widget, to_new_col);
@@ -189,20 +190,93 @@ void initWidgets() {
     e_widget.hidden = true;
     e_widget.has_scrollbar = false;
 
+    // Column 0 - takes full widget space
+    // --------------------------------------------------------
     UIMap.addElement("elements list", UI_ITEMS_LIST, &e_widget);
     UIMap["elements list"].label = "elements list";    
+    UIMap["elements list"].text_align = IndieGo::UI::TEXT_ALIGN::LEFT;
 
+    // --------------------------------------------------------
+
+    // Column 1 - under it "width" and "height" elements, also "selected widget" text
+    // --------------------------------------------------------
     UIMap.addElement("rows list", UI_ITEMS_LIST, &e_widget, to_new_col);
     UIMap["rows list"].label = "rows";
+    UIMap["rows list"].text_align = IndieGo::UI::TEXT_ALIGN::LEFT;
 
+    UIMap.addElement("row height", UI_FLOAT, &e_widget, to_new_subrow);
+    UIMap["row height"].label = "row height";
+
+    UIMap.addElement("col width", UI_FLOAT, &e_widget, to_new_subrow);
+    UIMap["col width"].label = "col width";
+
+    UIMap.addElement("element borders", UI_BOOL, &e_widget, to_new_subrow);
+    UIMap["element borders"].label = "element borders";
+
+    UIMap.addElement("layout borders", UI_BOOL, &e_widget, to_new_subrow);
+    UIMap["layout borders"].label = "layout borders";
+
+    UIMap.addElement("selected widget", UI_STRING_TEXT, &e_widget, to_new_subrow);
+    UIMap["selected widget"].label = "selected widget:";
+
+    // --------------------------------------------------------
+
+    // Column 2 - nothing under it
+    // --------------------------------------------------------
     UIMap.addElement("cols list", UI_ITEMS_LIST, &e_widget, to_new_col);
     UIMap["cols list"].label = "cols";
+    UIMap["cols list"].text_align = IndieGo::UI::TEXT_ALIGN::LEFT;
 
+    // Column 3 - half of buttons
+    // --------------------------------------------------------
     UIMap.addElement("new element name label", UI_STRING_LABEL, &e_widget, to_new_col);
     UIMap["new element name label"].label = "new element name:";
     
+    UIMap.addElement("new element name", UI_STRING_INPUT, &e_widget, to_new_subrow);
+    UIMap["new element name"].label = "new element name";
+
     UIMap.addElement("switch type", UI_BOOL, &e_widget, to_new_subrow);
     UIMap["switch type"].label = "switch type";
+
+    // UIMap.addElement("rename element", UI_BUTTON, &e_widget, to_new_subrow);
+    // UIMap["rename element"].label = "rename element";
+
+    UIMap.addElement("push opt", UI_BUTTON, &e_widget, to_new_subrow);
+    UIMap["push opt"].label = "push: to new row";
+
+    UIMap.addElement("delete element", UI_BUTTON, &e_widget, to_new_subrow);
+    UIMap["delete element"].label = "delete elt";
+
+    UIMap.addElement("keep space", UI_BOOL, &e_widget, to_new_subrow);
+    UIMap["keep space"].label = "keep space";
+
+    UIMap.addElement("back to widgets", UI_BUTTON, &e_widget, to_new_subrow);
+    UIMap["back to widgets"].label = "back to widgets";
+
+    UIMap.addElement("empty_0", UI_EMPTY, &e_widget, to_new_subrow);
+    // UIMap["add input"].label = "add input";
+
+    UIMap.addElement("empty_1", UI_EMPTY, &e_widget, to_new_subrow);
+
+    UIMap.addElement("empty_2", UI_EMPTY, &e_widget, to_new_subrow);
+    // UIMap["add int"].label = "add int";
+
+    // Column 3 - last column
+    // --------------------------------------------------------
+    UIMap.addElement("add image", UI_BUTTON, &e_widget, to_new_col);
+    UIMap["add image"].label = "add image";
+
+    UIMap.addElement("add label", UI_BUTTON, &e_widget, to_new_subrow);
+    UIMap["add label"].label = "add label";
+
+    UIMap.addElement("add text", UI_BUTTON, &e_widget, to_new_subrow);
+    UIMap["add text"].label = "add text";
+    
+    UIMap.addElement("add empty", UI_BUTTON, &e_widget, to_new_subrow);
+    UIMap["add empty"].label = "add empty";
+
+    UIMap.addElement("add float", UI_BUTTON, &e_widget, to_new_subrow);
+    UIMap["add float"].label = "add float";
 
     UIMap.addElement("add button", UI_BUTTON, &e_widget, to_new_subrow);
     UIMap["add button"].label = "add button";
@@ -219,130 +293,28 @@ void initWidgets() {
     UIMap.addElement("add int", UI_BUTTON, &e_widget, to_new_subrow);
     UIMap["add int"].label = "add int";
 
-    UIMap.addElement("new element name", UI_STRING_INPUT, &e_widget, to_new_col);
-    UIMap["new element name"].label = "new element name";
-
-    UIMap.addElement("rename element", UI_BUTTON, &e_widget, to_new_subrow);
-    UIMap["rename element"].label = "rename element";
-
-    UIMap.addElement("add image", UI_BUTTON, &e_widget, to_new_subrow);
-    UIMap["add image"].label = "add image";
-
-    UIMap.addElement("add label", UI_BUTTON, &e_widget, to_new_subrow);
-    UIMap["add label"].label = "add label";
-
-    UIMap.addElement("add text", UI_BUTTON, &e_widget, to_new_subrow);
-    UIMap["add text"].label = "add text";
-    
-    UIMap.addElement("add empty", UI_BUTTON, &e_widget, to_new_subrow);
-    UIMap["add empty"].label = "add empty";
-
-    UIMap.addElement("add float", UI_BUTTON, &e_widget, to_new_subrow);
-    UIMap["add float"].label = "add float";
-
-    e_widget.updateRowHeight(e_widget.layout_grid.size() - 1, 0.5f);
-
+    e_widget.updateRowHeight(e_widget.layout_grid.size() - 1, 0.9f);
+    e_widget.updateColWidth(e_widget.layout_grid.size() - 1, 0, 0.35f);
     e_widget.updateColWidth(e_widget.layout_grid.size() - 1, 1, 0.1f);
     e_widget.updateColWidth(e_widget.layout_grid.size() - 1, 2, 0.1f);
-    e_widget.updateColWidth(e_widget.layout_grid.size() - 1, 3, 0.29f);
-    e_widget.updateColWidth(e_widget.layout_grid.size() - 1, 4, 0.29f);
-
-    // width and height of specific element
-    UIMap.addElement("element width", UI_FLOAT, &e_widget);
-    UIMap["element width"].label = "width";
-    UIMap.addElement("element height", UI_FLOAT, &e_widget, to_new_subrow);
-    UIMap["element height"].label = "height";
-    UIMap.addElement("element pad x", UI_FLOAT, &e_widget, to_new_subrow);
-    UIMap["element pad x"].label = "pad x";
-    UIMap.addElement("element pad y", UI_FLOAT, &e_widget, to_new_subrow);
-    UIMap["element pad y"].label = "pad y";
-    UIMap.addElement("element border", UI_FLOAT, &e_widget, to_new_subrow);
-    UIMap["element border"].label = "border";
-    UIMap.addElement("element rounding", UI_FLOAT, &e_widget, to_new_subrow);
-    UIMap["element rounding"].label = "rounding";
-
-    UIMap.addElement("row height", UI_FLOAT, &e_widget, to_new_col);
-    UIMap["row height"].label = "row height";
-
-    UIMap.addElement("col width", UI_FLOAT, &e_widget, to_new_subrow);
-    UIMap["col width"].label = "col width";
+    e_widget.updateColWidth(e_widget.layout_grid.size() - 1, 3, 0.225f);
+    e_widget.updateColWidth(e_widget.layout_grid.size() - 1, 4, 0.225f);
     
-    UIMap.addElement("delete element", UI_BUTTON, &e_widget, to_new_subrow);
-    UIMap["delete element"].label = "delete elt";
+    UIMap["rows list"].height *= 4.f;
+    UIMap["cols list"].height = UIMap["rows list"].height;
 
-    UIMap.addElement("keep space", UI_BOOL, &e_widget, to_new_subrow);
-    UIMap["keep space"].label = "keep space";
+    std::vector<std::string> similar_changes = {
+        "row height",
+        "col width",
+        "element borders",
+        "layout borders",
+        "selected widget"
+    };
 
-    // UIMap.addElement("switch type", UI_BUTTON, &e_widget, to_new_subrow);
-    // UIMap["switch type"].label = "switch type";
-
-    UIMap.addElement("push opt", UI_BUTTON, &e_widget, to_new_subrow);
-    UIMap["push opt"].label = "push: to new row";
-
-    UIMap.addElement("layout borders", UI_BOOL, &e_widget, to_new_subrow);
-    UIMap["layout borders"].label = "layout borders";
-
-    UIMap.addElement("elt label label", UI_STRING_LABEL, &e_widget, to_new_col);
-    UIMap["elt label label"].label = "label:";
-
-    UIMap.addElement("selected widget", UI_STRING_TEXT, &e_widget, to_new_subrow);
-    UIMap["selected widget"].label = "selected widget:";
-
-    UIMap.addElement("back to widgets", UI_BUTTON, &e_widget, to_new_subrow);
-    UIMap["back to widgets"].label = "back to widgets";
-
-    UIMap.addElement("element borders", UI_BOOL, &e_widget, to_new_subrow);
-    UIMap["element borders"].label = "element borders";
-
-    UIMap.addElement("elt label", UI_STRING_INPUT, &e_widget, to_new_col);
-
-    UIMap.addElement("init button img", UI_BUTTON, &e_widget, to_new_subrow);
-    UIMap["init button img"].label = "init button img";
-
-    UIMap.addElement("crop as img", UI_BOOL, &e_widget, to_new_subrow);
-    UIMap["crop as img"].label = "use crop as img";
-
-    UIMap.addElement("crop to img", UI_BUTTON, &e_widget, to_new_subrow);
-    UIMap["crop to img"].label = "apply crop";
-
-    e_widget.layout_grid.back().cells[2].min_width = 0.22f;
-    UIMap["elt label"].width = 0.2f;
-    UIMap["elt label"].height = 0.09f;
-
-    UIMap["init button img"].width = 0.2f;
-    UIMap["init button img"].height = 0.07f;
-    UIMap["back to widgets"].width = 0.2f;
-    UIMap["crop to img"].width = 0.2f;
-    UIMap["crop to img"].height = 0.07f;
-
-    e_widget.layout_grid.back().cells[0].min_width = 0.28f;
-    UIMap["elements list"].height = 0.5f;
-    UIMap["element width"].height = 0.06f;
-    UIMap["element width"].width = 0.28f;
-    UIMap["element height"].height = 0.06f;
-    UIMap["element height"].width = 0.28f;
-    UIMap["element pad x"].height = 0.06f;
-    UIMap["element pad x"].width = 0.28f;
-    UIMap["element pad y"].height = 0.06f;
-    UIMap["element pad y"].width = 0.28f;
-    UIMap["element border"].height = 0.06f;
-    UIMap["element border"].width = 0.28f;
-    UIMap["element rounding"].height = 0.06f;
-    UIMap["element rounding"].width = 0.28f;
-
-    e_widget.layout_grid.back().cells[1].min_width = 0.28f;
-    UIMap["row height"].width = 0.28f;
-    UIMap["row height"].height = 0.06f;
-    UIMap["col width"].width = 0.28f;
-    UIMap["col width"].height = 0.06f;
-    UIMap["delete element"].width = 0.28f;
-    UIMap["delete element"].height = 0.06f;
-    UIMap["keep space"].width = 0.28f;
-    UIMap["keep space"].height = 0.06f;
-    UIMap["switch type"].width = 0.28f;
-    UIMap["switch type"].height = 0.06f;
-    UIMap["push opt"].width = 0.28f;
-    UIMap["push opt"].height = 0.06f;
+    for (auto name : similar_changes) {
+        UIMap[name].width *= 2.f;    
+        UIMap[name].height /= 3.f;
+    }
 
     WIDGET widgets_style;
     widgets_style.screen_region.x = (float)(WIDTH / 4) / ((float)WIDTH);
@@ -489,6 +461,7 @@ void initWidgets() {
 
     UIMap.addElement("loaded fonts", UI_ITEMS_LIST, &fonts_widget, to_new_col);
     UIMap["loaded fonts"].label = "loaded fonts";
+    UIMap["loaded fonts"].text_align = IndieGo::UI::TEXT_ALIGN::LEFT;
 
     UIMap.addElement("font sizes", UI_ITEMS_LIST, &fonts_widget, to_new_col);
     UIMap["font sizes"].label = "sizes";
@@ -592,6 +565,58 @@ void initWidgets() {
     skinning_widget.updateRowHeight(14, 0.03f);
     skinning_widget.updateRowHeight(15, 0.03f);
     skinning_widget.updateRowHeight(16, 0.03f);
+
+    // Element props widget:
+    // all things for element live here
+    WIDGET element_props;
+    element_props.screen_region.x = 0.7f;
+    element_props.screen_region.y = 0.5f;
+    element_props.screen_region.w = 0.12f;
+    element_props.screen_region.h = 0.4f;
+    element_props.name = "Element properties";
+    editorWidgets.push_back(element_props.name);
+
+    WIDGET & elt_props_widget = GUI.addWidget(element_props, winID);
+    elt_props_widget.has_scrollbar = false;
+
+    // width and height of specific element
+    UIMap.addElement("element width", UI_FLOAT, &elt_props_widget);
+    UIMap["element width"].label = "width";
+    UIMap.addElement("element height", UI_FLOAT, &elt_props_widget);
+    UIMap["element height"].label = "height";
+    UIMap.addElement("element pad x", UI_FLOAT, &elt_props_widget);
+    UIMap["element pad x"].label = "pad x";
+    UIMap.addElement("element pad y", UI_FLOAT, &elt_props_widget);
+    UIMap["element pad y"].label = "pad y";
+    UIMap.addElement("element border", UI_FLOAT, &elt_props_widget);
+    UIMap["element border"].label = "border";
+    UIMap.addElement("element rounding", UI_FLOAT, &elt_props_widget);
+    UIMap["element rounding"].label = "rounding";
+
+    UIMap.addElement("elt label label", UI_STRING_LABEL, &elt_props_widget);
+    UIMap["elt label label"].label = "label:";
+
+    UIMap.addElement("elt label", UI_STRING_INPUT, &elt_props_widget);
+
+    UIMap.addElement("init button img", UI_BUTTON, &elt_props_widget);
+    UIMap["init button img"].label = "init button img";
+
+    UIMap.addElement("crop as img", UI_BOOL, &elt_props_widget);
+    UIMap["crop as img"].label = "use crop as img";
+
+    UIMap.addElement("crop to img", UI_BUTTON, &elt_props_widget);
+    UIMap["crop to img"].label = "apply crop";
+
+    UIMap.addElement("elt name label", UI_STRING_LABEL, &elt_props_widget);
+    UIMap["elt name label"].label = "name:";
+
+    UIMap.addElement("elt name", UI_STRING_INPUT, &elt_props_widget);
+
+    UIMap.addElement("rename element", UI_BUTTON, &elt_props_widget);
+    UIMap["rename element"].label = "rename element";
+    for (int i = 0; i < 14; i++) {
+        elt_props_widget.updateRowHeight(i, 0.06f);
+    }
 
     std::string home_dir = fs::current_path().string();
     if (home_dir.find("ui_editor") == std::string::npos) {
