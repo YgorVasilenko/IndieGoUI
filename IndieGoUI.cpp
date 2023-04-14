@@ -175,6 +175,8 @@ void addElement(
     std::string widID, 
     std::string winID, 
     std::string elt_name, 
+    std::string anchor, 
+    bool push_after,
     UI_ELEMENT_TYPE type
 ) {
     if (elt_name.size() == 0)
@@ -191,7 +193,7 @@ void addElement(
     // get UIMap
     UI_elements_map & UIMap = GUI.UIMaps[winID];
     // add element to widget
-    UIMap.addElement(elt_name, type, &w, push_opt);
+    UIMap.addElement(elt_name, type, &w, push_opt, anchor, push_after);
 }
 
 #ifdef RELEASE_BUILD
@@ -505,6 +507,8 @@ void Manager::deserialize(const std::string & winID, const std::string & path) {
                 w.widget().name(),
                 winID,
                 e.name(),
+                "None", // push after here always None
+                false,
                 (UI_ELEMENT_TYPE)e.type()
             );
             

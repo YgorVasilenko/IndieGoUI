@@ -67,11 +67,25 @@ void updateLayoutFromUI(
     }
 }
 
+std::string getTextAlignLabel(IndieGo::UI::TEXT_ALIGN align) {
+    if (align == IndieGo::UI::TEXT_ALIGN::LEFT)
+        return "text align: left";
+    
+    if (align == IndieGo::UI::TEXT_ALIGN::CENTER)
+        return "text align: center";
+
+    if (align == IndieGo::UI::TEXT_ALIGN::RIGHT)
+        return "text align: right";
+
+    return "Unexpected value!";
+}
+
 void updateElementFromUI(
     std::string elementName, 
     std::string winID,
     std::string widID // required for element's renaming
 ) {
+
     UI_elements_map & UIMap = GUI.UIMaps[winID];
     UI_element & e = UIMap[elementName];
 
@@ -95,6 +109,16 @@ void updateElementFromUI(
             );
         }
     }
+
+    if (UIMap["element text align"]._data.b) {
+        if (e.text_align == IndieGo::UI::TEXT_ALIGN::CENTER) {
+            e.text_align = IndieGo::UI::TEXT_ALIGN::RIGHT;
+        } else if (e.text_align == IndieGo::UI::TEXT_ALIGN::RIGHT) {
+            e.text_align = IndieGo::UI::TEXT_ALIGN::LEFT;
+        } else if (e.text_align == IndieGo::UI::TEXT_ALIGN::LEFT) {
+            e.text_align = IndieGo::UI::TEXT_ALIGN::CENTER;
+        }
+    }
 }
 
 void updateUIFromElement(
@@ -112,6 +136,7 @@ void updateUIFromElement(
     UIMap["element height"]._data.f = e.height * UI_FLT_VAL_SCALE;
 
     *UIMap["elt label"]._data.strPtr = e.label;
+    UIMap["element text align"].label = getTextAlignLabel(e.text_align);
 }
 
 void updateWidgetFromUI(
@@ -286,6 +311,8 @@ extern void addElement(
     std::string widID, 
     std::string winID, 
     std::string elt_name, 
+    std::string anchor,
+    bool push_after, 
     UI_ELEMENT_TYPE type
 );
 
@@ -299,6 +326,8 @@ void processAddOptions(std::string winID) {
     UI_elements_map & UIMap = GUI.UIMaps[winID];
     ui_string_group & widgets_list = *UIMap["widgets list"]._data.usgPtr;
     ui_string_group & elements_list = *UIMap["elements list"]._data.usgPtr;
+    bool use_anchor = UIMap["selected anchor"]._data.b;
+    bool push_after_anchor = UIMap["push after anchor"]._data.b;
 
     if (UIMap["delete element"]._data.b && elements_list.selected_element != -1) {
         WIDGET& w = GUI.getWidget(widgets_list.getSelected(), winID);
@@ -315,6 +344,7 @@ void processAddOptions(std::string winID) {
     }
 
     std::string new_element_name = *UIMap["new element name"]._data.strPtr;
+    std::string anchor_element = use_anchor && elements_list.selected_element != -1 ? elements_list.getSelected() : "None";
     // if (new_element_name.size() == 0) return;
 
     if ( UIMap["add image"]._data.b ) {
@@ -324,7 +354,13 @@ void processAddOptions(std::string winID) {
                 new_element_name = elements_list.getSelected();
                 UIMap[new_element_name].type = t;
             } else {
-                addElement(widgets_list.getSelected(), winID, new_element_name, t);
+                addElement(
+                    widgets_list.getSelected(), 
+                    winID, new_element_name, 
+                    anchor_element,
+                    push_after_anchor,
+                    t
+                );
             }
         } else {
             std::vector<std::string> paths = getPaths(true, false, GUI.project_dir);
@@ -335,7 +371,14 @@ void processAddOptions(std::string winID) {
                     new_element_name = elements_list.getSelected();
                     UIMap[new_element_name].type = t;
                 } else {
-                    addElement(widgets_list.getSelected(), winID, new_element_name, t);
+                    addElement(
+                        widgets_list.getSelected(), 
+                        winID, 
+                        new_element_name, 
+                        anchor_element,
+                        push_after_anchor,
+                        t
+                    );
                 }
                 region<float> crop = { 0.f, 0.f, 1.f, 1.f };
                 UIMap[new_element_name].initImage(td.texID, td.w, td.h, crop);
@@ -349,7 +392,14 @@ void processAddOptions(std::string winID) {
             UIMap[elements_list.getSelected()].type = UI_STRING_TEXT;
         } else {
             UI_ELEMENT_TYPE t = UI_STRING_TEXT;
-            addElement(widgets_list.getSelected(), winID, new_element_name, t);
+            addElement(
+                widgets_list.getSelected(), 
+                winID, 
+                new_element_name, 
+                anchor_element,
+                push_after_anchor,
+                t
+            );
             UIMap[new_element_name].label = new_element_name;
         }
     }
@@ -358,7 +408,14 @@ void processAddOptions(std::string winID) {
             UIMap[elements_list.getSelected()].type = UI_STRING_LABEL;
         } else {
             UI_ELEMENT_TYPE t = UI_STRING_LABEL;
-            addElement(widgets_list.getSelected(), winID, new_element_name, t);
+            addElement(
+                widgets_list.getSelected(), 
+                winID, 
+                new_element_name, 
+                anchor_element,
+                push_after_anchor,
+                t
+            );
             UIMap[new_element_name].label = new_element_name;
         }
     }
@@ -367,7 +424,14 @@ void processAddOptions(std::string winID) {
             UIMap[elements_list.getSelected()].type = UI_PROGRESS;
         } else {
             UI_ELEMENT_TYPE t = UI_PROGRESS;
-            addElement(widgets_list.getSelected(), winID, new_element_name, t);
+            addElement(
+                widgets_list.getSelected(), 
+                winID, 
+                new_element_name, 
+                anchor_element,
+                push_after_anchor,
+                t
+            );
             UIMap[new_element_name].modifyable_progress_bar = true; // hard-code for now
         }
     }
@@ -376,7 +440,14 @@ void processAddOptions(std::string winID) {
             UIMap[elements_list.getSelected()].type = UI_BUTTON;
         } else {
             UI_ELEMENT_TYPE t = UI_BUTTON;
-            addElement(widgets_list.getSelected(), winID, new_element_name, t);
+            addElement(
+                widgets_list.getSelected(), 
+                winID, 
+                new_element_name, 
+                anchor_element,
+                push_after_anchor,
+                t
+            );
             UIMap[new_element_name].label = new_element_name;
         }
     }
@@ -385,7 +456,14 @@ void processAddOptions(std::string winID) {
             UIMap[elements_list.getSelected()].type = UI_BOOL;
         } else {
             UI_ELEMENT_TYPE t = UI_BOOL;
-            addElement(widgets_list.getSelected(), winID, new_element_name, t);
+            addElement(
+                widgets_list.getSelected(), 
+                winID, 
+                new_element_name, 
+                anchor_element,
+                push_after_anchor,
+                t
+            );
             UIMap[new_element_name].label = new_element_name;
         }
     }
@@ -398,7 +476,14 @@ void processAddOptions(std::string winID) {
             UIMap[elements_list.getSelected()].type = UI_EMPTY;
         } else {
             UI_ELEMENT_TYPE t = UI_EMPTY;
-            addElement(widgets_list.getSelected(), winID, new_element_name, t);
+            addElement(
+                widgets_list.getSelected(), 
+                winID, 
+                new_element_name, 
+                anchor_element,
+                push_after_anchor,
+                t
+            );
             UIMap[new_element_name].label = new_element_name;
         }
     }
@@ -408,7 +493,14 @@ void processAddOptions(std::string winID) {
             UIMap[elements_list.getSelected()].type = UI_STRING_INPUT;
         } else {
             UI_ELEMENT_TYPE t = UI_STRING_INPUT;
-            addElement(widgets_list.getSelected(), winID, new_element_name, t);
+            addElement(
+                widgets_list.getSelected(), 
+                winID, 
+                new_element_name, 
+                anchor_element,
+                push_after_anchor,
+                t
+            );
             UIMap[new_element_name].label = new_element_name;
         }
     }
@@ -418,7 +510,14 @@ void processAddOptions(std::string winID) {
             UIMap[elements_list.getSelected()].type = UI_FLOAT;
         } else {
             UI_ELEMENT_TYPE t = UI_FLOAT;
-            addElement(widgets_list.getSelected(), winID, new_element_name, t);
+            addElement(
+                widgets_list.getSelected(), 
+                winID, 
+                new_element_name, 
+                anchor_element,
+                push_after_anchor,
+                t
+            );
             UIMap[new_element_name].label = new_element_name;
         }
     }

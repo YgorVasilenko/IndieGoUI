@@ -239,6 +239,11 @@ void initWidgets() {
     UIMap.addElement("switch type", UI_BOOL, &e_widget, to_new_subrow);
     UIMap["switch type"].label = "switch type";
 
+    UIMap.addElement("selected anchor", UI_BOOL, &e_widget, to_new_subrow);
+    UIMap["selected anchor"].label = "Use selected as anchor";
+
+    UIMap.addElement("push after anchor", UI_BOOL, &e_widget, to_new_subrow);
+    UIMap["push after anchor"].label = "push after anchor";
     // UIMap.addElement("rename element", UI_BUTTON, &e_widget, to_new_subrow);
     // UIMap["rename element"].label = "rename element";
 
@@ -257,9 +262,9 @@ void initWidgets() {
     UIMap.addElement("empty_0", UI_EMPTY, &e_widget, to_new_subrow);
     // UIMap["add input"].label = "add input";
 
-    UIMap.addElement("empty_1", UI_EMPTY, &e_widget, to_new_subrow);
+    // UIMap.addElement("empty_1", UI_EMPTY, &e_widget, to_new_subrow);
 
-    UIMap.addElement("empty_2", UI_EMPTY, &e_widget, to_new_subrow);
+    // UIMap.addElement("empty_2", UI_EMPTY, &e_widget, to_new_subrow);
     // UIMap["add int"].label = "add int";
 
     // Column 3 - last column
