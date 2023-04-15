@@ -20,6 +20,7 @@
 #include <string>
 #include <vector>
 #include <map>
+#include <functional>
 #include <iostream>
 #include <fstream>
 #include <algorithm>
@@ -287,6 +288,18 @@ namespace IndieGo {
 			// so this is a workaround
 			bool hovered_by_keys = false;
 			bool selected_by_keys = false;
+
+			// interaction callbacks
+			std::vector<std::function<void(void*)>> activeCallbacks;
+			std::vector<void *> activeDatas;
+
+			void setActiveCallback(
+				void (*callbackPtr)(void*), 
+				void * dataPtr = NULL
+			) {
+				activeCallbacks.push_back(callbackPtr);
+				activeDatas.push_back(dataPtr);
+			};
 
 			bool modifyable_progress_bar = false;
 
@@ -583,7 +596,9 @@ namespace IndieGo {
 			// returns position on layout, that element was eventually added to
 			std::pair<int, int> addElement(
 				const std::string & elt_name, 
-				ELT_PUSH_OPT push_opt = to_new_row
+				ELT_PUSH_OPT push_opt = to_new_row,
+				const std::string & anchor = "None",
+				bool push_after = false
 			) {
 				// Guard against widgets elements doubling
 				if (std::find(widget_elements.begin(), widget_elements.end(), elt_name) != widget_elements.end()){
@@ -591,28 +606,107 @@ namespace IndieGo {
 					return std::pair<int, int>(-1, -1);
 				}
 				widget_elements.push_back(elt_name);
-				
-				if (push_opt == to_new_row) {
-					layout_grid.push_back(grid_row());
-					layout_grid.back().cells.push_back(row_cell());
-					layout_grid.back().cells.back().elements.push_back(elt_name);
-				}
 
-				if (push_opt == to_new_col) {
-					if (layout_grid.size() == 0)
-						layout_grid.push_back(grid_row());
-					layout_grid.back().cells.push_back(row_cell());
-					layout_grid.back().cells.back().elements.push_back(elt_name);
-				}
-
-				if (push_opt == to_new_subrow) {
-					if (layout_grid.size() == 0)
-						layout_grid.push_back(grid_row());
-					if (layout_grid.back().cells.size() == 0)
-						layout_grid.back().cells.push_back(row_cell());
-					layout_grid.back().cells.back().elements.push_back(elt_name);
+				if (anchor != "None") {
+					if (std::find(widget_elements.begin(), widget_elements.end(), anchor) == widget_elements.end()) {
+						std::cout << "[WARNING] addElement: element '" << anchor << "' don't exists in widget " << name << ", pushing " << elt_name << " to grid back" << std::endl;
+						return pushToGridBack(elt_name, push_opt);
+					}
+					return pushToGridAfter(elt_name, push_opt, anchor, push_after);
+				} else {
+					return pushToGridBack(elt_name, push_opt);
 				}
 			}
+			private:
+				std::pair<int, int> pushToGridAfter(
+					const std::string & elt_name, 
+					ELT_PUSH_OPT push_opt,
+					const std::string & anchor,
+					bool push_after = false
+				) {
+					unsigned int rowIdx = 0;
+					unsigned int cellIdx = 0;
+					bool found = false;
+					for (auto row : layout_grid) {
+						cellIdx = 0;
+						for (auto cell : row.cells) {
+							if (std::find(cell.elements.begin(), cell.elements.end(), anchor) != cell.elements.end()) {
+								found = true;
+								break;
+							}
+							cellIdx++;
+						}
+						if (found)
+							break;
+						rowIdx++;
+					}
+					if (push_opt == to_new_row) {
+						// insert new row
+						grid_row new_row;
+						row_cell new_cell;
+						new_cell.elements.push_back(elt_name);
+						new_row.cells.push_back(new_cell);
+						if (push_after)
+							rowIdx++;
+						layout_grid.insert(
+							layout_grid.begin() + rowIdx,
+							new_row
+						);
+						// rowIdx++;
+					}
+
+					if (push_opt == to_new_col) {
+						// insert new column in specified row
+						row_cell new_cell;
+						new_cell.elements.push_back(elt_name);
+						if (push_after)
+							cellIdx++;
+						layout_grid[rowIdx].cells.insert(
+							layout_grid[rowIdx].cells.begin() + cellIdx,
+							new_cell
+						);
+					}
+
+					if (push_opt == to_new_subrow) {
+						// push to specified cell.elements after required element
+						layout_grid[rowIdx].cells[cellIdx].elements.insert(
+							std::find(
+								layout_grid[rowIdx].cells[cellIdx].elements.begin(),
+								layout_grid[rowIdx].cells[cellIdx].elements.end(),
+								anchor
+							),
+							elt_name
+						);
+					}
+					return std::pair<int, int>(rowIdx, cellIdx);
+				}
+
+				std::pair<int, int> pushToGridBack(
+					const std::string & elt_name, 
+					ELT_PUSH_OPT push_opt
+				) {
+					if (push_opt == to_new_row) {
+						layout_grid.push_back(grid_row());
+						layout_grid.back().cells.push_back(row_cell());
+						layout_grid.back().cells.back().elements.push_back(elt_name);
+					}
+
+					if (push_opt == to_new_col) {
+						if (layout_grid.size() == 0)
+							layout_grid.push_back(grid_row());
+						layout_grid.back().cells.push_back(row_cell());
+						layout_grid.back().cells.back().elements.push_back(elt_name);
+					}
+
+					if (push_opt == to_new_subrow) {
+						if (layout_grid.size() == 0)
+							layout_grid.push_back(grid_row());
+						if (layout_grid.back().cells.size() == 0)
+							layout_grid.back().cells.push_back(row_cell());
+						layout_grid.back().cells.back().elements.push_back(elt_name);
+					}
+					return std::pair<int, int>(layout_grid.size() - 1, layout_grid.back().cells.size() - 1);
+				}
 		};
 
 		struct UI_elements_map {
@@ -630,7 +724,9 @@ namespace IndieGo {
 				UI_ELEMENT_TYPE type,
 				WIDGET_BASE * widRef = NULL,
 				ELT_PUSH_OPT push_opt = to_new_row,
-				
+				const std::string & anchor = "None",
+				bool push_after = false,
+
 				// addition to new col will assign width to elements like so : 1 / cols.size()
 				bool autowidth = true
 			) {
@@ -641,7 +737,7 @@ namespace IndieGo {
 
 				std::pair<int, int> elt_pos(-1, -1);
 				if (widRef){
-					elt_pos = widRef->addElement(elt_name, push_opt);
+					elt_pos = widRef->addElement(elt_name, push_opt, anchor, push_after);
 				} else {
 					std::cout << "[WARNING] addElement: element '" << elt_name << "' added to UIMap, but no widget will display it! Make shure to add it to *some* widget.widget_elements later!" << std::endl;
 				}
