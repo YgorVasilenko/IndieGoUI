@@ -172,7 +172,8 @@ std::vector<std::string> skip_save_widgets = {
     "Widgets style", 
     "Elements style",
     "Fonts",
-    "Skinning"
+    "Skinning",
+    "Element properties"
 };
 
 std::vector<float> font_load_sizes = {
