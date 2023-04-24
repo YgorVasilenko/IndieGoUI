@@ -21,6 +21,7 @@
 #include <GLFW/glfw3.h>
 
 #include <filesystem>
+#include <algorithm>
 namespace fs = std::filesystem;
 
 #define STB_IMAGE_IMPLEMENTATION
@@ -203,6 +204,9 @@ void addElement(
 // helper function lo load image through stbi
 // in other engine parts ImageLoader will do that
 TexData Manager::load_image(std::string path, bool useProjectDir) {
+#ifdef __APPLE__
+    std::replace(path.begin(), path.end(), '\\', '/');
+#endif
     std::string project_dir = "";
 #ifdef RELEASE_BUILD
     project_dir = global_home;
