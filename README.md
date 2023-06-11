@@ -1,6 +1,54 @@
-# structure for saving state of Immediate-mode backend UI elements.
+# UI editor.
+Editor for UI creation for ```IndieGo::UI::UI_elements_map```. 
 
-Quick embedding GUI control elements into C++ application. Singletone UI object, for which element state can be accessed anywhere in the app.
+## Building ui editor:
+1. Make sure [cmake](https://cmake.org/) available in PATH:
+
+powershell:
+```powershell
+$env:Path="C:\Program Files\CMake\bin;$env:Path"
+```
+
+2. Build:
+
+```powershell
+cd ui_editor
+cmake -Bbuild
+cmake --build build
+```
+
+3. Run:
+```
+.\build\Debug\UI_editor.exe
+```
+
+
+## Building example app:
+
+1. Make sure [cmake](https://cmake.org/) available in PATH:
+
+powershell:
+```powershell
+$env:Path="C:\Program Files\CMake\bin;$env:Path"
+```
+
+1. Build:
+
+```powershell
+cd example_app
+cmake -Bbuild
+cmake --build build
+```
+
+1. Run:
+```
+.\env.ps1
+build\Debug\GUI_example.exe
+```
+
+# ```IndieGo::UI::UI_elements_map``` - structure for saving state of Immediate-mode backend UI elements.
+
+Quick embedding GUI control elements into C++ application. Singletone object, from which UI elements state can be accessed anywhere in the app.
 Use any Immediate-mode gui - see [Nuklear backend](https://github.com/YgorVasilenko/IndieGoUI/blob/main/backends/Nuklear/renderer.cpp), [App-side inclulde](https://github.com/YgorVasilenko/IndieGoUI/blob/main/IndieGoUI.h) for what required to be implemented.<br>
 <br>
 
@@ -45,7 +93,7 @@ Proper docs - TODO :)<br>
 Check [ui_editor](https://github.com/YgorVasilenko/IndieGoUI/blob/main/ui_editor/src/init.cpp)'s ```init.cpp``` module, [test_app](https://github.com/YgorVasilenko/IndieGoUI/blob/main/test_app/src/app.cpp) and [IndieGoUI.h](https://github.com/YgorVasilenko/IndieGoUI/blob/main/IndieGoUI.h) header to get idea of what could be done.<br>
 
 ## Support for arbitrary Immediate-mode GUI libriary
-All rendering should be provided by user. F.e. one could have ```renderer.cpp`` module for specific imgui backend. This module should include [IndieGoUI.h](https://github.com/YgorVasilenko/IndieGoUI/blob/main/IndieGoUI.h), provide (implement) several functions.<br>
+All rendering should be provided by user. F.e. one could have ```renderer.cpp``` module for specific imgui backend. This module should include [IndieGoUI.h](https://github.com/YgorVasilenko/IndieGoUI/blob/main/IndieGoUI.h), provide (implement) several functions.<br>
 List of what should be implemented goes like so:<br>
 1. All virtual methods of ```UI::WIDGET``` [struct](https://github.com/YgorVasilenko/IndieGoUI/blob/main/IndieGoUI.h#L569):
 ```C++
@@ -78,29 +126,6 @@ static void addImage(unsigned int texID,unsigned short w, unsigned short h, regi
 ```
 
 Where to store data from ```init*()```, ```use*()``` and ```load*()``` methods - user's decision.
-
-## Building example app:
-
-1. Make sure cmake available in PATH:
-
-powershell:
-```powershell
-$env:Path="C:\Program Files\CMake\bin;$env:Path"
-```
-
-1. Build:
-
-```powershell
-cd example_app
-cmake -Bbuild
-cmake --build build
-```
-
-## Running:
-```
-.\env.ps1
-build\Debug\GUI_example.exe
-```
 
 ## TODO:
 1. Support Linux

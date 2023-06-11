@@ -605,7 +605,6 @@ namespace IndieGo {
 					std::cout << "[ERROR] addElement: element '" << elt_name << "' already exists in widget " << name << std::endl;
 					return std::pair<int, int>(-1, -1);
 				}
-
 				if (anchor != "None") {
 					if (std::find(widget_elements.begin(), widget_elements.end(), anchor) == widget_elements.end()) {
 						std::cout << "[WARNING] addElement: element '" << anchor << "' don't exists in widget " << name << ", pushing " << elt_name << " to grid back" << std::endl;
@@ -686,9 +685,9 @@ namespace IndieGo {
 						) + shift_idx,
 						elt_name
 					);
+
 					return std::pair<int, int>(rowIdx, cellIdx);
 				}
-
 				std::pair<int, int> pushToGridBack(
 					const std::string & elt_name, 
 					ELT_PUSH_OPT push_opt
@@ -713,7 +712,6 @@ namespace IndieGo {
 							layout_grid.back().cells.push_back(row_cell());
 						layout_grid.back().cells.back().elements.push_back(elt_name);
 					}
-
 					widget_elements.push_back(elt_name);
 					return std::pair<int, int>(layout_grid.size() - 1, layout_grid.back().cells.size() - 1);
 				}
