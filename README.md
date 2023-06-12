@@ -4,7 +4,7 @@ Quick embedding GUI into C++ application. Singletone UI object, for which elemen
 <br>
 
 ## create UI
-use [ui_editor](https://github.com/YgorVasilenko/IndieGoUI/tree/main/ui_editor) to quickly add some ui elements
+use [ui_editor](ui_editor) to quickly add some ui elements
 
 ![Editor example](docs/Quick_add.gif)
 
@@ -12,7 +12,7 @@ use [ui_editor](https://github.com/YgorVasilenko/IndieGoUI/tree/main/ui_editor) 
 ![Styling example](docs/Quick_style.gif)
 
 ## integrate and use in application
-see [example app](https://github.com/YgorVasilenko/IndieGoUI/blob/main/example_app/src/app.cpp).<br>
+see [example app](example_app).<br>
 
 ```C++
 // include 
@@ -92,7 +92,7 @@ $env:PROJECT_DIR="path\to\fonts\and\images"
 All modules listed here are already integrated in this repo.
 1. Google's [protobuf](https://developers.google.com/protocol-buffers) - save/load created ui
 2. [GLFW](https://www.glfw.org/) - example app window, i/o handling
-3. [Nuklear](https://github.com/YgorVasilenko/IndieGoUI/blob/main/backends/Nuklear/renderer.cpp) - currently implemented backend
+3. [Nuklear](backends/Nuklear/renderer.cpp) - currently implemented backend
 
 ## TODO:
 1. Support Linux
