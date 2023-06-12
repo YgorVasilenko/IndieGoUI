@@ -1,6 +1,6 @@
 # UI creator
 
-Quick embedding GUI control elements into C++ application. Singletone UI object, for which element state can be accessed anywhere in the app.
+Quick embedding GUI into C++ application. Singletone UI object, for which element state can be accessed anywhere in the app.
 <br>
 
 ## create UI
@@ -67,20 +67,19 @@ $env:Path="C:\Program Files\CMake\bin;$env:Path"
 ```
 
 2. Build:
-
 ```powershell
 cd example_app
 cmake -Bbuild
 cmake --build build
 ```
 
-## Running:
+3. Run:
 ```
 .\env.ps1
 build\Debug\GUI_example.exe
 ```
 
-All resources (images and fonts) that one may load into UI should be taken from location, pointed by  ```PROJECT_DIR``` env variable.<br>
+All resources (images and fonts) should be taken from location, pointed by  ```PROJECT_DIR``` env variable.<br>
 
 
 ```
