@@ -27,7 +27,10 @@ GLFWwindow * screen;
 
 using namespace IndieGo::UI;
 
+// Create Manager
+// Can also be created in runtime
 Manager GUI;
+
 WIDGET creator_widget;
 WIDGET styling_widget;
 std::string winID = "UI test app";
@@ -79,10 +82,15 @@ int main() {
     glfwSetKeyCallback(screen, key_callback);
 
     glViewport(0, 0, WIDTH, HEIGHT);
+    
+    // Initialize Manager with window's string name and pointer to window.
+    // Current backend version indeed uses GLFWwindow, but all usage can be replaced with other type
     GUI.init(winID, screen);
+
+    // Provide screen sizes - will be used for widgets positions calculation
     GUI.screen_size.w = WIDTH;
     GUI.screen_size.h = HEIGHT;
-
+    
     // PROJECT_DIR should contain created ui
     char * p = getenv("PROJECT_DIR");
     if (!p) {
@@ -97,6 +105,7 @@ int main() {
         return -1;
     }
 
+    // Init GUI.project_dir here. Will be used for loading images and fonts
     GUI.project_dir = path;
     GUI.deserialize(winID, path + "/ui_example_app.indg");
 
@@ -124,9 +133,11 @@ int main() {
         // update screen size each frame before calling immediate backend
         glfwGetWindowSize(screen, &width, &height);
 
+        // Update screen sizes, if screen changed
         GUI.screen_size.w = width;
         GUI.screen_size.h = height;
 
+        // Call frame updates!
         GUI.drawFrameStart(winID);
         GUI.displayWidgets(winID);
         GUI.drawFrameEnd(winID);

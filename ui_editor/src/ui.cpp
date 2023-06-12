@@ -345,7 +345,7 @@ void processAddOptions(std::string winID) {
 
     std::string new_element_name = *UIMap["new element name"]._data.strPtr;
     std::string anchor_element = use_anchor && elements_list.selected_element != -1 ? elements_list.getSelected() : "None";
-    // if (new_element_name.size() == 0) return;
+    if (new_element_name.size() == 0) return;
 
     if ( UIMap["add image"]._data.b ) {
         UI_ELEMENT_TYPE t = UI_IMAGE;

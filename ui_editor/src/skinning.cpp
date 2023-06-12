@@ -51,23 +51,23 @@ void processSkinning(int prev_selected_crop = -1) {
 
     // SKINNING IMAGE DRAWING
     // ------------------------------------------------------------
-    if (UIMap["w skin image scale"]._data.f > 10000.f)
-        UIMap["w skin image scale"]._data.f = 10000.f;
+    if (UIMap["w skin image scale"]._data.f > 100000.f)
+        UIMap["w skin image scale"]._data.f = 100000.f;
 
     if (UIMap["w skin image scale"]._data.f < 0.f)
         UIMap["w skin image scale"]._data.f = 0.f;
 
-    if (UIMap["w skin image x"]._data.f > 1000.f)
-        UIMap["w skin image x"]._data.f = 1000.f;
+    if (UIMap["w skin image x"]._data.f > 100000.f)
+        UIMap["w skin image x"]._data.f = 100000.f;
 
-    if (UIMap["w skin image x"]._data.f < -1000.f)
-        UIMap["w skin image x"]._data.f = -1000.f;
+    if (UIMap["w skin image x"]._data.f < -100000.f)
+        UIMap["w skin image x"]._data.f = -100000.f;
 
-    if (UIMap["w skin image y"]._data.f > 1000.f)
-        UIMap["w skin image y"]._data.f = 1000.f;
+    if (UIMap["w skin image y"]._data.f > 100000.f)
+        UIMap["w skin image y"]._data.f = 100000.f;
 
-    if (UIMap["w skin image y"]._data.f < -1000.f)
-        UIMap["w skin image y"]._data.f = -1000.f;
+    if (UIMap["w skin image y"]._data.f < -100000.f)
+        UIMap["w skin image y"]._data.f = -100000.f;
 
     ui_string_group & skin_crops_list = *UIMap["w skin crops list"]._data.usgPtr;
     ui_string_group & widgets_list = *UIMap["widgets list"]._data.usgPtr;

@@ -55,6 +55,10 @@ std::map<std::string, unsigned int> widgets_fill;
 extern Shader skinningShader;
 extern Shader layoutShader;
 
+// hotkey combination
+bool ctrl_press = false;
+bool h_press = false;
+
 // Window callbacks
 void cursor_position_callback(GLFWwindow* window, double xpos, double ypos) {
 	GUI.mouse_move( &winID, xpos, ypos);
@@ -74,6 +78,20 @@ void char_callback(GLFWwindow* window, unsigned int codepoint) {
 
 void key_callback(GLFWwindow* window, int key, int scancode, int action, int mods) {
     GUI.key_input( &winID, key, glfwGetKey(window, key) == GLFW_PRESS);
+
+    if (glfwGetKey(window, key) == GLFW_PRESS) {
+        if (key == GLFW_KEY_LEFT_CONTROL)
+            ctrl_press = true;
+
+        if (key == GLFW_KEY_H)
+            h_press = true;
+    } else {
+        if (key == GLFW_KEY_LEFT_CONTROL)
+            ctrl_press = false;
+
+        if (key == GLFW_KEY_H)
+            h_press = false;
+    }
 }
 
 void window_size_callback(GLFWwindow* window, int width, int height) {
@@ -172,7 +190,8 @@ std::vector<std::string> skip_save_widgets = {
     "Widgets style", 
     "Elements style",
     "Fonts",
-    "Skinning"
+    "Skinning",
+    "Element properties"
 };
 
 std::vector<float> font_load_sizes = {
@@ -574,6 +593,28 @@ int main() {
         processSkinning(prev_selected_crop);
 
         prev_selected_crop = skin_crops_list.selected_element;
+
+        // hotkey to close all windows except technical
+        if (ctrl_press && h_press) {
+            for (
+                auto widget = GUI.widgets[winID].begin();
+                widget != GUI.widgets[winID].end();
+                widget++
+            ) {
+                if (
+                    std::find(
+                        skip_save_widgets.begin(), 
+                        skip_save_widgets.end(), 
+                        widget->first
+                    ) == skip_save_widgets.end()
+                ) {
+                    widget->second.hidden = true;
+                    if (widgets_list.selected_element != -1 && widgets_list.getSelected() == widget->first) {
+                        UIMap["visible"]._data.b = false;
+                    }
+                }
+            }
+        }
 
         GUI.drawFrameStart(winID);
         GUI.displayWidgets(winID);
