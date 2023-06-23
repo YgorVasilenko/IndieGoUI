@@ -1181,6 +1181,7 @@ struct nk_convert_config {
     const struct nk_draw_vertex_layout_element *vertex_layout; /* describes the vertex output format and packing */
     nk_size vertex_size; /* sizeof one vertex for vertex packing */
     nk_size vertex_alignment; /* vertex alignment: Can be obtained by NK_ALIGNOF */
+    float cmd_idx; // Index of currently processed draw command
 };
 /*/// #### nk__begin
 /// Returns a draw command list iterator to iterate all draw
@@ -1257,7 +1258,7 @@ NK_API const struct nk_command* nk__next(struct nk_context*, const struct nk_com
 /// NK_CONVERT_VERTEX_BUFFER_FULL   | The provided buffer for storing vertices is full or failed to allocate more memory
 /// NK_CONVERT_ELEMENT_BUFFER_FULL  | The provided buffer for storing indices is full or failed to allocate more memory
 */
-NK_API nk_flags nk_convert(struct nk_context*, struct nk_buffer *cmds, struct nk_buffer *vertices, struct nk_buffer *elements, const struct nk_convert_config*);
+NK_API nk_flags nk_convert(struct nk_context*, struct nk_buffer *cmds, struct nk_buffer *vertices, struct nk_buffer *elements, struct nk_convert_config*);
 /*/// #### nk__draw_begin
 /// Returns a draw vertex command buffer iterator to iterate over the vertex draw command buffer
 ///
@@ -9783,8 +9784,11 @@ nk_draw_vertex(void *dst, const struct nk_convert_config *config,
 {
     void *result = (void*)((char*)dst + config->vertex_size);
     const struct nk_draw_vertex_layout_element *elem_iter = config->vertex_layout;
+    void* address = NULL;
     while (!nk_draw_vertex_layout_element_is_end_of_layout(elem_iter)) {
-        void *address = (void*)((char*)dst + elem_iter->offset);
+        
+        // add 1 more float size to offset
+        address = (void*)((char*)dst + elem_iter->offset);
         switch (elem_iter->attribute) {
         case NK_VERTEX_ATTRIBUTE_COUNT:
         default: NK_ASSERT(0 && "wrong element attribute"); break;
@@ -9794,6 +9798,10 @@ nk_draw_vertex(void *dst, const struct nk_convert_config *config,
         }
         elem_iter++;
     }
+    float idx = config->cmd_idx;
+    // float idx = 0;
+    address = (char*)address + (sizeof(unsigned char) * 4);
+    NK_MEMCPY(address, &idx, sizeof(float));
     return result;
 }
 NK_API void
@@ -10564,7 +10572,7 @@ nk_draw_list_add_text(struct nk_draw_list *list, const struct nk_user_font *font
 NK_API nk_flags
 nk_convert(struct nk_context *ctx, struct nk_buffer *cmds,
     struct nk_buffer *vertices, struct nk_buffer *elements,
-    const struct nk_convert_config *config)
+    struct nk_convert_config *config)
 {
     nk_flags res = NK_CONVERT_SUCCESS;
     const struct nk_command *cmd;
@@ -10580,11 +10588,16 @@ nk_convert(struct nk_context *ctx, struct nk_buffer *cmds,
 
     nk_draw_list_setup(&ctx->draw_list, config, cmds, vertices, elements,
         config->line_AA, config->shape_AA);
+
+    // TODO : for each command write index to vertex data in buffer
+    float idx = 0;
     nk_foreach(cmd, ctx)
     {
 #ifdef NK_INCLUDE_COMMAND_USERDATA
         ctx->draw_list.userdata = cmd->userdata;
 #endif
+        //config->cmd_idx = idx;
+        ctx->draw_list.config.cmd_idx = idx;
         switch (cmd->type) {
         case NK_COMMAND_NOP: break;
         case NK_COMMAND_SCISSOR: {
@@ -10697,6 +10710,7 @@ nk_convert(struct nk_context *ctx, struct nk_buffer *cmds,
         } break;
         default: break;
         }
+        idx++;
     }
     res |= (cmds->needed > cmds->allocated + (cmds->memory.size - cmds->size)) ? NK_CONVERT_COMMAND_BUFFER_FULL: 0;
     res |= (vertices->needed > vertices->allocated) ? NK_CONVERT_VERTEX_BUFFER_FULL: 0;

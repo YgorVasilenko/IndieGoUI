@@ -79,6 +79,7 @@ struct nk_glfw_vertex {
     float position[2];
     float uv[2];
     nk_byte col[4];
+    float idx;
 };
 
 #ifdef __APPLE__
@@ -147,11 +148,14 @@ static const GLchar* vertex_shader =
         "in vec2 Position;\n"
         "in vec2 TexCoord;\n"
         "in vec4 Color;\n"
+        "in float Index;\n"
         "out vec2 Frag_UV;\n"
         "out vec4 Frag_Color;\n"
+        "out float Cmd_Idx;\n"
         "void main() {\n"
         "   Frag_UV = TexCoord;\n"
         "   Frag_Color = Color;\n"
+        "   Cmd_Idx = Index;\n"
         "   gl_Position = ProjMtx * vec4(Position.xy, 0, 1);\n"
         "}\n";
 static const GLchar* fragment_shader =
@@ -160,9 +164,51 @@ static const GLchar* fragment_shader =
         "uniform sampler2D Texture;\n"
         "in vec2 Frag_UV;\n"
         "in vec4 Frag_Color;\n"
+        "in float Cmd_Idx;\n"
         "out vec4 Out_Color;\n"
         "void main(){\n"
         "   Out_Color = Frag_Color * texture(Texture, Frag_UV.st);\n"
+        "   if (Cmd_Idx == 0.f) {\n"
+        "       Out_Color.r += 0.3f;\n"
+        "   };\n"
+        "   if (Cmd_Idx == 1.f) {\n"
+        "       Out_Color.g += 0.3f;\n"
+        "   };\n"
+        "   if (Cmd_Idx == 2.f) {\n"
+        "       Out_Color.b += 0.3f;\n"
+        "   };\n"
+        "   if (Cmd_Idx == 3.f) {\n"
+        "       Out_Color.r += 0.3f;\n"
+        "       Out_Color.g += 0.3f;\n"
+        "   };\n"
+        "   if (Cmd_Idx == 4.f) {\n"
+        "       Out_Color.g += 0.3f;\n"
+        "       Out_Color.b += 0.3f;\n"
+        "   };\n"
+        "   if (Cmd_Idx == 5.f) {\n"
+        "       Out_Color.b += 0.3f;\n"
+        "       Out_Color.r += 0.3f;\n"
+        "   };\n"
+        "   if (Cmd_Idx == 6.f) {\n"
+        "       Out_Color.r += 0.3f;\n"
+        "   };\n"
+        "   if (Cmd_Idx == 7.f) {\n"
+        "       Out_Color.g += 0.3f;\n"
+        "   };\n"
+        "   if (Cmd_Idx == 8.f) {\n"
+        "       Out_Color.b += 0.3f;\n"
+        "   };\n"
+        "   if (Cmd_Idx == 9.f) {\n"
+        "       Out_Color.r += 0.3f;\n"
+        "       Out_Color.g += 0.3f;\n"
+        "   };\n"
+        "   if (Cmd_Idx == 10.f) {\n"
+        "       Out_Color.g += 0.3f;\n"
+        "       Out_Color.b += 0.3f;\n"
+        "   };\n"
+        "   if (Cmd_Idx == 11.f) {\n"
+        "       Out_Color = vec4(0.f, 0.f, 0.f, 1.f);\n"
+        "   };\n"
         "}\n";
 
 NK_API void nk_glfw3_device_create(struct nk_glfw* glfw) {
@@ -192,6 +238,7 @@ NK_API void nk_glfw3_device_create(struct nk_glfw* glfw) {
     dev->attrib_pos = glGetAttribLocation(dev->prog, "Position");
     dev->attrib_uv = glGetAttribLocation(dev->prog, "TexCoord");
     dev->attrib_col = glGetAttribLocation(dev->prog, "Color");
+    GLint attrib_idx = glGetAttribLocation(dev->prog, "Index");
 
     {
         /* buffer setup */
@@ -199,6 +246,7 @@ NK_API void nk_glfw3_device_create(struct nk_glfw* glfw) {
         size_t vp = offsetof(struct nk_glfw_vertex, position);
         size_t vt = offsetof(struct nk_glfw_vertex, uv);
         size_t vc = offsetof(struct nk_glfw_vertex, col);
+        size_t vi = offsetof(struct nk_glfw_vertex, idx);
 
         glGenBuffers(1, &dev->vbo);
         glGenBuffers(1, &dev->ebo);
@@ -211,10 +259,12 @@ NK_API void nk_glfw3_device_create(struct nk_glfw* glfw) {
         glEnableVertexAttribArray((GLuint)dev->attrib_pos);
         glEnableVertexAttribArray((GLuint)dev->attrib_uv);
         glEnableVertexAttribArray((GLuint)dev->attrib_col);
+        glEnableVertexAttribArray((GLuint)attrib_idx);
 
         glVertexAttribPointer((GLuint)dev->attrib_pos, 2, GL_FLOAT, GL_FALSE, vs, (void*)vp);
         glVertexAttribPointer((GLuint)dev->attrib_uv, 2, GL_FLOAT, GL_FALSE, vs, (void*)vt);
         glVertexAttribPointer((GLuint)dev->attrib_col, 4, GL_UNSIGNED_BYTE, GL_TRUE, vs, (void*)vc);
+        glVertexAttribPointer((GLuint)attrib_idx, 1, GL_FLOAT, GL_FALSE, vs, (void*)vi);
     }
 
     glBindTexture(GL_TEXTURE_2D, 0);
@@ -313,15 +363,18 @@ NK_API void nk_glfw3_render(struct nk_glfw* glfw, enum nk_anti_aliasing AA, int 
         glUnmapBuffer(GL_ELEMENT_ARRAY_BUFFER);
 
         /* iterate over and execute each draw command */
+        unsigned int times_call = 0;
         nk_draw_foreach(cmd, &glfw->ctx, &dev->cmds)
         {
             if (!cmd->elem_count) continue;
+            times_call++;
             glBindTexture(GL_TEXTURE_2D, (GLuint)cmd->texture.id);
             glScissor(
                 (GLint)(cmd->clip_rect.x * glfw->fb_scale.x),
                 (GLint)((glfw->height - (GLint)(cmd->clip_rect.y + cmd->clip_rect.h)) * glfw->fb_scale.y),
                 (GLint)(cmd->clip_rect.w * glfw->fb_scale.x),
                 (GLint)(cmd->clip_rect.h * glfw->fb_scale.y));
+            // TODO : insert additional calls for effects here?
             glDrawElements(GL_TRIANGLES, (GLsizei)cmd->elem_count, GL_UNSIGNED_SHORT, offset);
             offset += cmd->elem_count;
         }
