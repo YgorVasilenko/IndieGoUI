@@ -569,27 +569,38 @@ void UI_element::callUIfunction(float x, float y, float space_w, float space_h) 
                 images[skinned_style.props[cursor_active].first][skinned_style.props[cursor_active].second].first
             );
         }*/
-        nk_bool button_state;
+        // nk_bool button_state;
         if (ui_button_image != -1) {
-            button_state = nk_button_image(ctx, images[ui_button_image][cropId].first);
+            // button_state = nk_button_image(ctx, images[ui_button_image][cropId].first);
+            _data.b = nk_button_image(ctx, images[ui_button_image][cropId].first);
         } else {
-            button_state = nk_button_label(ctx, label.c_str());
+            // button_state = nk_button_label(ctx, label.c_str());
+            _data.b = nk_button_label(ctx, label.c_str());
         }
-        nk_bool button_hovered = nk_widget_is_hovered(ctx);
+
+        isHovered = nk_widget_is_hovered(ctx);
+        if (disabled) {
+            rmb_click = false;
+            _data.b = false;
+        }
+        /*nk_bool button_hovered = nk_widget_is_hovered(ctx);
         if (button_hovered) {
             isHovered = true;
         } else {
             isHovered = false;
-        }
+        }*/
 
-        if (button_state) {
+        if (_data.b && Manager::buttonClickCallback) {
+            Manager::buttonClickCallback(NULL);
+        }
+        /*if (button_state) {
             _data.b = true;
             if (Manager::buttonClickCallback) {
                 Manager::buttonClickCallback(NULL);
             }
         } else {
             _data.b = false;
-        }
+        }*/
 
         if (selected_by_keys)
             _data.b = true;

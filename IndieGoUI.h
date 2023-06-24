@@ -284,6 +284,10 @@ namespace IndieGo {
 
 			bool isHovered = false;
 			bool rmb_click = false;
+
+			// disabled button don't save state
+			bool disabled = false;
+
 			// Nuklear does not have options for buttons usage,
 			// so this is a workaround
 			bool hovered_by_keys = false;
