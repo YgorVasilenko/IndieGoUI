@@ -22,6 +22,7 @@
 #define NK_INCLUDE_STANDARD_IO
 
 #include "backends/Nuklear/nuklear.h"
+#include "backends/Nuklear/shaders.h"
 
 #include <os/glad/glad.h>
 #include <os/GLFW/glfw3.h>
@@ -30,6 +31,7 @@
 #include <string>
 #include <regex>
 #include <filesystem>
+#include <sstream>
 namespace fs = std::filesystem;
 
 enum nk_glfw_init_state{
@@ -41,19 +43,43 @@ enum nk_glfw_init_state{
 #define NK_GLFW_TEXT_MAX 256
 #endif
 
+ScreenRect screen_rect = {
+    0.f, // x
+    0.f, // y
+    1.f, // width - set in runtime
+    1.f, // height - set in runtime
+
+    1.f, // l
+    1.f, // r
+    0.f, // t
+    0.f  // b
+};
+
 struct nk_glfw_device {
     struct nk_buffer cmds;
     struct nk_draw_null_texture null;
-    GLuint vbo, vao, ebo;
-    GLuint prog;
-    GLuint vert_shdr;
-    GLuint frag_shdr;
+    GLuint vbo, vao, ebo, fbo;
+    GLuint prog, screen_prog;
+    GLuint vert_shdr, screen_vert;
+    GLuint frag_shdr, screen_frag;
+    GLuint screen_geom;
+
+    // frramebuffer shader attributes and uniforms
     GLint attrib_pos;
     GLint attrib_uv;
     GLint attrib_col;
     GLint uniform_tex;
     GLint uniform_proj;
-    GLuint font_tex;
+
+    // Screen shader attributes and uniforms
+    GLint attrib_position;
+    GLint attrib_size;
+    GLint attrib_tex;
+    GLint uniform_scale;
+    GLint uniform_projection;
+    GLint uniform_prerender_ui;
+
+    GLuint font_tex, frame_tex;
 };
 
 struct nk_glfw {
@@ -122,6 +148,31 @@ void nk_glfw3_device_upload_atlas(struct nk_glfw* glfw, const void *image, int w
                 GL_RGBA, GL_UNSIGNED_BYTE, image);
 }
 
+// std::string loadShaderFile(const char* path) {
+//     // 1. retrieve the vertex/fragment source code from filePath
+//     std::string code = "";
+//     std::ifstream ShaderFile;
+
+//     // ensure ifstream objects can throw exceptions:
+//     ShaderFile.exceptions(std::ifstream::failbit | std::ifstream::badbit);
+//     try {
+//         // open file
+//         ShaderFile.open(path);
+//         std::stringstream ShaderStream;
+
+//         // read file's buffer contents into streams
+//         ShaderStream << ShaderFile.rdbuf();
+//         // close file handlers
+//         ShaderFile.close();
+
+//         // convert stream into string
+//         code = ShaderStream.str();
+//     } catch (std::ifstream::failure& e) {
+//         std::cout << "ERROR::SHADER::FILE_NOT_SUCCESFULLY_READ" << std::endl;
+//     }
+//     return code;
+// }
+
 void nk_glfw3_clipboard_paste(nk_handle usr, struct nk_text_edit *edit) {
     struct nk_glfw* glfw = (nk_glfw*) usr.ptr;
     const char *text = glfwGetClipboardString(glfw->win);
@@ -141,72 +192,78 @@ void nk_glfw3_clipboard_copy(nk_handle usr, const char *text, int len) {
     free(str);
 }
 
-static const GLchar* vertex_shader =
-        NK_SHADER_VERSION
-        "uniform mat4 ProjMtx;\n"
-        "in vec2 Position;\n"
-        "in vec2 TexCoord;\n"
-        "in vec4 Color;\n"
-        "out vec2 Frag_UV;\n"
-        "out vec4 Frag_Color;\n"
-        "void main() {\n"
-        "   Frag_UV = TexCoord;\n"
-        "   Frag_Color = Color;\n"
-        "   gl_Position = ProjMtx * vec4(Position.xy, 0, 1);\n"
-        "}\n";
-static const GLchar* fragment_shader =
-        NK_SHADER_VERSION
-        "precision mediump float;\n"
-        "uniform sampler2D Texture;\n"
-        "in vec2 Frag_UV;\n"
-        "in vec4 Frag_Color;\n"
-        "out vec4 Out_Color;\n"
-        "void main(){\n"
-        "   Out_Color = Frag_Color * texture(Texture, Frag_UV.st);\n"
-        "}\n";
+void checkCompileErrors(GLuint shader, std::string type) {
+    GLint success;
+    GLchar infoLog[1024];
+    if (type != "PROGRAM") {
+        glGetShaderiv(shader, GL_COMPILE_STATUS, &success);
+        if (!success) {
+            glGetShaderInfoLog(shader, 1024, NULL, infoLog);
+            std::cout << "ERROR::SHADER_COMPILATION_ERROR of type: " + type << std::endl;
+            std::cout << std::string(infoLog) << std::endl;
+            std::cout << " -- --------------------------------------------------- -- " << std::endl;
+        }
+    } else {
+        glGetProgramiv(shader, GL_LINK_STATUS, &success);
+        if (!success) {
+            glGetProgramInfoLog(shader, 1024, NULL, infoLog);
+            std::cout << "ERROR::PROGRAM_LINKING_ERROR of type: " + type << std::endl;
+            std::cout << std::string(infoLog) << std::endl;
+            std::cout << " -- --------------------------------------------------- -- " << std::endl;
+        }
+    }
+}
 
-NK_API void nk_glfw3_device_create(struct nk_glfw* glfw) {
+NK_API void nk_glfw3_load_shader(
+    const GLchar* vertex_code,
+    const GLchar* fragment_code,
+    const GLchar* geometry_code,
+    GLuint & prog,
+    GLuint & vert_shdr,
+    GLuint & frag_shdr
+) {
     GLint status;
-
-    struct nk_glfw_device* dev = &glfw->ogl;
-    nk_buffer_init_default(&dev->cmds);
-    dev->prog = glCreateProgram();
-    dev->vert_shdr = glCreateShader(GL_VERTEX_SHADER);
-    dev->frag_shdr = glCreateShader(GL_FRAGMENT_SHADER);
-    glShaderSource(dev->vert_shdr, 1, &vertex_shader, 0);
-    glShaderSource(dev->frag_shdr, 1, &fragment_shader, 0);
-    glCompileShader(dev->vert_shdr);
-    glCompileShader(dev->frag_shdr);
-    glGetShaderiv(dev->vert_shdr, GL_COMPILE_STATUS, &status);
+    prog = glCreateProgram();
+    vert_shdr = glCreateShader(GL_VERTEX_SHADER);
+    frag_shdr = glCreateShader(GL_FRAGMENT_SHADER);
+    glShaderSource(vert_shdr, 1, &vertex_code, 0);
+    glShaderSource(frag_shdr, 1, &fragment_code, 0);
+    glCompileShader(vert_shdr);
+    glCompileShader(frag_shdr);
+    glGetShaderiv(vert_shdr, GL_COMPILE_STATUS, &status);
     assert(status == GL_TRUE);
-    glGetShaderiv(dev->frag_shdr, GL_COMPILE_STATUS, &status);
+    // checkCompileErrors(frag_shdr, "GL_FRAGMENT_SHADER");
+    glGetShaderiv(frag_shdr, GL_COMPILE_STATUS, &status);
     assert(status == GL_TRUE);
-    glAttachShader(dev->prog, dev->vert_shdr);
-    glAttachShader(dev->prog, dev->frag_shdr);
-    glLinkProgram(dev->prog);
-    glGetProgramiv(dev->prog, GL_LINK_STATUS, &status);
+    glAttachShader(prog, vert_shdr);
+    glAttachShader(prog, frag_shdr);
+
+    GLuint geom_shdr;
+    if (geometry_code) {
+        geom_shdr = glCreateShader(GL_GEOMETRY_SHADER);
+        glShaderSource(geom_shdr, 1, &geometry_code, 0);
+        glCompileShader(geom_shdr);
+        glGetShaderiv(geom_shdr, GL_COMPILE_STATUS, &status);
+        // checkCompileErrors(geom_shdr, "GL_GEOMETRY_SHADER");
+        assert(status == GL_TRUE);
+        glAttachShader(prog, geom_shdr);
+    }
+
+    glLinkProgram(prog);
+    glGetProgramiv(prog, GL_LINK_STATUS, &status);
+    // checkCompileErrors(prog, "PROGRAM");
     assert(status == GL_TRUE);
+}
 
-    dev->uniform_tex = glGetUniformLocation(dev->prog, "Texture");
-    dev->uniform_proj = glGetUniformLocation(dev->prog, "ProjMtx");
-    dev->attrib_pos = glGetAttribLocation(dev->prog, "Position");
-    dev->attrib_uv = glGetAttribLocation(dev->prog, "TexCoord");
-    dev->attrib_col = glGetAttribLocation(dev->prog, "Color");
-
-    {
-        /* buffer setup */
+NK_API void nk_glfw3_set_attributes(
+    struct nk_glfw_device* dev, 
+    bool framebuffer_prog = true
+) {
+    if (framebuffer_prog) {
         GLsizei vs = sizeof(struct nk_glfw_vertex);
         size_t vp = offsetof(struct nk_glfw_vertex, position);
         size_t vt = offsetof(struct nk_glfw_vertex, uv);
         size_t vc = offsetof(struct nk_glfw_vertex, col);
-
-        glGenBuffers(1, &dev->vbo);
-        glGenBuffers(1, &dev->ebo);
-        glGenVertexArrays(1, &dev->vao);
-
-        glBindVertexArray(dev->vao);
-        glBindBuffer(GL_ARRAY_BUFFER, dev->vbo);
-        glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, dev->ebo);
 
         glEnableVertexAttribArray((GLuint)dev->attrib_pos);
         glEnableVertexAttribArray((GLuint)dev->attrib_uv);
@@ -216,6 +273,96 @@ NK_API void nk_glfw3_device_create(struct nk_glfw* glfw) {
         glVertexAttribPointer((GLuint)dev->attrib_uv, 2, GL_FLOAT, GL_FALSE, vs, (void*)vt);
         glVertexAttribPointer((GLuint)dev->attrib_col, 4, GL_UNSIGNED_BYTE, GL_TRUE, vs, (void*)vc);
     }
+}
+
+NK_API void nk_glfw3_device_create(struct nk_glfw* glfw) {
+    GLint status;
+
+    struct nk_glfw_device* dev = &glfw->ogl;
+    nk_buffer_init_default(&dev->cmds);
+    shader_codes shaders;
+#define USE_FRAMEBUFFER 1 
+#ifdef USE_FRAMEBUFFER
+    // Framebuffer
+    glGenFramebuffers(1, &dev->fbo);
+    glBindFramebuffer(GL_FRAMEBUFFER, dev->fbo);
+    // Try specifying other blending parameters
+    glBlendFuncSeparate(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA, GL_ONE, GL_ONE_MINUS_SRC_ALPHA);
+
+    // colors pre-render texture
+    glGenTextures(1, &dev->frame_tex);
+    // TODO : add assert for non-zero height and width
+    glBindTexture(GL_TEXTURE_2D, dev->frame_tex);
+    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, glfw->width, glfw->height, 0, GL_RGBA, GL_UNSIGNED_BYTE, NULL);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+
+    // attach texture to framebuffer as color attachment 0
+    glFramebufferTexture2D( GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, dev->frame_tex, 0 );
+    
+    // load screen quad shader
+    nk_glfw3_load_shader(
+        shaders.screen_vertex_shader, 
+        shaders.screen_fragment_shader,
+        shaders.screen_geometry_shader,
+        dev->screen_prog,
+        dev->screen_vert,
+        dev->screen_frag
+    );
+
+    dev->uniform_projection = glGetUniformLocation(dev->screen_prog, "projection");
+    dev->uniform_scale = glGetUniformLocation(dev->screen_prog, "scale");
+    dev->uniform_prerender_ui = glGetUniformLocation(dev->screen_prog, "prerender_ui");
+
+    dev->attrib_position = glGetAttribLocation(dev->screen_prog, "position");
+    dev->attrib_size = glGetAttribLocation(dev->screen_prog, "size");
+    dev->attrib_tex = glGetAttribLocation(dev->screen_prog, "tex");
+
+    glBindFramebuffer(GL_FRAMEBUFFER, 0);
+
+#endif
+    nk_glfw3_load_shader(
+        shaders.vertex_shader, 
+        shaders.fragment_shader,
+        NULL,
+        dev->prog,
+        dev->vert_shdr,
+        dev->frag_shdr
+    );
+
+    dev->uniform_tex = glGetUniformLocation(dev->prog, "Texture");
+    dev->uniform_proj = glGetUniformLocation(dev->prog, "ProjMtx");
+    dev->attrib_pos = glGetAttribLocation(dev->prog, "Position");
+    dev->attrib_uv = glGetAttribLocation(dev->prog, "TexCoord");
+    dev->attrib_col = glGetAttribLocation(dev->prog, "Color");
+
+    glGenBuffers(1, &dev->vbo);
+    glGenBuffers(1, &dev->ebo);
+    glGenVertexArrays(1, &dev->vao);
+
+    // {
+    //     /* buffer setup */
+    //     GLsizei vs = sizeof(struct nk_glfw_vertex);
+    //     size_t vp = offsetof(struct nk_glfw_vertex, position);
+    //     size_t vt = offsetof(struct nk_glfw_vertex, uv);
+    //     size_t vc = offsetof(struct nk_glfw_vertex, col);
+
+    //     // glGenBuffers(1, &dev->vbo);
+    //     // glGenBuffers(1, &dev->ebo);
+    //     // glGenVertexArrays(1, &dev->vao);
+
+    //     glBindVertexArray(dev->vao);
+    //     glBindBuffer(GL_ARRAY_BUFFER, dev->vbo);
+    //     glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, dev->ebo);
+
+    //     glEnableVertexAttribArray((GLuint)dev->attrib_pos);
+    //     glEnableVertexAttribArray((GLuint)dev->attrib_uv);
+    //     glEnableVertexAttribArray((GLuint)dev->attrib_col);
+
+    //     glVertexAttribPointer((GLuint)dev->attrib_pos, 2, GL_FLOAT, GL_FALSE, vs, (void*)vp);
+    //     glVertexAttribPointer((GLuint)dev->attrib_uv, 2, GL_FLOAT, GL_FALSE, vs, (void*)vt);
+    //     glVertexAttribPointer((GLuint)dev->attrib_col, 4, GL_UNSIGNED_BYTE, GL_TRUE, vs, (void*)vc);
+    // }
 
     glBindTexture(GL_TEXTURE_2D, 0);
     glBindBuffer(GL_ARRAY_BUFFER, 0);
@@ -255,6 +402,16 @@ NK_API void nk_glfw3_render(struct nk_glfw* glfw, enum nk_anti_aliasing AA, int 
     ortho[1][1] /= (GLfloat)glfw->height;
 
     /* setup global state */
+#undef USE_FRAMEBUFFER
+#ifdef USE_FRAMEBUFFER
+    // Render on framebuffer texture
+    // ----------------------------------------------------
+    glBindFramebuffer(GL_FRAMEBUFFER, dev->fbo);
+    unsigned int attachments[1] = { GL_COLOR_ATTACHMENT0 };
+    glDrawBuffers(1, attachments);
+    // ----------------------------------------------------
+#endif
+
     glDisable(GL_DEPTH_TEST);
     glEnable(GL_SCISSOR_TEST);
     glActiveTexture(GL_TEXTURE0);
@@ -276,6 +433,9 @@ NK_API void nk_glfw3_render(struct nk_glfw* glfw, enum nk_anti_aliasing AA, int 
         glBindVertexArray(dev->vao);
         glBindBuffer(GL_ARRAY_BUFFER, dev->vbo);
         glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, dev->ebo);
+
+        // TODO : set attributes for dev->prog
+        nk_glfw3_set_attributes(dev);
 
         glBufferData(GL_ARRAY_BUFFER, max_vertex_buffer, NULL, GL_STREAM_DRAW);
         glBufferData(GL_ELEMENT_ARRAY_BUFFER, max_element_buffer, NULL, GL_STREAM_DRAW);
@@ -327,6 +487,12 @@ NK_API void nk_glfw3_render(struct nk_glfw* glfw, enum nk_anti_aliasing AA, int 
         }
         nk_clear(&glfw->ctx);
         nk_buffer_clear(&dev->cmds);
+
+        // TODO : apply post-precessing effects on framebuffer
+        // 1. select framebuffer 0
+        // 2. select dev->screen_prog, set attributes
+        // 3. set buffer data to screen_rect
+        // 4. call glDrawArrays(GL_POINTS)
     }
 
     glDisable(GL_SCISSOR_TEST);
