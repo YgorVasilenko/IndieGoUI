@@ -281,7 +281,8 @@ namespace IndieGo {
 				ui_string_group * usgPtr;
 				std::string * strPtr;
 			} _data;
-
+			
+			bool apply_custom_shader = false;
 			bool isHovered = false;
 			bool rmb_click = false;
 			// Nuklear does not have options for buttons usage,
@@ -418,6 +419,7 @@ namespace IndieGo {
 			// widgets provide place on screen to display ui elements
 			std::vector<std::string> widget_elements;
 			std::string name = "";
+			bool apply_custom_shader = false;
 			// bool backgroundImage = false;
 			
 			// index in global array of images

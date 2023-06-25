@@ -235,6 +235,7 @@ float apply_indices[50] = {
     -1, -1, -1, -1, -1, -1, -1, -1, -1, -1,
     -1, -1, -1, -1, -1, -1, -1, -1, -1, -1
 };
+int last_apply_idx = -1;
 
 NK_API void nk_glfw3_render(struct nk_glfw* glfw, enum nk_anti_aliasing AA, int max_vertex_buffer, int max_element_buffer) {
 
@@ -485,6 +486,10 @@ void UI_element::callUIfunction(float x, float y, float space_w, float space_h) 
     /*ctx->current->buffer.curr_cmd_idx = Manager::draw_idx;
     debug_array[label] = Manager::draw_idx;*/
     // Manager::draw_idx++;
+    if (apply_custom_shader) {
+        last_apply_idx++;
+        apply_indices[last_apply_idx] = Manager::draw_idx;
+    }
 
     if (font != "None") {
         nk_style_set_font(
@@ -1035,6 +1040,10 @@ void WIDGET::callImmediateBackend(UI_elements_map & UIMap){
         }
     }
     ctx->draw_idx = Manager::draw_idx;
+    if (apply_custom_shader) {
+        last_apply_idx++;
+        apply_indices[last_apply_idx] = Manager::draw_idx;
+    }
 
     if (
         nk_begin(
@@ -1176,8 +1185,8 @@ unsigned int char_to_uncode(char c) {
     return (unsigned int)u;
 }
 
-void Manager::drawFrameStart(std::string & winID) {
-    struct nk_glfw * glfw = glfw_storage[winID];
+void Manager::drawFrameStart(std::string& winID) {
+    struct nk_glfw* glfw = glfw_storage[winID];
 
     int i;
     double x, y;
@@ -1185,15 +1194,15 @@ void Manager::drawFrameStart(std::string & winID) {
     ctx = &glfw->ctx;
 
     //struct nk_context *ctx = &glfw->ctx;
-    struct GLFWwindow *win = glfw->win;
-    
+    struct GLFWwindow* win = glfw->win;
+
     // Update current window
     glfw->win = win;
 
     glfwGetWindowSize(win, &glfw->width, &glfw->height);
     glfwGetFramebufferSize(win, &glfw->display_width, &glfw->display_height);
-    glfw->fb_scale.x = (float)glfw->display_width/(float)glfw->width;
-    glfw->fb_scale.y = (float)glfw->display_height/(float)glfw->height;
+    glfw->fb_scale.x = (float)glfw->display_width / (float)glfw->width;
+    glfw->fb_scale.y = (float)glfw->display_height / (float)glfw->height;
 
     nk_input_begin(ctx);
     for (i = 0; i < glfw->text_len; ++i)
@@ -1234,8 +1243,8 @@ void Manager::drawFrameStart(std::string & winID) {
     nk_input_key(ctx, NK_KEY_SCROLL_END, glfwGetKey(win, GLFW_KEY_END) == GLFW_PRESS);
     nk_input_key(ctx, NK_KEY_SCROLL_DOWN, glfwGetKey(win, GLFW_KEY_PAGE_DOWN) == GLFW_PRESS);
     nk_input_key(ctx, NK_KEY_SCROLL_UP, glfwGetKey(win, GLFW_KEY_PAGE_UP) == GLFW_PRESS);
-    nk_input_key(ctx, NK_KEY_SHIFT, glfwGetKey(win, GLFW_KEY_LEFT_SHIFT) == GLFW_PRESS||
-                                    glfwGetKey(win, GLFW_KEY_RIGHT_SHIFT) == GLFW_PRESS);
+    nk_input_key(ctx, NK_KEY_SHIFT, glfwGetKey(win, GLFW_KEY_LEFT_SHIFT) == GLFW_PRESS ||
+        glfwGetKey(win, GLFW_KEY_RIGHT_SHIFT) == GLFW_PRESS);
 
     if (glfwGetKey(win, GLFW_KEY_LEFT_CONTROL) == GLFW_PRESS ||
         glfwGetKey(win, GLFW_KEY_RIGHT_CONTROL) == GLFW_PRESS) {
@@ -1248,7 +1257,8 @@ void Manager::drawFrameStart(std::string & winID) {
         nk_input_key(ctx, NK_KEY_TEXT_WORD_RIGHT, glfwGetKey(win, GLFW_KEY_RIGHT) == GLFW_PRESS);
         nk_input_key(ctx, NK_KEY_TEXT_LINE_START, glfwGetKey(win, GLFW_KEY_B) == GLFW_PRESS);
         nk_input_key(ctx, NK_KEY_TEXT_LINE_END, glfwGetKey(win, GLFW_KEY_E) == GLFW_PRESS);
-    } else {
+    }
+    else {
         // nk_input_key(ctx, NK_KEY_LEFT, glfwGetKey(win, GLFW_KEY_LEFT) == GLFW_PRESS);
         // nk_input_key(ctx, NK_KEY_RIGHT, glfwGetKey(win, GLFW_KEY_RIGHT) == GLFW_PRESS);
         nk_input_key(ctx, NK_KEY_COPY, 0);
@@ -1273,15 +1283,21 @@ void Manager::drawFrameStart(std::string & winID) {
     nk_input_scroll(ctx, glfw->scroll);
     nk_input_end(&glfw->ctx);
     glfw->text_len = 0;
-    glfw->scroll = nk_vec2(0,0);
+    glfw->scroll = nk_vec2(0, 0);
 
     // set "default global" font
     if (main_font != "None") {
         nk_style_set_font(
-            &glfw->ctx, 
+            &glfw->ctx,
             &backend_loaded_fonts[main_font][main_font_size]->handle
         );
     }
+
+    // reset apply_indices
+    for (int i = 0; i < 50; i++) {
+        apply_indices[i] = -1;
+    }
+    last_apply_idx = -1;
 }
 
 void Manager::drawFrameEnd(std::string & winID) {
