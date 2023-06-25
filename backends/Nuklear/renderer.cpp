@@ -43,6 +43,8 @@ enum nk_glfw_init_state{
 #define NK_GLFW_TEXT_MAX 256
 #endif
 
+extern void save_image(std::string path, unsigned char * data, int width, int height);
+
 ScreenRect screen_rect = {
     0.f, // x
     0.f, // y
@@ -58,7 +60,7 @@ ScreenRect screen_rect = {
 struct nk_glfw_device {
     struct nk_buffer cmds;
     struct nk_draw_null_texture null;
-    GLuint vbo, vao, ebo, fbo;
+    GLuint vbo, vao, ebo, fbo, rbo;
     GLuint prog, screen_prog;
     GLuint vert_shdr, screen_vert;
     GLuint frag_shdr, screen_frag;
@@ -147,31 +149,6 @@ void nk_glfw3_device_upload_atlas(struct nk_glfw* glfw, const void *image, int w
     glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, (GLsizei)width, (GLsizei)height, 0,
                 GL_RGBA, GL_UNSIGNED_BYTE, image);
 }
-
-// std::string loadShaderFile(const char* path) {
-//     // 1. retrieve the vertex/fragment source code from filePath
-//     std::string code = "";
-//     std::ifstream ShaderFile;
-
-//     // ensure ifstream objects can throw exceptions:
-//     ShaderFile.exceptions(std::ifstream::failbit | std::ifstream::badbit);
-//     try {
-//         // open file
-//         ShaderFile.open(path);
-//         std::stringstream ShaderStream;
-
-//         // read file's buffer contents into streams
-//         ShaderStream << ShaderFile.rdbuf();
-//         // close file handlers
-//         ShaderFile.close();
-
-//         // convert stream into string
-//         code = ShaderStream.str();
-//     } catch (std::ifstream::failure& e) {
-//         std::cout << "ERROR::SHADER::FILE_NOT_SUCCESFULLY_READ" << std::endl;
-//     }
-//     return code;
-// }
 
 void nk_glfw3_clipboard_paste(nk_handle usr, struct nk_text_edit *edit) {
     struct nk_glfw* glfw = (nk_glfw*) usr.ptr;
@@ -272,6 +249,16 @@ NK_API void nk_glfw3_set_attributes(
         glVertexAttribPointer((GLuint)dev->attrib_pos, 2, GL_FLOAT, GL_FALSE, vs, (void*)vp);
         glVertexAttribPointer((GLuint)dev->attrib_uv, 2, GL_FLOAT, GL_FALSE, vs, (void*)vt);
         glVertexAttribPointer((GLuint)dev->attrib_col, 4, GL_UNSIGNED_BYTE, GL_TRUE, vs, (void*)vc);
+    } else {
+        GLsizei vs = sizeof(ScreenRect);
+
+        glEnableVertexAttribArray((GLuint)dev->attrib_position);
+        glEnableVertexAttribArray((GLuint)dev->attrib_size);
+        glEnableVertexAttribArray((GLuint)dev->attrib_tex);
+
+        glVertexAttribPointer((GLuint)dev->attrib_position, 2, GL_FLOAT, GL_FALSE, vs, (void*)0);
+        glVertexAttribPointer((GLuint)dev->attrib_size, 2, GL_FLOAT, GL_FALSE, vs, (void*)(2 * sizeof(float)));
+        glVertexAttribPointer((GLuint)dev->attrib_tex, 4, GL_FLOAT, GL_FALSE, vs, (void*)(4 * sizeof(float)));
     }
 }
 
@@ -293,13 +280,22 @@ NK_API void nk_glfw3_device_create(struct nk_glfw* glfw) {
     glGenTextures(1, &dev->frame_tex);
     // TODO : add assert for non-zero height and width
     glBindTexture(GL_TEXTURE_2D, dev->frame_tex);
-    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, glfw->width, glfw->height, 0, GL_RGBA, GL_UNSIGNED_BYTE, NULL);
+    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, WIDTH, HEIGHT, 0, GL_RGBA, GL_UNSIGNED_BYTE, NULL);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
 
     // attach texture to framebuffer as color attachment 0
     glFramebufferTexture2D( GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, dev->frame_tex, 0 );
-    
+
+    // Renderbuffer
+    glGenRenderbuffers(1, &dev->rbo);
+    glBindRenderbuffer(GL_RENDERBUFFER, dev->rbo); 
+    glRenderbufferStorage(GL_RENDERBUFFER, GL_DEPTH24_STENCIL8, WIDTH, HEIGHT);
+
+    // attaching renderbuffer to framebuffer as depth and stencil attachments
+    glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_DEPTH_STENCIL_ATTACHMENT, GL_RENDERBUFFER, dev->rbo);
+    status = glCheckFramebufferStatus(GL_FRAMEBUFFER);
+
     // load screen quad shader
     nk_glfw3_load_shader(
         shaders.screen_vertex_shader, 
@@ -340,30 +336,6 @@ NK_API void nk_glfw3_device_create(struct nk_glfw* glfw) {
     glGenBuffers(1, &dev->ebo);
     glGenVertexArrays(1, &dev->vao);
 
-    // {
-    //     /* buffer setup */
-    //     GLsizei vs = sizeof(struct nk_glfw_vertex);
-    //     size_t vp = offsetof(struct nk_glfw_vertex, position);
-    //     size_t vt = offsetof(struct nk_glfw_vertex, uv);
-    //     size_t vc = offsetof(struct nk_glfw_vertex, col);
-
-    //     // glGenBuffers(1, &dev->vbo);
-    //     // glGenBuffers(1, &dev->ebo);
-    //     // glGenVertexArrays(1, &dev->vao);
-
-    //     glBindVertexArray(dev->vao);
-    //     glBindBuffer(GL_ARRAY_BUFFER, dev->vbo);
-    //     glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, dev->ebo);
-
-    //     glEnableVertexAttribArray((GLuint)dev->attrib_pos);
-    //     glEnableVertexAttribArray((GLuint)dev->attrib_uv);
-    //     glEnableVertexAttribArray((GLuint)dev->attrib_col);
-
-    //     glVertexAttribPointer((GLuint)dev->attrib_pos, 2, GL_FLOAT, GL_FALSE, vs, (void*)vp);
-    //     glVertexAttribPointer((GLuint)dev->attrib_uv, 2, GL_FLOAT, GL_FALSE, vs, (void*)vt);
-    //     glVertexAttribPointer((GLuint)dev->attrib_col, 4, GL_UNSIGNED_BYTE, GL_TRUE, vs, (void*)vc);
-    // }
-
     glBindTexture(GL_TEXTURE_2D, 0);
     glBindBuffer(GL_ARRAY_BUFFER, 0);
     glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
@@ -388,6 +360,8 @@ void nk_glfw3_font_stash_end(struct nk_glfw* glfw) {
 }
 // ----------------------------------------------------------
 
+bool firstFrameFlushed = false;
+
 NK_API void nk_glfw3_render(struct nk_glfw* glfw, enum nk_anti_aliasing AA, int max_vertex_buffer, int max_element_buffer) {
 
     struct nk_glfw_device* dev = &glfw->ogl;
@@ -407,9 +381,13 @@ NK_API void nk_glfw3_render(struct nk_glfw* glfw, enum nk_anti_aliasing AA, int 
     // Render on framebuffer texture
     // ----------------------------------------------------
     glBindFramebuffer(GL_FRAMEBUFFER, dev->fbo);
+    GLuint err = glGetError();
     unsigned int attachments[1] = { GL_COLOR_ATTACHMENT0 };
     glDrawBuffers(1, attachments);
+    err = glGetError();
     // ----------------------------------------------------
+#else
+    GLuint err = glGetError();
 #endif
 
     glDisable(GL_DEPTH_TEST);
@@ -420,6 +398,7 @@ NK_API void nk_glfw3_render(struct nk_glfw* glfw, enum nk_anti_aliasing AA, int 
 
     /* setup program */
     glUseProgram(dev->prog);
+    err = glGetError();
     glUniform1i(dev->uniform_tex, 0);
     glUniformMatrix4fv(dev->uniform_proj, 1, GL_FALSE, &ortho[0][0]);
     glViewport(0, 0, (GLsizei)glfw->display_width, (GLsizei)glfw->display_height);
@@ -436,13 +415,18 @@ NK_API void nk_glfw3_render(struct nk_glfw* glfw, enum nk_anti_aliasing AA, int 
 
         // TODO : set attributes for dev->prog
         nk_glfw3_set_attributes(dev);
+        err = glGetError();
 
         glBufferData(GL_ARRAY_BUFFER, max_vertex_buffer, NULL, GL_STREAM_DRAW);
+        err = glGetError();
         glBufferData(GL_ELEMENT_ARRAY_BUFFER, max_element_buffer, NULL, GL_STREAM_DRAW);
+        err = glGetError();
 
         /* load draw vertices & elements directly into vertex + element buffer */
         vertices = glMapBuffer(GL_ARRAY_BUFFER, GL_WRITE_ONLY);
+        err = glGetError();
         elements = glMapBuffer(GL_ELEMENT_ARRAY_BUFFER, GL_WRITE_ONLY);
+        err = glGetError();
         {
             /* fill convert configuration */
             struct nk_convert_config config;
@@ -477,22 +461,53 @@ NK_API void nk_glfw3_render(struct nk_glfw* glfw, enum nk_anti_aliasing AA, int 
         {
             if (!cmd->elem_count) continue;
             glBindTexture(GL_TEXTURE_2D, (GLuint)cmd->texture.id);
-            glScissor(
+            err = glGetError();
+            /*glScissor(
                 (GLint)(cmd->clip_rect.x * glfw->fb_scale.x),
                 (GLint)((glfw->height - (GLint)(cmd->clip_rect.y + cmd->clip_rect.h)) * glfw->fb_scale.y),
                 (GLint)(cmd->clip_rect.w * glfw->fb_scale.x),
-                (GLint)(cmd->clip_rect.h * glfw->fb_scale.y));
+                (GLint)(cmd->clip_rect.h * glfw->fb_scale.y));*/
             glDrawElements(GL_TRIANGLES, (GLsizei)cmd->elem_count, GL_UNSIGNED_SHORT, offset);
+            err = glGetError();
             offset += cmd->elem_count;
         }
         nk_clear(&glfw->ctx);
         nk_buffer_clear(&dev->cmds);
 
+#ifdef USE_FRAMEBUFFER
+        if (!firstFrameFlushed) {
+            glBindTexture(GL_TEXTURE_2D, dev->frame_tex);
+            unsigned char* image_data = new unsigned char[WIDTH * HEIGHT * 4];
+            glGetTexImage(GL_TEXTURE_2D, 0, GL_RGBA, GL_UNSIGNED_BYTE, image_data);
+            save_image("test", image_data, WIDTH, HEIGHT);
+            delete[] image_data;
+            firstFrameFlushed = true;
+        }
+
         // TODO : apply post-precessing effects on framebuffer
         // 1. select framebuffer 0
-        // 2. select dev->screen_prog, set attributes
+        glBindFramebuffer(GL_FRAMEBUFFER, 0);
+
+        // 2. select dev->screen_prog, set unforms and attributes
+        glUseProgram(dev->screen_prog);
+        err = glGetError();
+        glActiveTexture(GL_TEXTURE0);
+		glBindTexture(GL_TEXTURE_2D, dev->frame_tex);
+        err = glGetError();
+        glUniform1i(dev->uniform_prerender_ui, 0);
+        glUniformMatrix4fv(dev->uniform_projection, 1, GL_FALSE, &ortho[0][0]);
+        glUniform1f(dev->uniform_scale, 1.f);
+        glViewport(0, 0, (GLsizei)glfw->display_width, (GLsizei)glfw->display_height);
+        nk_glfw3_set_attributes(dev, true);
+        err = glGetError();
+
         // 3. set buffer data to screen_rect
+        glBufferData( GL_ARRAY_BUFFER, sizeof(ScreenRect), &screen_rect, GL_DYNAMIC_DRAW );
+        err = glGetError();
         // 4. call glDrawArrays(GL_POINTS)
+        glDrawArrays( GL_POINTS, 0, 1 );
+        err = glGetError();
+#endif
     }
 
     glDisable(GL_SCISSOR_TEST);

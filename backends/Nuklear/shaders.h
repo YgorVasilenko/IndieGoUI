@@ -26,7 +26,7 @@ struct shader_codes {
         "uniform sampler2D Texture;\n"
         "in vec2 Frag_UV;\n"
         "in vec4 Frag_Color;\n"
-        "out vec4 Out_Color;\n"
+        "layout (location = 0) out vec4 Out_Color;\n"
         "void main(){\n"
         "   Out_Color = Frag_Color * texture(Texture, Frag_UV.st);\n"
         "}\n";
@@ -127,7 +127,8 @@ struct shader_codes {
         "uniform sampler2D prerender_ui;\n"
         "in vec2 texCoords;\n"
         "void main() {\n"
-        "    FragColor = texture(prerender_ui, texCoords);\n"
+        // "    FragColor = texture(prerender_ui, texCoords);\n"
+        "    FragColor = vec4(1, 1, 1, 1);\n"
         "};";
 };
 

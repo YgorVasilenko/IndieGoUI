@@ -26,6 +26,8 @@ namespace fs = std::filesystem;
 #define STB_IMAGE_IMPLEMENTATION
 #include "stb_image.h"
 
+#include <Magick++.h>
+
 #if !defined NO_SERIALIZATION && !defined NO_UI_SERIALIZATION
 #include <IndieGoUI.pb.h>
 #endif
@@ -200,6 +202,12 @@ void addElement(
 #ifdef RELEASE_BUILD
     extern std::string global_home;
 #endif
+
+void save_image(std::string path, unsigned char * data, int width, int height) {
+    Magick::Image img;
+	img.read(width, height, "RGBA", MagickCore::CharPixel, data);
+	img.write(path + ".png");
+}
 
 // helper function lo load image through stbi
 // in other engine parts ImageLoader will do that
