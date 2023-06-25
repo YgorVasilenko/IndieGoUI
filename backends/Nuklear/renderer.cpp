@@ -228,6 +228,14 @@ void (*Manager::custom_ui_uniforms)(void*) = 0;
 void * Manager::uniforms_data_ptr = NULL;
 int Manager::draw_idx = 0;
 
+float apply_indices[50] = { 
+    9, -1, -1, -1, -1, -1, -1, -1, -1, -1, 
+    -1, -1, -1, -1, -1, -1, -1, -1, -1, -1,
+    -1, -1, -1, -1, -1, -1, -1, -1, -1, -1,
+    -1, -1, -1, -1, -1, -1, -1, -1, -1, -1,
+    -1, -1, -1, -1, -1, -1, -1, -1, -1, -1
+};
+
 NK_API void nk_glfw3_render(struct nk_glfw* glfw, enum nk_anti_aliasing AA, int max_vertex_buffer, int max_element_buffer) {
 
     struct nk_glfw_device* dev = &glfw->ogl;
@@ -252,6 +260,12 @@ NK_API void nk_glfw3_render(struct nk_glfw* glfw, enum nk_anti_aliasing AA, int 
     glUseProgram(dev->prog);
     glUniform1i(dev->uniform_tex, 0);
     glUniformMatrix4fv(dev->uniform_proj, 1, GL_FALSE, &ortho[0][0]);
+
+    // set apply_indices array
+    for (int i = 0; i < 50; i++) {
+        std::string name = "apply_indices[" + std::to_string(i) + "]";
+        glUniform1f(glGetUniformLocation(dev->prog, name.c_str()), apply_indices[i]);
+    }
 
     if (Manager::custom_ui_uniforms) {
         Manager::custom_ui_uniforms(

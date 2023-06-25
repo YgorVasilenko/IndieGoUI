@@ -26,16 +26,23 @@ struct shader_codes {
         NK_SHADER_VERSION
         "precision mediump float;\n"
         "uniform sampler2D Texture;\n"
+        "uniform float apply_indices[50];\n"
+        // "uniform float last_index;\n"
         "in vec2 Frag_UV;\n"
         "in vec4 Frag_Color;\n"
         "in float Cmd_Idx;\n"
         "out vec4 Out_Color;\n"
         "void main(){\n"
         "   Out_Color = Frag_Color * texture(Texture, Frag_UV.st);\n"
-        "   if (Cmd_Idx == 0.f) {\n"
+        /*"   if (Cmd_Idx == 0.f) {\n"
         "       Out_Color.r += 0.3f;\n"
+        "   };\n"*/
+        "   for (int i = 0; i < 50; i++) {\n"
+        "       if (Cmd_Idx == apply_indices[i]) {\n"
+        "          Out_Color.r += 0.3f;\n"
+        "       };\n"
         "   };\n"
-        "   if (Cmd_Idx == 1.f) {\n"
+        /*"   if (Cmd_Idx == 1.f) {\n"
         "       Out_Color.g += 0.3f;\n"
         "   };\n"
         "   if (Cmd_Idx == 2.f) {\n"
@@ -89,6 +96,6 @@ struct shader_codes {
         "   if (Cmd_Idx == 16.f) {\n"
         "       Out_Color.g += 0.3f;\n"
         "       Out_Color.b += 0.3f;\n"
-        "   };\n"
+        "   };\n"*/
         "}\n";
 };
