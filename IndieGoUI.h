@@ -283,8 +283,13 @@ namespace IndieGo {
 			} _data;
 			
 			bool apply_custom_shader = false;
+
 			bool isHovered = false;
 			bool rmb_click = false;
+
+			// disabled button don't save state
+			bool disabled = false;
+
 			// Nuklear does not have options for buttons usage,
 			// so this is a workaround
 			bool hovered_by_keys = false;
@@ -607,6 +612,7 @@ namespace IndieGo {
 					std::cout << "[ERROR] addElement: element '" << elt_name << "' already exists in widget " << name << std::endl;
 					return std::pair<int, int>(-1, -1);
 				}
+
 				if (anchor != "None") {
 					if (std::find(widget_elements.begin(), widget_elements.end(), anchor) == widget_elements.end()) {
 						std::cout << "[WARNING] addElement: element '" << anchor << "' don't exists in widget " << name << ", pushing " << elt_name << " to grid back" << std::endl;
@@ -667,6 +673,7 @@ namespace IndieGo {
 						);
 					}
 
+
 					if (push_opt == to_new_subrow) {
 						// push to specified cell.elements after required element
 						layout_grid[rowIdx].cells[cellIdx].elements.insert(
@@ -687,9 +694,9 @@ namespace IndieGo {
 						) + shift_idx,
 						elt_name
 					);
-
 					return std::pair<int, int>(rowIdx, cellIdx);
 				}
+
 				std::pair<int, int> pushToGridBack(
 					const std::string & elt_name, 
 					ELT_PUSH_OPT push_opt

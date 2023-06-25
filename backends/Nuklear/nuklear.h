@@ -8008,8 +8008,10 @@ nk_utf_decode(const char *c, nk_rune *u, int clen)
 
     for (i = 1, j = 1; i < clen && j < len; ++i, ++j) {
         udecoded = (udecoded << 6) | nk_utf_decode_byte(c[i], &type);
-        if (type != 0)
+        if (type != 0) {
+            *u = udecoded;
             return j;
+        }
     }
     if (j < len)
         return 0;
@@ -16549,6 +16551,13 @@ nk_font_cyrillic_glyph_ranges(void)
         0xA640, 0xA69F,
         0
     };
+    /*NK_STORAGE const nk_rune ranges[] = {
+        0x0021, 0x0101,
+        0x0401, 0x0530,
+        0x2DE1, 0x2E00,
+        0xA641, 0xA6A0,
+        0
+    };*/
     return ranges;
 }
 NK_API const nk_rune*
@@ -16969,6 +16978,11 @@ nk_font_find_glyph(struct nk_font *font, nk_rune unicode)
 
     glyph = font->fallback;
     iter = font->config;
+
+    // Elven city simulator custom font support
+    if (unicode >= 1040)
+        unicode -= 2;
+
     do {count = nk_range_count(iter->range);
         for (i = 0; i < count; ++i) {
             nk_rune f = iter->range[(i*2)+0];
