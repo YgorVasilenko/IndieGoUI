@@ -281,6 +281,8 @@ namespace IndieGo {
 				ui_string_group * usgPtr;
 				std::string * strPtr;
 			} _data;
+			
+			bool apply_custom_shader = false;
 
 			bool isHovered = false;
 			bool rmb_click = false;
@@ -422,6 +424,7 @@ namespace IndieGo {
 			// widgets provide place on screen to display ui elements
 			std::vector<std::string> widget_elements;
 			std::string name = "";
+			bool apply_custom_shader = false;
 			// bool backgroundImage = false;
 			
 			// index in global array of images
@@ -670,6 +673,7 @@ namespace IndieGo {
 						);
 					}
 
+
 					if (push_opt == to_new_subrow) {
 						// push to specified cell.elements after required element
 						layout_grid[rowIdx].cells[cellIdx].elements.insert(
@@ -717,7 +721,6 @@ namespace IndieGo {
 							layout_grid.back().cells.push_back(row_cell());
 						layout_grid.back().cells.back().elements.push_back(elt_name);
 					}
-
 					widget_elements.push_back(elt_name);
 					return std::pair<int, int>(layout_grid.size() - 1, layout_grid.back().cells.size() - 1);
 				}
@@ -967,6 +970,12 @@ namespace IndieGo {
 			std::string project_dir = "";
 			region_size<unsigned int> screen_size;
 
+			static void (*custom_ui_uniforms)(void*);
+			static void * uniforms_data_ptr;
+
+			// draw index gets updated with each call
+			static int draw_idx;
+
 			// [win_id] = ui_map
 			std::map<std::string, UI_elements_map> UIMaps;
 			
@@ -1087,6 +1096,7 @@ namespace IndieGo {
 				}
 
 				hoveredWidgets[curr_ui_map] = NULL;
+				draw_idx = 0;
 				for (auto widget = widgets[curr_ui_map].begin(); widget != widgets[curr_ui_map].end(); widget++) {
 					hadFocus = false;
 					
