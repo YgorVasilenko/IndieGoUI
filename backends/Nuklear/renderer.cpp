@@ -82,11 +82,12 @@ struct nk_glfw_vertex {
     float idx;
 };
 
-#ifdef __APPLE__
-  #define NK_SHADER_VERSION "#version 150\n"
-#else
-  #define NK_SHADER_VERSION "#version 300 es\n"
-#endif
+#include <backends/Nuklear/shader_codes.h>
+// #ifdef __APPLE__
+//   #define NK_SHADER_VERSION "#version 150\n"
+// #else
+//   #define NK_SHADER_VERSION "#version 300 es\n"
+// #endif
 
 #define MAX_VERTEX_BUFFER 512 * 1024
 #define MAX_ELEMENT_BUFFER 128 * 1024
@@ -142,85 +143,17 @@ void nk_glfw3_clipboard_copy(nk_handle usr, const char *text, int len) {
     free(str);
 }
 
-static const GLchar* vertex_shader =
-        NK_SHADER_VERSION
-        "uniform mat4 ProjMtx;\n"
-        "in vec2 Position;\n"
-        "in vec2 TexCoord;\n"
-        "in vec4 Color;\n"
-        "in float Index;\n"
-        "out vec2 Frag_UV;\n"
-        "out vec4 Frag_Color;\n"
-        "out float Cmd_Idx;\n"
-        "void main() {\n"
-        "   Frag_UV = TexCoord;\n"
-        "   Frag_Color = Color;\n"
-        "   Cmd_Idx = Index;\n"
-        "   gl_Position = ProjMtx * vec4(Position.xy, 0, 1);\n"
-        "}\n";
-static const GLchar* fragment_shader =
-        NK_SHADER_VERSION
-        "precision mediump float;\n"
-        "uniform sampler2D Texture;\n"
-        "in vec2 Frag_UV;\n"
-        "in vec4 Frag_Color;\n"
-        "in float Cmd_Idx;\n"
-        "out vec4 Out_Color;\n"
-        "void main(){\n"
-        "   Out_Color = Frag_Color * texture(Texture, Frag_UV.st);\n"
-        "   if (Cmd_Idx == 0.f) {\n"
-        "       Out_Color.r += 0.3f;\n"
-        "   };\n"
-        "   if (Cmd_Idx == 1.f) {\n"
-        "       Out_Color.g += 0.3f;\n"
-        "   };\n"
-        "   if (Cmd_Idx == 2.f) {\n"
-        "       Out_Color.b += 0.3f;\n"
-        "   };\n"
-        "   if (Cmd_Idx == 3.f) {\n"
-        "       Out_Color.r += 0.3f;\n"
-        "       Out_Color.g += 0.3f;\n"
-        "   };\n"
-        "   if (Cmd_Idx == 4.f) {\n"
-        "       Out_Color.g += 0.3f;\n"
-        "       Out_Color.b += 0.3f;\n"
-        "   };\n"
-        "   if (Cmd_Idx == 5.f) {\n"
-        "       Out_Color.b += 0.3f;\n"
-        "       Out_Color.r += 0.3f;\n"
-        "   };\n"
-        "   if (Cmd_Idx == 6.f) {\n"
-        "       Out_Color.r += 0.3f;\n"
-        "   };\n"
-        "   if (Cmd_Idx == 7.f) {\n"
-        "       Out_Color.g += 0.3f;\n"
-        "   };\n"
-        "   if (Cmd_Idx == 8.f) {\n"
-        "       Out_Color.b += 0.3f;\n"
-        "   };\n"
-        "   if (Cmd_Idx == 9.f) {\n"
-        "       Out_Color.r += 0.3f;\n"
-        "       Out_Color.g += 0.3f;\n"
-        "   };\n"
-        "   if (Cmd_Idx == 10.f) {\n"
-        "       Out_Color.g += 0.3f;\n"
-        "       Out_Color.b += 0.3f;\n"
-        "   };\n"
-        "   if (Cmd_Idx == 11.f) {\n"
-        "       Out_Color = vec4(0.f, 0.f, 0.f, 1.f);\n"
-        "   };\n"
-        "}\n";
-
 NK_API void nk_glfw3_device_create(struct nk_glfw* glfw) {
     GLint status;
 
+    shader_codes shaders;
     struct nk_glfw_device* dev = &glfw->ogl;
     nk_buffer_init_default(&dev->cmds);
     dev->prog = glCreateProgram();
     dev->vert_shdr = glCreateShader(GL_VERTEX_SHADER);
     dev->frag_shdr = glCreateShader(GL_FRAGMENT_SHADER);
-    glShaderSource(dev->vert_shdr, 1, &vertex_shader, 0);
-    glShaderSource(dev->frag_shdr, 1, &fragment_shader, 0);
+    glShaderSource(dev->vert_shdr, 1, &shaders.vertex_shader, 0);
+    glShaderSource(dev->frag_shdr, 1, &shaders.fragment_shader, 0);
     glCompileShader(dev->vert_shdr);
     glCompileShader(dev->frag_shdr);
     glGetShaderiv(dev->vert_shdr, GL_COMPILE_STATUS, &status);
@@ -290,6 +223,10 @@ void nk_glfw3_font_stash_end(struct nk_glfw* glfw) {
         nk_style_set_font(&glfw->ctx, &atlas.default_font->handle);
 }
 // ----------------------------------------------------------
+using namespace IndieGo::UI;
+void (*Manager::custom_ui_uniforms)(void*) = 0;
+void * Manager::uniforms_data_ptr = NULL;
+int Manager::draw_idx = 0;
 
 NK_API void nk_glfw3_render(struct nk_glfw* glfw, enum nk_anti_aliasing AA, int max_vertex_buffer, int max_element_buffer) {
 
@@ -315,6 +252,13 @@ NK_API void nk_glfw3_render(struct nk_glfw* glfw, enum nk_anti_aliasing AA, int 
     glUseProgram(dev->prog);
     glUniform1i(dev->uniform_tex, 0);
     glUniformMatrix4fv(dev->uniform_proj, 1, GL_FALSE, &ortho[0][0]);
+
+    if (Manager::custom_ui_uniforms) {
+        Manager::custom_ui_uniforms(
+            Manager::uniforms_data_ptr
+        );
+    }
+
     glViewport(0, 0, (GLsizei)glfw->display_width, (GLsizei)glfw->display_height);
     {
         /* convert from command queue into draw list and draw to screen */
@@ -416,7 +360,6 @@ void prepareUIRenderer(GLFWwindow* window, std::string & winID) {
     nk_glfw3_font_stash_end(glfw);
 }
 
-using namespace IndieGo::UI;
 void (*Manager::buttonClickCallback)(void*) = NULL;
 
 void Manager::scroll(void * window, double xoff, double yoff) {
@@ -521,7 +464,13 @@ void textToString(std::string & str) {
 // callUIfunction abstracts away different UI elements.
 //
 //-------------------------------------------------------
+
+std::map<std::string, int> debug_array;
 void UI_element::callUIfunction(float x, float y, float space_w, float space_h) {
+    // debug_array[label] = Manager::draw_idx;
+    /*ctx->current->buffer.curr_cmd_idx = Manager::draw_idx;
+    debug_array[label] = Manager::draw_idx;*/
+    // Manager::draw_idx++;
 
     if (font != "None") {
         nk_style_set_font(
@@ -546,6 +495,9 @@ void UI_element::callUIfunction(float x, float y, float space_w, float space_h) 
     static const float ratio[] = { 100, 120 };
     float dbgVal;
     if (type == UI_BOOL) {
+        ctx->current->buffer.curr_cmd_idx = Manager::draw_idx;
+        debug_array[label] = Manager::draw_idx;
+        Manager::draw_idx++;
         // TODO : add skinning
         /*struct nk_key_selector ks;
         if (hovered_by_keys) {
@@ -559,6 +511,9 @@ void UI_element::callUIfunction(float x, float y, float space_w, float space_h) 
     }
 
     if (type == UI_FLOAT) {
+        ctx->current->buffer.curr_cmd_idx = Manager::draw_idx;
+        debug_array[label] = Manager::draw_idx;
+        Manager::draw_idx++;
         // TODO : add skinning
         full_name = "#" + label + ":";
         nk_property_float(ctx, full_name.c_str(), -300000.0f, &_data.f, 300000.0f, 1, flt_px_incr);
@@ -566,6 +521,9 @@ void UI_element::callUIfunction(float x, float y, float space_w, float space_h) 
     }
 
     if (type == UI_INT) {
+        ctx->current->buffer.curr_cmd_idx = Manager::draw_idx;
+        debug_array[label] = Manager::draw_idx;
+        Manager::draw_idx++;
         // TODO : add skinning
         full_name = "#" + label + ":";
         nk_property_int(ctx, full_name.c_str(), -1024, &_data.i, 1024, 1, 0.5f);
@@ -573,6 +531,9 @@ void UI_element::callUIfunction(float x, float y, float space_w, float space_h) 
     }
 
     if (type == UI_UINT) {
+        ctx->current->buffer.curr_cmd_idx = Manager::draw_idx;
+        debug_array[label] = Manager::draw_idx;
+        Manager::draw_idx++;
         // TODO : add skinning
         full_name = "#" + label + ":";
         nk_property_int(ctx, full_name.c_str(), 0, &_data.i, 2040, 1, 0.5f);
@@ -580,6 +541,9 @@ void UI_element::callUIfunction(float x, float y, float space_w, float space_h) 
     }
 
     if (type == UI_STRING_INPUT) {
+        ctx->current->buffer.curr_cmd_idx = Manager::draw_idx;
+        debug_array[label] = Manager::draw_idx;
+        Manager::draw_idx++;
         // TODO : add skinning
         std::string& stringRef = *_data.strPtr;
         stringToText(stringRef);
@@ -590,6 +554,9 @@ void UI_element::callUIfunction(float x, float y, float space_w, float space_h) 
     }
 
     if (type == UI_BUTTON) {
+        ctx->current->buffer.curr_cmd_idx = Manager::draw_idx;
+        debug_array[label] = Manager::draw_idx;
+        Manager::draw_idx++;
         ctx->style.button.border = border;
         ctx->style.button.rounding = rounding;
         if (skinned_style.props[button_normal].first != -1) {
@@ -669,6 +636,10 @@ void UI_element::callUIfunction(float x, float y, float space_w, float space_h) 
     }
 
     if (type == UI_BUTTON_SWITCH) {
+        ctx->current->buffer.curr_cmd_idx = Manager::draw_idx;
+        debug_array[label] = Manager::draw_idx;
+        Manager::draw_idx++;
+
         if (skinned_style.props[button_normal].first != -1) {
             ctx->style.button.normal = nk_style_item_image(
                 images[skinned_style.props[button_normal].first][skinned_style.props[button_normal].second].first
@@ -743,11 +714,19 @@ void UI_element::callUIfunction(float x, float y, float space_w, float space_h) 
     }
     
     if (type == UI_IMAGE) {
+        ctx->current->buffer.curr_cmd_idx = Manager::draw_idx;
+        debug_array[label] = Manager::draw_idx;
+        Manager::draw_idx++;
+
         if (_data.i != -1)
             nk_image(ctx, images[_data.i][cropId].first);
     }
 
     if (type == UI_STRING_LABEL) {
+        ctx->current->buffer.curr_cmd_idx = Manager::draw_idx;
+        debug_array[label] = Manager::draw_idx;
+        Manager::draw_idx++;
+
         nk_flags align;
         switch(text_align){
           case LEFT:
@@ -764,10 +743,17 @@ void UI_element::callUIfunction(float x, float y, float space_w, float space_h) 
     }
 
     if (type == UI_STRING_TEXT) {
+        ctx->current->buffer.curr_cmd_idx = Manager::draw_idx;
+        debug_array[label] = Manager::draw_idx;
+        Manager::draw_idx++;
+
         nk_label_wrap(ctx, label.c_str());
     }
     
     if (type == UI_PROGRESS) {
+        ctx->current->buffer.curr_cmd_idx = Manager::draw_idx;
+        debug_array[label] = Manager::draw_idx;
+        Manager::draw_idx++;
         if (skinned_style.props[progress_normal].first != -1) {
             ctx->style.progress.normal = nk_style_item_image(
                 images[skinned_style.props[progress_normal].first][skinned_style.props[progress_normal].second].first
@@ -809,6 +795,10 @@ void UI_element::callUIfunction(float x, float y, float space_w, float space_h) 
     }
 
     if (type == UI_ITEMS_LIST) {
+        ctx->current->buffer.curr_cmd_idx = Manager::draw_idx;
+        debug_array[label] = Manager::draw_idx;
+        Manager::draw_idx++;
+
         // TODO : add skinning
         ui_string_group& uiGroupRef = *_data.usgPtr;
         uiGroupRef.selection_switch = false;
@@ -1030,6 +1020,7 @@ void WIDGET::callImmediateBackend(UI_elements_map & UIMap){
             );
         }
     }
+    ctx->draw_idx = Manager::draw_idx;
 
     if (
         nk_begin(
@@ -1066,7 +1057,8 @@ void WIDGET::callImmediateBackend(UI_elements_map & UIMap){
         
         if (title || movable || minimizable)
             header_height = ctx->current->layout->header_height;
-
+        
+        Manager::draw_idx++;
         callWidgetUI(UIMap);
         minimized = false;
     } else {

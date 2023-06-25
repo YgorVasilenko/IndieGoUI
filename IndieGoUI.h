@@ -961,6 +961,12 @@ namespace IndieGo {
 			std::string project_dir = "";
 			region_size<unsigned int> screen_size;
 
+			static void (*custom_ui_uniforms)(void*);
+			static void * uniforms_data_ptr;
+
+			// draw index gets updated with each call
+			static int draw_idx;
+
 			// [win_id] = ui_map
 			std::map<std::string, UI_elements_map> UIMaps;
 			
@@ -1081,6 +1087,7 @@ namespace IndieGo {
 				}
 
 				hoveredWidgets[curr_ui_map] = NULL;
+				draw_idx = 0;
 				for (auto widget = widgets[curr_ui_map].begin(); widget != widgets[curr_ui_map].end(); widget++) {
 					hadFocus = false;
 					

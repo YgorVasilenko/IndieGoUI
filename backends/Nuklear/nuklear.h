@@ -1181,7 +1181,7 @@ struct nk_convert_config {
     const struct nk_draw_vertex_layout_element *vertex_layout; /* describes the vertex output format and packing */
     nk_size vertex_size; /* sizeof one vertex for vertex packing */
     nk_size vertex_alignment; /* vertex alignment: Can be obtained by NK_ALIGNOF */
-    float cmd_idx; // Index of currently processed draw command
+    int cmd_idx; // Index of currently processed draw command
 };
 /*/// #### nk__begin
 /// Returns a draw command list iterator to iterate all draw
@@ -4447,6 +4447,7 @@ enum nk_command_type {
 struct nk_command {
     enum nk_command_type type;
     nk_size next;
+    int cmd_idx;
 #ifdef NK_INCLUDE_COMMAND_USERDATA
     nk_handle userdata;
 #endif
@@ -4615,6 +4616,7 @@ struct nk_command_buffer {
     int use_clipping;
     nk_handle userdata;
     nk_size begin, end, last;
+    int curr_cmd_idx;
 };
 
 /* shape outlines */
@@ -5651,6 +5653,7 @@ struct nk_context {
     struct nk_text_edit text_edit;
     /* draw buffer used for overlay drawing operation like cursor */
     struct nk_command_buffer overlay;
+    int draw_idx;
 
     /* windows */
     int build;
@@ -8846,6 +8849,7 @@ nk_command_buffer_init(struct nk_command_buffer *cb,
     cb->begin = b->allocated;
     cb->end = b->allocated;
     cb->last = b->allocated;
+    cb->curr_cmd_idx = 0;
 }
 NK_LIB void
 nk_command_buffer_reset(struct nk_command_buffer *b)
@@ -8860,6 +8864,7 @@ nk_command_buffer_reset(struct nk_command_buffer *b)
     b->userdata.ptr = 0;
 #endif
 }
+
 NK_LIB void*
 nk_command_buffer_push(struct nk_command_buffer* b,
     enum nk_command_type t, nk_size size)
@@ -8887,6 +8892,8 @@ nk_command_buffer_push(struct nk_command_buffer* b,
 
     cmd->type = t;
     cmd->next = b->base->allocated + alignment;
+    cmd->cmd_idx = b->curr_cmd_idx;
+    // b->curr_cmd_idx++;
 #ifdef NK_INCLUDE_COMMAND_USERDATA
     cmd->userdata = b->userdata;
 #endif
@@ -10590,14 +10597,15 @@ nk_convert(struct nk_context *ctx, struct nk_buffer *cmds,
         config->line_AA, config->shape_AA);
 
     // TODO : for each command write index to vertex data in buffer
-    float idx = 0;
+    int idx = 0;
     nk_foreach(cmd, ctx)
     {
 #ifdef NK_INCLUDE_COMMAND_USERDATA
         ctx->draw_list.userdata = cmd->userdata;
 #endif
         //config->cmd_idx = idx;
-        ctx->draw_list.config.cmd_idx = idx;
+        // ctx->draw_list.config.cmd_idx = idx;
+        ctx->draw_list.config.cmd_idx = cmd->cmd_idx;
         switch (cmd->type) {
         case NK_COMMAND_NOP: break;
         case NK_COMMAND_SCISSOR: {
@@ -20243,6 +20251,7 @@ nk_begin_titled(struct nk_context *ctx, const char *name, const char *title,
             ctx->active = win;
     } else {
         /* update window */
+        win->buffer.curr_cmd_idx = ctx->draw_idx;
         win->flags &= ~(nk_flags)(NK_WINDOW_PRIVATE-1);
         win->flags |= flags;
         if (!(win->flags & (NK_WINDOW_MOVABLE | NK_WINDOW_SCALABLE)))
