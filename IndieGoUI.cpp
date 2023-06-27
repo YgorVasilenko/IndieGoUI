@@ -97,6 +97,7 @@ void WIDGET::copyWidget(const std::string & add_name, WIDGET * other) {
                     push_opt
                 );
                 UIMap[add_name + elt].label = UIMap[elt].label;
+                UIMap[add_name + elt].hidden = UIMap[elt].hidden;
                 e++;
                 if (UIMap[elt].type == UI_IMAGE) {
                     // load image
