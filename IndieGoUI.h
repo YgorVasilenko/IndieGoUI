@@ -1012,7 +1012,7 @@ namespace IndieGo {
 				return hoveredWidgets[curr_ui_map] != NULL;
 			}
 			// If we want user to prevent focusing some widget, we need to switch back to previously focused
-			std::map<std::string, WIDGET*> prevFocusedWidgets = {};
+			// std::map<std::string, WIDGET*> prevFocusedWidgets = {};
 
 			std::map<std::string, WIDGET*> hoveredWidgets = {};
 
@@ -1051,7 +1051,7 @@ namespace IndieGo {
 				if (widgets.find(win_name) == widgets.end()){
 					std::map<std::string, WIDGET> container;
 					widgets[win_name] = container;
-					prevFocusedWidgets[win_name] = NULL;
+					// prevFocusedWidgets[win_name] = NULL;
 					hoveredWidgets[win_name] = NULL;
 				}
 
@@ -1073,22 +1073,22 @@ namespace IndieGo {
 				if (widgets.find(curr_ui_map) == widgets.end())
 					return;
 
-				bool hadFocus = false;
-				// find previously focused widget
-				WIDGET * currFocusedWidget = NULL;
-				for (auto widget = widgets[curr_ui_map].begin(); widget != widgets[curr_ui_map].end(); widget++) {
-					if (widget->second.focused){
-						currFocusedWidget = & widget->second;
-						break;
-					}
-				}
+				// bool hadFocus = false;
+				// // find previously focused widget
+				// WIDGET * currFocusedWidget = NULL;
+				// for (auto widget = widgets[curr_ui_map].begin(); widget != widgets[curr_ui_map].end(); widget++) {
+				// 	if (widget->second.focused){
+				// 		currFocusedWidget = & widget->second;
+				// 		break;
+				// 	}
+				// }
 
 				hoveredWidgets[curr_ui_map] = NULL;
 				for (auto widget = widgets[curr_ui_map].begin(); widget != widgets[curr_ui_map].end(); widget++) {
-					hadFocus = false;
+					// hadFocus = false;
 					
-					if ( currFocusedWidget == & widget->second ) 
-						hadFocus = true;
+					// if ( currFocusedWidget == & widget->second ) 
+					// 	hadFocus = true;
 
 					if (!widget->second.hidden){
 						widget->second.screen_size = screen_size;
@@ -1101,8 +1101,8 @@ namespace IndieGo {
 						widget->second.hasCursor = false;
 					}
 
-					if (hadFocus && !widget->second.focused)
-						prevFocusedWidgets[curr_ui_map] = & widget->second;
+					// if (hadFocus && !widget->second.focused)
+					// 	prevFocusedWidgets[curr_ui_map] = & widget->second;
 				}
 			};
 
