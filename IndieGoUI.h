@@ -863,6 +863,9 @@ namespace IndieGo {
 			// true, if cursor is hovered over this widget
 			bool hasCursor = false;
 
+			// if true, window shouldn't be focused
+			bool forceNoFocus = false;
+
 			// provide implementation with actual drawing calls
 			virtual void callImmediateBackend(UI_elements_map & UIMap);
 
