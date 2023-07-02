@@ -793,6 +793,18 @@ void UI_element::callUIfunction(float x, float y, float space_w, float space_h) 
         ctx->current->buffer.curr_cmd_idx = Manager::draw_idx;
         debug_array[label] = Manager::draw_idx;
         Manager::draw_idx++;
+        if (use_custom_element_style) {
+            ctx->style.progress.cursor_normal = nk_style_item_color(
+                *(struct nk_color*)&style.elements[COLOR_ELEMENTS::UI_COLOR_SLIDER_CURSOR]
+            );
+            ctx->style.progress.cursor_hover = nk_style_item_color(
+                *(struct nk_color*)&style.elements[COLOR_ELEMENTS::UI_COLOR_SLIDER_CURSOR_HOVER]
+            );
+            ctx->style.progress.cursor_active = nk_style_item_color(
+                *(struct nk_color*)&style.elements[COLOR_ELEMENTS::UI_COLOR_SLIDER_CURSOR_ACTIVE]
+            );
+        }
+
         if (skinned_style.props[progress_normal].first != -1) {
             ctx->style.progress.normal = nk_style_item_image(
                 images[skinned_style.props[progress_normal].first][skinned_style.props[progress_normal].second].first

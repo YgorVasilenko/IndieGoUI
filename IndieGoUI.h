@@ -339,6 +339,7 @@ namespace IndieGo {
 
 			// style settings for various elements
 			color_table style;
+			bool use_custom_element_style = false;
 			image_props skinned_style;
 			virtual region<float> getImgCrop(IMAGE_SKIN_ELEMENT elt);
 
