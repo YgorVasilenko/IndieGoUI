@@ -1019,7 +1019,7 @@ void WIDGET::callImmediateBackend(UI_elements_map & UIMap){
         flags = flags | NK_WINDOW_NO_SCROLLBAR;
 
     if (forceNoFocus)
-        flags = flags | NK_WINDOW_NO_INPUT;
+        flags = flags | NK_WINDOW_NO_INPUT | NK_WINDOW_BACKGROUND;
 
     if (custom_style)
         nk_style_from_table(ctx, (struct nk_color*)style.elements);
