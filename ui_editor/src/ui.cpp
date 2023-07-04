@@ -99,7 +99,7 @@ void updateElementFromUI(
     e.label = *UIMap["elt label"]._data.strPtr;
 
     if (UIMap["rename element"]._data.b) {
-        std::string new_name = *UIMap["new element name"]._data.strPtr;
+        std::string new_name = *UIMap["elt name"]._data.strPtr;
         if (new_name.size() > 0 && UIMap.elements.find(new_name) == UIMap.elements.end()) {
 
             UIMap.renameElement(

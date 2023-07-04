@@ -924,15 +924,13 @@ void WIDGET::callImmediateBackend(UI_elements_map & UIMap){
     if (!has_scrollbar)
         flags = flags | NK_WINDOW_NO_SCROLLBAR;
 
+    if (forceNoFocus)
+        flags = flags | NK_WINDOW_NO_INPUT;
+
     if (custom_style)
         nk_style_from_table(ctx, (struct nk_color*)style.elements);
     else
         nk_style_default(ctx);
-    
-    if (setFocus) {
-        nk_window_set_focus(ctx, name.c_str());
-        setFocus = false;
-    }
 
     // check various styling possibilities
     // Background
@@ -991,6 +989,11 @@ void WIDGET::callImmediateBackend(UI_elements_map & UIMap){
             flags 
         )
     ) {
+        if (setFocus) {
+            nk_window_set_focus(ctx, name.c_str());
+            setFocus = false;
+        }
+        
         if (has_scrollbar && updateScrollPosReq) {
             unsigned int X, Y;
             nk_window_get_scroll(ctx, &X, &Y);
