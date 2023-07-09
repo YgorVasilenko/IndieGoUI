@@ -39,7 +39,8 @@ struct shader_codes {
         "   };\n"*/
         "   for (int i = 0; i < 50; i++) {\n"
         "       if (Cmd_Idx == apply_indices[i]) {\n"
-        "          Out_Color.r += 0.3f;\n"
+        "          Out_Color.b += 0.25f;\n"
+        "          Out_Color.g += 0.1f;\n"
         "       };\n"
         "   };\n"
         /*"   if (Cmd_Idx == 1.f) {\n"
