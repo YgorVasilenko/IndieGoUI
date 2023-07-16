@@ -440,9 +440,9 @@ void initWidgets() {
     UIMap["e selected element"].height = 0.15f;
 
     WIDGET fonts;
-    fonts.screen_region.x = 0.7f;
+    fonts.screen_region.x = 0.6f;
     fonts.screen_region.y = 0.f;
-    fonts.screen_region.w = 0.25f;
+    fonts.screen_region.w = 0.3f;
     fonts.screen_region.h = 0.25f;
     fonts.name = "Fonts";
     editorWidgets.push_back(fonts.name);
@@ -464,6 +464,10 @@ void initWidgets() {
 
     UIMap.addElement("apply font", UI_BUTTON, &fonts_widget, to_new_subrow);
     UIMap["apply font"].label = "apply font";
+
+    UIMap.addElement("current font", UI_STRING_LABEL, &fonts_widget, to_new_subrow);
+    UIMap["current font"].label = "None";
+    UIMap["current font"].text_align = IndieGo::UI::TEXT_ALIGN::LEFT;
 
     UIMap.addElement("loaded fonts", UI_ITEMS_LIST, &fonts_widget, to_new_col);
     UIMap["loaded fonts"].label = "loaded fonts";

@@ -294,6 +294,13 @@ void updateUIFromWidget(
     UIMap["movable"]._data.b = w.movable;
     UIMap["has scrollbar"]._data.b = w.has_scrollbar;
 
+    // font
+    if (w.font != "None") {
+        UIMap["current font"].label = w.font + " " + std::to_string(w.font_size);
+    } else {
+        UIMap["current font"].label = "None";
+    }
+
     UIMap["widget border"]._data.f = w.border_size;
 
     // show/hide

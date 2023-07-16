@@ -294,6 +294,9 @@ namespace IndieGo {
 			// so this is a workaround
 			bool hovered_by_keys = false;
 			bool selected_by_keys = false;
+			bool tooltip_display = false;
+			std::string tooltip_text = "    Long tooltip text    ";
+			color_table tooltip_style;
 
 			// interaction callbacks
 			std::vector<std::function<void(void*)>> activeCallbacks;
