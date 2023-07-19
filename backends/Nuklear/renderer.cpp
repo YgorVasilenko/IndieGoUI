@@ -306,7 +306,7 @@ NK_API void nk_glfw3_render(struct nk_glfw* glfw, enum nk_anti_aliasing AA, int 
             config.vertex_layout = vertex_layout;
             config.vertex_size = sizeof(struct nk_glfw_vertex);
             config.vertex_alignment = NK_ALIGNOF(struct nk_glfw_vertex);
-            config.null = dev->null;
+            config.tex_null = dev->null;
             config.circle_segment_count = 22;
             config.curve_segment_count = 22;
             config.arc_segment_count = 22;
@@ -790,6 +790,7 @@ void UI_element::callUIfunction(float x, float y, float space_w, float space_h) 
             align = NK_TEXT_RIGHT;
             break;
         }
+        nk_draw_set_color_inline(ctx, NK_COLOR_INLINE_TAG);
         nk_label(ctx, label.c_str(), align);
     }
 
