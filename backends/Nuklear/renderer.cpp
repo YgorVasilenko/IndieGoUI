@@ -30,6 +30,7 @@
 #include <string>
 #include <regex>
 #include <filesystem>
+#include <unordered_map>
 namespace fs = std::filesystem;
 
 enum nk_glfw_init_state{
@@ -96,13 +97,13 @@ struct nk_glfw_vertex {
 std::map<std::string, std::map<float, struct nk_font *>> backend_loaded_fonts;
 
 // texture_iid = vector<sub_images>
-std::map<unsigned int, std::vector<std::pair<struct nk_image, IndieGo::UI::region<float>>>> images;
+std::unordered_map<unsigned int, std::vector<std::pair<struct nk_image, IndieGo::UI::region<float>>>> images;
 
 // Use winID to store window's context. If window destroyed and re-initializes
 // context should be same for respective winID
-std::map<std::string, struct nk_glfw*> glfw_storage;
+std::unordered_map<std::string, struct nk_glfw*> glfw_storage;
 
-std::map<std::string, struct nk_font> fonts;
+std::unordered_map<std::string, struct nk_font> fonts;
 
 // TODO - struct for several atlases loading
 struct nk_font_atlas atlas;

@@ -360,6 +360,7 @@ void processAddOptions(std::string winID) {
             if (UIMap["switch type"]._data.b) {
                 new_element_name = elements_list.getSelected();
                 UIMap[new_element_name].type = t;
+                UIMap[new_element_name]._data.i = -1;
             } else {
                 addElement(
                     widgets_list.getSelected(), 
