@@ -570,6 +570,8 @@ void UI_element::callUIfunction(float x, float y, float space_w, float space_h) 
         std::string& stringRef = *_data.strPtr;
         stringToText(stringRef);
         // ctx->style.edit.normal
+
+        nk_draw_set_color_inline(ctx, NK_COLOR_INLINE_NONE);
         nk_edit_string(ctx, NK_EDIT_SIMPLE, text, &text_len, 512, nk_filter_default);
         textToString(stringRef);
         // return;
@@ -799,6 +801,7 @@ void UI_element::callUIfunction(float x, float y, float space_w, float space_h) 
         debug_array[label] = Manager::draw_idx;
         Manager::draw_idx++;
 
+        nk_draw_set_color_inline(ctx, NK_COLOR_INLINE_TAG);
         nk_label_wrap(ctx, label.c_str());
     }
     

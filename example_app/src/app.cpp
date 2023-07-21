@@ -148,7 +148,7 @@ int main() {
         fps_counter++;
         if (glfwGetTime() >= 1.f) {
             glfwSetTime(0.0);
-            UIMap["FPS counter"].label = "FPS: " + std::to_string(fps_counter);
+            UIMap["FPS counter"].label = "b";
             fps_counter = 0;
         }
     }

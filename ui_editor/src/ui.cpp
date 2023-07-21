@@ -137,6 +137,13 @@ void updateUIFromElement(
 
     *UIMap["elt label"]._data.strPtr = e.label;
     UIMap["element text align"].label = getTextAlignLabel(e.text_align);
+
+    // font
+    if (e.font != "None") {
+        UIMap["current font"].label = e.font + " " + std::to_string(e.font_size);
+    } else {
+        UIMap["current font"].label = "None";
+    }
 }
 
 void updateWidgetFromUI(
