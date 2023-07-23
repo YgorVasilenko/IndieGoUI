@@ -572,8 +572,9 @@ void UI_element::callUIfunction(float x, float y, float space_w, float space_h) 
         // ctx->style.edit.normal
 
         nk_draw_set_color_inline(ctx, NK_COLOR_INLINE_NONE);
-        nk_edit_string(ctx, NK_EDIT_SIMPLE, text, &text_len, 512, nk_filter_default);
+        nk_edit_string(ctx, NK_EDIT_SIMPLE | NK_EDIT_SELECTABLE, text, &text_len, 512, nk_filter_default);
         textToString(stringRef);
+
         // return;
     }
 
@@ -794,6 +795,59 @@ void UI_element::callUIfunction(float x, float y, float space_w, float space_h) 
         }
         nk_draw_set_color_inline(ctx, NK_COLOR_INLINE_TAG);
         nk_label(ctx, label.c_str(), align);
+
+        if (hasClickableText) {
+            // check for coloring and set original, if it was saved
+            for (auto clk_rgn = clickable_regions.begin(); clk_rgn != clickable_regions.end(); clk_rgn++) {
+                if (clk_rgn->original_color != "") {
+                    label.replace(
+                        label.find("[color=#") + 8, 6, clk_rgn->original_color
+                    );
+                    clk_rgn->original_color = "";
+                }
+            }
+            if (nk_widget_is_hovered(ctx)) {
+                // Note: we don't use any scrollbars!
+                struct nk_rect area;
+                struct nk_rect bounds = nk_widget_bounds(ctx);
+                area.y = bounds.y + ctx->style.edit.padding.y + ctx->style.edit.border;
+                float mouse_y = (ctx->input.mouse.pos.y - area.y);
+                if (mouse_y > 0.f) {
+                    area.x = bounds.x + ctx->style.edit.padding.x + ctx->style.edit.border;
+                    float mouse_x = (ctx->input.mouse.pos.x - area.x);
+                    int glyph_len = 0;
+                    nk_rune unicode = 0;
+                    glyph_len = nk_utf_decode(label.data(), &unicode, 1);
+                    float glyph_width = ctx->style.font->width(
+                        ctx->style.font->userdata,
+                        ctx->style.font->height,
+                        label.data(),
+                        glyph_len
+                    );
+                    int cursor = mouse_x / glyph_width;
+                    for (auto click_region = clickable_regions.begin(); click_region != clickable_regions.end(); click_region++) {
+                        // w == left, h == right
+                        if (click_region->click_region.h <= cursor && cursor <= click_region->click_region.w) {
+                            if (nk_input_has_mouse_click(&ctx->input, NK_BUTTON_LEFT)) {
+                                if (click_region->clickCallback)
+                                    click_region->clickCallback(click_region->dataPtr);
+                            } else {
+                                // update color
+                                bool mouse_down = nk_input_is_mouse_down(&ctx->input, NK_BUTTON_LEFT);
+                                click_region->original_color = label.substr(
+                                    label.find("[color=#") + 8, 6
+                                );
+                                if (label.find("[color=#") != std::string::npos && label.find("[/color]") != std::string::npos) {
+                                    label.replace(
+                                        label.find("[color=#") + 8, 6, mouse_down ? "aaaaff" : "ff00ff"
+                                    );
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        }
     }
 
     if (type == UI_STRING_TEXT) {

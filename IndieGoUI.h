@@ -25,6 +25,7 @@
 #include <fstream>
 #include <algorithm>
 #include <cassert>
+// #include <unordered_set>
 
 #ifndef DEFAULT_WINDOW_NAME
 // If app will maintain sinlge window, designer may define it's defautl name
@@ -269,6 +270,13 @@ namespace IndieGo {
 			to_new_subrow // push element to existing row and existing col, but subdivide latter top-down (grid_rows.back().cells.elements + 1) 
 		};
 
+		struct TextClickData {
+			region_size<unsigned int> click_region;
+			std::string original_color = "";
+			void(*clickCallback)(void*) = 0;
+			void* dataPtr = 0;
+		};
+
 		struct UI_element {
 			union ui_data {
 				bool b;
@@ -282,6 +290,17 @@ namespace IndieGo {
 				std::string * strPtr;
 			} _data;
 			
+			// For UI_STRING_LABEL:
+			// If true, and mouse is hovered over one of clickable_regions, 
+			// respective clickCallbacl is called (if set)
+			bool hasClickableText = false;
+			std::vector<TextClickData> clickable_regions = {};
+
+			// std::unordered_map<
+			// 	region_size<unsigned int>,
+			// 	std::pair<void(*)(void*), void*>
+			// > clickable_regions;
+
 			bool apply_custom_shader = false;
 
 			bool isHovered = false;
