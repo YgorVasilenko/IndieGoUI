@@ -273,8 +273,9 @@ namespace IndieGo {
 		struct TextClickData {
 			region_size<unsigned int> click_region;
 			std::string original_color = "";
-			void(*clickCallback)(void*) = 0;
-			void* dataPtr = 0;
+			void(*clickCallback)(std::string &) = 0;
+			// void* dataPtr = 0;
+			std::string objectID = "";
 		};
 
 		struct UI_element {

@@ -830,7 +830,7 @@ void UI_element::callUIfunction(float x, float y, float space_w, float space_h) 
                         if (click_region->click_region.h <= cursor && cursor <= click_region->click_region.w) {
                             if (nk_input_has_mouse_click(&ctx->input, NK_BUTTON_LEFT)) {
                                 if (click_region->clickCallback)
-                                    click_region->clickCallback(click_region->dataPtr);
+                                    click_region->clickCallback(click_region->objectID);
                             } else {
                                 // update color
                                 bool mouse_down = nk_input_is_mouse_down(&ctx->input, NK_BUTTON_LEFT);
