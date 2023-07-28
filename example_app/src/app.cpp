@@ -61,6 +61,10 @@ unsigned int buttons_count = 1;
 double curr_time = 0.0, prev_time = 0.0;
 unsigned int frames = 0;
 
+void clickCallback(void*) {
+    std::cout << "Clickable text was clicked!" << std::endl;
+}
+
 int main() {
 
   	glfwInit();
@@ -114,6 +118,19 @@ int main() {
 
     // Update text so it will be aligned to left border
     UIMap["FPS counter"].text_align = LEFT;
+    UIMap["FPS counter"].label = "This is some text with [color=#0011ff]clickable[/color] region";
+    
+    // Clickable text setup
+    // -------------------------------------------------
+    TextClickData clickData;
+    clickData.click_region.h = 22;
+    clickData.click_region.w = 31;
+    clickData.clickCallback = clickCallback;
+    UIMap["FPS counter"].clickable_regions.push_back(
+        clickData
+    );
+    UIMap["FPS counter"].hasClickableText = true;
+    // -------------------------------------------------
 
 	// set initial time to zero
 	glfwSetTime(0.0);
@@ -148,7 +165,7 @@ int main() {
         fps_counter++;
         if (glfwGetTime() >= 1.f) {
             glfwSetTime(0.0);
-            UIMap["FPS counter"].label = "b";
+            // UIMap["FPS counter"].label = "b";
             fps_counter = 0;
         }
     }
