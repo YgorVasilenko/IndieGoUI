@@ -520,16 +520,9 @@ void UI_element::callUIfunction(float x, float y, float space_w, float space_h) 
         ctx->current->buffer.curr_cmd_idx = Manager::draw_idx;
         debug_array[label] = Manager::draw_idx;
         Manager::draw_idx++;
-        // TODO : add skinning
-        /*struct nk_key_selector ks;
-        if (hovered_by_keys) {
-            ks.focused = true;
-        }*/
         nk_val = _data.b;
-        //nk_checkbox_label(ctx, label.c_str(), &nk_val, &ks);
         nk_checkbox_label(ctx, label.c_str(), &nk_val);
         _data.b = nk_val;
-        // return;
     }
 
     if (type == UI_FLOAT) {
@@ -539,7 +532,6 @@ void UI_element::callUIfunction(float x, float y, float space_w, float space_h) 
         // TODO : add skinning
         full_name = "#" + label + ":";
         nk_property_float(ctx, full_name.c_str(), -300000.0f, &_data.f, 300000.0f, 1, flt_px_incr);
-        // return;
     }
 
     if (type == UI_INT) {
@@ -549,7 +541,6 @@ void UI_element::callUIfunction(float x, float y, float space_w, float space_h) 
         // TODO : add skinning
         full_name = "#" + label + ":";
         nk_property_int(ctx, full_name.c_str(), -1024, &_data.i, 1024, 1, 0.5f);
-        // return;
     }
 
     if (type == UI_UINT) {
@@ -559,7 +550,6 @@ void UI_element::callUIfunction(float x, float y, float space_w, float space_h) 
         // TODO : add skinning
         full_name = "#" + label + ":";
         nk_property_int(ctx, full_name.c_str(), 0, &_data.i, 2040, 1, 0.5f);
-        // return;
     }
 
     if (type == UI_STRING_INPUT) {
@@ -569,13 +559,10 @@ void UI_element::callUIfunction(float x, float y, float space_w, float space_h) 
         // TODO : add skinning
         std::string& stringRef = *_data.strPtr;
         stringToText(stringRef);
-        // ctx->style.edit.normal
 
         nk_draw_set_color_inline(ctx, NK_COLOR_INLINE_NONE);
         nk_edit_string(ctx, NK_EDIT_SIMPLE | NK_EDIT_SELECTABLE, text, &text_len, 512, nk_filter_default);
         textToString(stringRef);
-
-        // return;
     }
 
     if (type == UI_BUTTON) {
@@ -616,15 +603,19 @@ void UI_element::callUIfunction(float x, float y, float space_w, float space_h) 
         }*/
         // struct nk_rect bounds = nk_widget_bounds(ctx);
         if (ui_button_image != -1) {
-            // button_state = nk_button_image(ctx, images[ui_button_image][cropId].first);
             _data.b = nk_button_image(ctx, images[ui_button_image][cropId].first);
         } else {
-            // button_state = nk_button_label(ctx, label.c_str());
             _data.b = nk_button_label(ctx, label.c_str());
         }
         nk_bool button_hovered = nk_widget_is_hovered(ctx);
         if (button_hovered) {
             isHovered = true;
+            // evoke hovered callbacks
+            unsigned int cbIdx = 0;
+            for (auto callback : hoverCallbacks) {
+                callback(hoverDatas[cbIdx]);
+                cbIdx++;
+            }
         } else {
             isHovered = false;
         }

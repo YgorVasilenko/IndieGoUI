@@ -317,6 +317,17 @@ namespace IndieGo {
 			std::vector<std::function<void(void*)>> activeCallbacks;
 			std::vector<void *> activeDatas;
 
+			std::vector<std::function<void(void*)>> hoverCallbacks;
+			std::vector<void *> hoverDatas;
+
+			void setHoverCallback(
+				void (*callbackPtr)(void*), 
+				void * dataPtr = NULL
+			) {
+				hoverCallbacks.push_back(callbackPtr);
+				hoverDatas.push_back(dataPtr);
+			};
+
 			void setActiveCallback(
 				void (*callbackPtr)(void*), 
 				void * dataPtr = NULL
