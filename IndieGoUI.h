@@ -297,11 +297,6 @@ namespace IndieGo {
 			bool hasClickableText = false;
 			std::vector<TextClickData> clickable_regions = {};
 
-			// std::unordered_map<
-			// 	region_size<unsigned int>,
-			// 	std::pair<void(*)(void*), void*>
-			// > clickable_regions;
-
 			bool apply_custom_shader = false;
 
 			bool isHovered = false;
@@ -406,7 +401,6 @@ namespace IndieGo {
 			}
 		};
 
-
 		// All elements in "folding group" should be consecutive
 		struct elements_group {
 			bool unfolded = false;
@@ -414,31 +408,6 @@ namespace IndieGo {
 			std::string name;
 			std::string start;
 			std::string end;
-
-			// bool isElementInGroup(const std::string & element, const std::vector<grid_row> & layout_grid){
-			// 	// look for group start, group end, and element
-			// 	bool groupStarted = false, groupEnded = false, element_found = false;
-			// 	for (auto row : layout_grid){
-			// 		for (auto elt : row.cells) {
-			// 			if (!groupStarted && elt == start) {
-			// 				groupStarted = true;
-			// 			}
-            //     		if (!groupEnded && elt == end) {
-            //         		groupEnded = true;
-            //     		}
-
-	    	// 			if (element == elt) {
-		    // 				if( !groupStarted )
-			//     				return false;
-			// 	    		else if (!groupEnded)
-			// 		    		return true;
-            //         		else
-			// 		    		return false;
-            //     		}
-			// 		}
-			// 	}
-        	// 	return false;
-			// }
 		};
 
 		// defines memory items, that will be used by UI_elements_map
@@ -449,14 +418,10 @@ namespace IndieGo {
 			std::vector<std::string> widget_elements;
 			std::string name = "";
 			bool apply_custom_shader = false;
-			// bool backgroundImage = false;
 			
 			// index in global array of images
 			// maintained by backend
 			unsigned int img_idx = 0;
-
-			//float row_size = 25.f,
-			//	col_size = -1.f; // -1 == auto-scale
 
 			// font is switched in runtime
 			float font_height = 0.023f;
@@ -482,66 +447,6 @@ namespace IndieGo {
 			void updateRowHeight(unsigned int row, float newHeight);
 			void updateColWidth(unsigned int row, unsigned int col, float newWidth);
 			void copyLayout(WIDGET_BASE * other);
-			// void copyWidget(const std::string & add_name, WIDGET_BASE * other);
-
-			// True, if element successfully added to folding group
-			bool addElementToGroup(const std::string & elt_name, const std::string & group_name) {
-				// std::vector<elements_group>::iterator target_group = find_if(
-				// 	elements_groups.begin(),
-				// 	elements_groups.end(),
-				// 	[&group_name](elements_group & g){
-				// 		return group_name == g.name;
-				// 	}
-				// );
-				// if (target_group == elements_groups.end()){
-				// 	// simply create new group
-				// 	elements_group new_group;
-				// 	new_group.name = group_name;
-				// 	new_group.start = elt_name;
-				// 	new_group.end = elt_name;
-				// 	new_group.row_items_count = 1;
-				// 	elements_groups.push_back(new_group);
-				// 	return true;
-				// } else {
-				// 	// Important note - elements in group should go consecutively in layout
-				// 	// make shure, that when adding element to existing group, it's located right after current group.end in layout
-				// 	int elt_idx = 0, grp_idx = 0;
-				// 	for (auto row : layout_grid){
-				// 		elt_idx = 0;
-				// 		for (auto elt : row.cells){
-				// 			if (elt == target_group->end){
-				// 				if ( ( elt_idx + 1 ) < row.cells.size()){
-				// 					if ( row.cells[elt_idx + 1] == elt_name){
-				// 						target_group->end = elt_name;
-				// 						target_group->row_items_count++;
-				// 						return true;
-				// 					} else {
-				// 						// next element after group's end is not target_element,
-				// 						// therefore group can't be extended to target_element
-				// 						return false;
-				// 					}
-				// 				} else {
-				// 					// check first element of next group - if it's target_element,
-				// 					// then we can extend group to include it
-				// 					if ((grp_idx + 1) < layout_grid.size()){
-				// 						if ( layout_grid[grp_idx + 1].cells.size() > 0 && layout_grid[grp_idx + 1].cells[0] == elt_name){
-				// 							target_group->end = elt_name;
-				// 							target_group->row_items_count++;
-				// 							return true;
-				// 						} else {
-				// 							return false;
-				// 						}
-				// 					} else {
-				// 						return false;
-				// 					}
-				// 				}
-				// 			}
-				// 			elt_idx++;
-				// 		}
-				// 	}
-				// 	return false;
-				// }
-			};
 
 			// true on successfull renaming, false otherwise
 			bool renameElement(const std::string & old_name, const std::string & new_name) {
@@ -899,9 +804,6 @@ namespace IndieGo {
 			virtual void endRow();
 
 			void copyWidget(const std::string & add_name, WIDGET * other);
-			// virtual void allocateEmptySpace(unsigned int fill_count = 1);
-			// virtual void allocateGroupStart(elements_group & group, float min_height);
-			// virtual void allocateGroupEnd();
 
 			virtual void useSkinImage(
 				unsigned int texID,
@@ -936,8 +838,6 @@ namespace IndieGo {
 
 			// required for serialization
 			virtual region<float> getImgCrop(IMAGE_SKIN_ELEMENT elt);
-
-			// bool initialized_in_backend = false;
 
 			void callWidgetUI(UI_elements_map & UIMap) {
 				bool curr_group_folded = false;
@@ -1112,24 +1012,9 @@ namespace IndieGo {
 				if (widgets.find(curr_ui_map) == widgets.end())
 					return;
 
-				// bool hadFocus = false;
-				// // find previously focused widget
-				// WIDGET * currFocusedWidget = NULL;
-				// for (auto widget = widgets[curr_ui_map].begin(); widget != widgets[curr_ui_map].end(); widget++) {
-				// 	if (widget->second.focused){
-				// 		currFocusedWidget = & widget->second;
-				// 		break;
-				// 	}
-				// }
-
 				hoveredWidgets[curr_ui_map] = NULL;
 				draw_idx = 0;
 				for (auto widget = widgets[curr_ui_map].begin(); widget != widgets[curr_ui_map].end(); widget++) {
-					// hadFocus = false;
-					
-					// if ( currFocusedWidget == & widget->second ) 
-					// 	hadFocus = true;
-
 					if (!widget->second.hidden){
 						widget->second.screen_size = screen_size;
 						widget->second.callImmediateBackend(UIMaps[curr_ui_map]);
@@ -1140,9 +1025,6 @@ namespace IndieGo {
 						widget->second.focused = false;
 						widget->second.hasCursor = false;
 					}
-
-					// if (hadFocus && !widget->second.focused)
-					// 	prevFocusedWidgets[curr_ui_map] = & widget->second;
 				}
 			};
 
