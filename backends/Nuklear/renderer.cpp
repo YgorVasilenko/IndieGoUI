@@ -684,7 +684,7 @@ void UI_element::callUIfunction(float x, float y, float space_w, float space_h) 
         ctx->current->buffer.curr_cmd_idx = Manager::draw_idx;
         debug_array[label] = Manager::draw_idx;
         Manager::draw_idx++;
-
+        bool prev_val = _data.b;
         if (skinned_style.props[button_normal].first != -1) {
             ctx->style.button.normal = nk_style_item_image(
                 images[skinned_style.props[button_normal].first][skinned_style.props[button_normal].second].first
@@ -724,13 +724,22 @@ void UI_element::callUIfunction(float x, float y, float space_w, float space_h) 
                 ctx->style.button.text_active = nk_rgb(60, 60, 60);
                 ctx->style.button = button;
             }
-            if (nk_button_label(ctx, label.c_str()))
+            if (nk_button_label(ctx, label.c_str())) {
                 _data.b = false;
-        } else if (nk_button_label(ctx, label.c_str()))
+            }
+        } else if (nk_button_label(ctx, label.c_str())) 
             _data.b = true;
         else
             _data.b = false;
-        // return;
+        
+        if (prev_val != _data.b) {
+            // button was switched, evoke callbacks
+            unsigned int cbIdx = 0;
+            for (auto callback : activeCallbacks) {
+                callback(activeDatas[cbIdx]);
+                cbIdx++;
+            }
+        }
     }
 
     if (type == UI_DROPDOWN) {
