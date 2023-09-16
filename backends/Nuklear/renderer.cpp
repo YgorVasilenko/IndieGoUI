@@ -229,14 +229,22 @@ void (*Manager::custom_ui_uniforms)(void*) = 0;
 void * Manager::uniforms_data_ptr = NULL;
 int Manager::draw_idx = 0;
 
-float apply_indices[50] = { 
-    9, -1, -1, -1, -1, -1, -1, -1, -1, -1, 
+float apply_highlight_indices[50] = { 
+    -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, 
     -1, -1, -1, -1, -1, -1, -1, -1, -1, -1,
     -1, -1, -1, -1, -1, -1, -1, -1, -1, -1,
     -1, -1, -1, -1, -1, -1, -1, -1, -1, -1,
     -1, -1, -1, -1, -1, -1, -1, -1, -1, -1
 };
-int last_apply_idx = -1;
+float apply_shading_indices[50] = { 
+    -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, 
+    -1, -1, -1, -1, -1, -1, -1, -1, -1, -1,
+    -1, -1, -1, -1, -1, -1, -1, -1, -1, -1,
+    -1, -1, -1, -1, -1, -1, -1, -1, -1, -1,
+    -1, -1, -1, -1, -1, -1, -1, -1, -1, -1
+};
+int last_apply_highlight_idx = -1;
+int last_apply_shading_idx = -1;
 
 NK_API void nk_glfw3_render(struct nk_glfw* glfw, enum nk_anti_aliasing AA, int max_vertex_buffer, int max_element_buffer) {
 
@@ -265,8 +273,12 @@ NK_API void nk_glfw3_render(struct nk_glfw* glfw, enum nk_anti_aliasing AA, int 
 
     // set apply_indices array
     for (int i = 0; i < 50; i++) {
-        std::string name = "apply_indices[" + std::to_string(i) + "]";
-        glUniform1f(glGetUniformLocation(dev->prog, name.c_str()), apply_indices[i]);
+        std::string name = "apply_highlight_indices[" + std::to_string(i) + "]";
+        glUniform1f(glGetUniformLocation(dev->prog, name.c_str()), apply_highlight_indices[i]);
+    }
+    for (int i = 0; i < 50; i++) {
+        std::string name = "apply_shading_indices[" + std::to_string(i) + "]";
+        glUniform1f(glGetUniformLocation(dev->prog, name.c_str()), apply_shading_indices[i]);
     }
 
     if (Manager::custom_ui_uniforms) {
@@ -483,15 +495,19 @@ void textToString(std::string & str) {
 //
 //-------------------------------------------------------
 
+int max_shading_idx = -1;
+
 std::map<std::string, int> debug_array;
 void UI_element::callUIfunction(float x, float y, float space_w, float space_h) {
-    // debug_array[label] = Manager::draw_idx;
-    /*ctx->current->buffer.curr_cmd_idx = Manager::draw_idx;
-    debug_array[label] = Manager::draw_idx;*/
-    // Manager::draw_idx++;
-    if (apply_custom_shader) {
-        last_apply_idx++;
-        apply_indices[last_apply_idx] = Manager::draw_idx;
+    if (apply_highlight) {
+        last_apply_highlight_idx++;
+        apply_highlight_indices[last_apply_highlight_idx] = Manager::draw_idx;
+    }
+    if (apply_shading) {
+        last_apply_shading_idx++;
+        apply_shading_indices[last_apply_shading_idx] = Manager::draw_idx;
+        if (max_shading_idx < last_apply_shading_idx)
+            max_shading_idx = last_apply_shading_idx;
     }
 
     if (font != "None") {
@@ -518,8 +534,6 @@ void UI_element::callUIfunction(float x, float y, float space_w, float space_h) 
     float dbgVal;
     if (type == UI_BOOL) {
         ctx->current->buffer.curr_cmd_idx = Manager::draw_idx;
-        debug_array[label] = Manager::draw_idx;
-        Manager::draw_idx++;
         nk_val = _data.b;
         nk_checkbox_label(ctx, label.c_str(), &nk_val);
         _data.b = nk_val;
@@ -527,8 +541,6 @@ void UI_element::callUIfunction(float x, float y, float space_w, float space_h) 
 
     if (type == UI_FLOAT) {
         ctx->current->buffer.curr_cmd_idx = Manager::draw_idx;
-        debug_array[label] = Manager::draw_idx;
-        Manager::draw_idx++;
         // TODO : add skinning
         full_name = "#" + label + ":";
         nk_property_float(ctx, full_name.c_str(), -300000.0f, &_data.f, 300000.0f, 1, flt_px_incr);
@@ -536,8 +548,6 @@ void UI_element::callUIfunction(float x, float y, float space_w, float space_h) 
 
     if (type == UI_INT) {
         ctx->current->buffer.curr_cmd_idx = Manager::draw_idx;
-        debug_array[label] = Manager::draw_idx;
-        Manager::draw_idx++;
         // TODO : add skinning
         full_name = "#" + label + ":";
         nk_property_int(ctx, full_name.c_str(), -1024, &_data.i, 1024, 1, 0.5f);
@@ -545,8 +555,6 @@ void UI_element::callUIfunction(float x, float y, float space_w, float space_h) 
 
     if (type == UI_UINT) {
         ctx->current->buffer.curr_cmd_idx = Manager::draw_idx;
-        debug_array[label] = Manager::draw_idx;
-        Manager::draw_idx++;
         // TODO : add skinning
         full_name = "#" + label + ":";
         nk_property_int(ctx, full_name.c_str(), 0, &_data.i, 2040, 1, 0.5f);
@@ -554,8 +562,6 @@ void UI_element::callUIfunction(float x, float y, float space_w, float space_h) 
 
     if (type == UI_STRING_INPUT) {
         ctx->current->buffer.curr_cmd_idx = Manager::draw_idx;
-        debug_array[label] = Manager::draw_idx;
-        Manager::draw_idx++;
         // TODO : add skinning
         std::string& stringRef = *_data.strPtr;
         stringToText(stringRef);
@@ -567,8 +573,6 @@ void UI_element::callUIfunction(float x, float y, float space_w, float space_h) 
 
     if (type == UI_BUTTON) {
         ctx->current->buffer.curr_cmd_idx = Manager::draw_idx;
-        debug_array[label] = Manager::draw_idx;
-        Manager::draw_idx++;
         ctx->style.button.border = border;
         ctx->style.button.rounding = rounding;
         if (skinned_style.props[button_normal].first != -1) {
@@ -682,8 +686,6 @@ void UI_element::callUIfunction(float x, float y, float space_w, float space_h) 
 
     if (type == UI_BUTTON_SWITCH) {
         ctx->current->buffer.curr_cmd_idx = Manager::draw_idx;
-        debug_array[label] = Manager::draw_idx;
-        Manager::draw_idx++;
         bool prev_val = _data.b;
         if (skinned_style.props[button_normal].first != -1) {
             ctx->style.button.normal = nk_style_item_image(
@@ -769,17 +771,12 @@ void UI_element::callUIfunction(float x, float y, float space_w, float space_h) 
     
     if (type == UI_IMAGE) {
         ctx->current->buffer.curr_cmd_idx = Manager::draw_idx;
-        debug_array[label] = Manager::draw_idx;
-        Manager::draw_idx++;
-
         if (_data.i != -1)
             nk_image(ctx, images[_data.i][cropId].first);
     }
 
     if (type == UI_STRING_LABEL) {
         ctx->current->buffer.curr_cmd_idx = Manager::draw_idx;
-        debug_array[label] = Manager::draw_idx;
-        Manager::draw_idx++;
 
         nk_flags align;
         switch(text_align){
@@ -852,8 +849,6 @@ void UI_element::callUIfunction(float x, float y, float space_w, float space_h) 
 
     if (type == UI_STRING_TEXT) {
         ctx->current->buffer.curr_cmd_idx = Manager::draw_idx;
-        debug_array[label] = Manager::draw_idx;
-        Manager::draw_idx++;
 
         nk_draw_set_color_inline(ctx, NK_COLOR_INLINE_TAG);
         nk_label_wrap(ctx, label.c_str());
@@ -861,8 +856,6 @@ void UI_element::callUIfunction(float x, float y, float space_w, float space_h) 
     
     if (type == UI_PROGRESS) {
         ctx->current->buffer.curr_cmd_idx = Manager::draw_idx;
-        debug_array[label] = Manager::draw_idx;
-        Manager::draw_idx++;
         if (use_custom_element_style) {
             ctx->style.progress.cursor_normal = nk_style_item_color(
                 *(struct nk_color*)&style.elements[COLOR_ELEMENTS::UI_COLOR_SLIDER_CURSOR]
@@ -917,8 +910,6 @@ void UI_element::callUIfunction(float x, float y, float space_w, float space_h) 
 
     if (type == UI_ITEMS_LIST) {
         ctx->current->buffer.curr_cmd_idx = Manager::draw_idx;
-        debug_array[label] = Manager::draw_idx;
-        Manager::draw_idx++;
 
         // TODO : add skinning
         ui_string_group& uiGroupRef = *_data.usgPtr;
@@ -1012,7 +1003,7 @@ void UI_element::callUIfunction(float x, float y, float space_w, float space_h) 
             }
         }
     }
-
+    Manager::draw_idx++;
     struct nk_rect wid_rect = nk_widget_bounds(ctx);
     layout_border.x = wid_rect.x; 
     layout_border.y = wid_rect.y;
@@ -1140,11 +1131,14 @@ void WIDGET::callImmediateBackend(UI_elements_map & UIMap){
         }
     }
     ctx->draw_idx = Manager::draw_idx;
-    if (apply_custom_shader) {
-        last_apply_idx++;
-        apply_indices[last_apply_idx] = Manager::draw_idx;
+    if (apply_highlight) {
+        last_apply_highlight_idx++;
+        apply_highlight_indices[last_apply_highlight_idx] = Manager::draw_idx;
     }
-
+    if (apply_shading) {
+        last_apply_shading_idx++;
+        apply_shading_indices[last_apply_shading_idx] = Manager::draw_idx;
+    }
     if (
         nk_begin(
             ctx,
@@ -1400,9 +1394,13 @@ void Manager::drawFrameStart(std::string & winID) {
 
     // reset apply_indices
     for (int i = 0; i < 50; i++) {
-        apply_indices[i] = -1;
+        apply_highlight_indices[i] = -1;
     }
-    last_apply_idx = -1;
+    for (int i = 0; i < 50; i++) {
+        apply_shading_indices[i] = -1;
+    }
+    last_apply_highlight_idx = -1;
+    last_apply_shading_idx = -1;
 }
 
 void Manager::drawFrameEnd(std::string & winID) {

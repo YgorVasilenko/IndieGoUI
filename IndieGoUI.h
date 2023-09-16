@@ -297,7 +297,8 @@ namespace IndieGo {
 			bool hasClickableText = false;
 			std::vector<TextClickData> clickable_regions = {};
 
-			bool apply_custom_shader = false;
+			bool apply_highlight = false;
+			bool apply_shading = false;
 
 			bool isHovered = false;
 			bool rmb_click = false;
@@ -428,7 +429,8 @@ namespace IndieGo {
 			// widgets provide place on screen to display ui elements
 			std::vector<std::string> widget_elements;
 			std::string name = "";
-			bool apply_custom_shader = false;
+			bool apply_highlight = false;
+			bool apply_shading = false;
 			
 			// index in global array of images
 			// maintained by backend
