@@ -154,6 +154,7 @@ namespace IndieGo {
 		struct ui_string_group {
 			char **arr = NULL;
 			std::vector<std::string> elements;
+			std::string unselected = "__None__";
 
 			// additional vector, used to add additional labels to elements
 			std::vector<std::string> element_labels;
@@ -196,6 +197,9 @@ namespace IndieGo {
 			}
 
 			std::string & getSelected() {
+				if (selected_element == -1)
+					return unselected;
+					
 				return elements[selected_element];
 			}
 
@@ -274,6 +278,7 @@ namespace IndieGo {
 			region_size<unsigned int> click_region;
 			std::string original_color = "";
 			void(*clickCallback)(std::string &) = 0;
+			void(*hoverCallback)(std::string &) = 0;
 			// void* dataPtr = 0;
 			std::string objectID = "";
 		};

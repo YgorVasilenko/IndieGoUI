@@ -543,14 +543,34 @@ void UI_element::callUIfunction(float x, float y, float space_w, float space_h) 
         ctx->current->buffer.curr_cmd_idx = Manager::draw_idx;
         // TODO : add skinning
         full_name = "#" + label + ":";
+        float currData = _data.f;
         nk_property_float(ctx, full_name.c_str(), -300000.0f, &_data.f, 300000.0f, 1, flt_px_incr);
+
+        if (currData != _data.f) {
+            // evoke callbacks
+            unsigned int cbIdx = 0;
+            for (auto callback : activeCallbacks) {
+                callback(activeDatas[cbIdx]);
+                cbIdx++;
+            }
+        }
     }
 
     if (type == UI_INT) {
         ctx->current->buffer.curr_cmd_idx = Manager::draw_idx;
         // TODO : add skinning
         full_name = "#" + label + ":";
+        int currData = _data.i;
         nk_property_int(ctx, full_name.c_str(), -1024, &_data.i, 1024, 1, 0.5f);
+
+        if (currData != _data.i) {
+            // evoke callbacks
+            unsigned int cbIdx = 0;
+            for (auto callback : activeCallbacks) {
+                callback(activeDatas[cbIdx]);
+                cbIdx++;
+            }
+        }
     }
 
     if (type == UI_UINT) {
@@ -839,6 +859,8 @@ void UI_element::callUIfunction(float x, float y, float space_w, float space_h) 
                                         label.find("[color=#") + 8, 6, mouse_down ? "aaaaff" : "ff00ff"
                                     );
                                 }
+                                if (click_region->hoverCallback)
+                                    click_region->hoverCallback(click_region->objectID);
                             }
                         }
                     }
@@ -953,7 +975,7 @@ void UI_element::callUIfunction(float x, float y, float space_w, float space_h) 
                     nk_layout_row_dynamic(ctx, 20, 1);
                     nk_selectable_label(ctx, uiGroupRef.elements[i].c_str(), align, &selected);
                     if (selected) {
-                        if ( uiGroupRef.selected_element != i )
+                        if (uiGroupRef.selected_element != i)
                             uiGroupRef.selection_switch = true;
                         uiGroupRef.selected_element = i;
                     }
@@ -1000,6 +1022,14 @@ void UI_element::callUIfunction(float x, float y, float space_w, float space_h) 
                     uiGroupRef.selected_element = i;
                 }
                 i++;
+            }
+        }
+        if (uiGroupRef.selection_switch) {
+            // active callbacks
+            unsigned int cbIdx = 0;
+            for (auto callback : activeCallbacks) {
+                callback(activeDatas[cbIdx]);
+                cbIdx++;
             }
         }
     }
