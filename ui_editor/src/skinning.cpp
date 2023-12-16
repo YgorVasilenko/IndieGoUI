@@ -138,27 +138,33 @@ void processSkinning(int prev_selected_crop = -1) {
         }
     }
 
-    if (
-        skin_crops_list.selected_element != -1 
-        && widgets_list.selected_element != -1 
+    if (widgets_list.selected_element != -1 
         && w_skinning_props_list.selected_element != -1
-        && UIMap["w apply crop"]._data.b
     ) {
-        WIDGET & w = GUI.getWidget(widgets_list.getSelected(), winID);
-        TexData td =  skin_crops[skin_crops_list.getSelected()].first;
-        region<float> crop = skin_crops[skin_crops_list.getSelected()].second;
-        td.texID = skinningShader.skin_tex_id;
-        td.w = GUI.skin_img_size.w;
-        td.h = GUI.skin_img_size.h;
-        w.useSkinImage(
-            td.texID,
-            td.w,
-            td.h,
-            crop,
-            (IMAGE_SKIN_ELEMENT)w_skinning_props_list.selected_element
-        );
-    }
+        if (
+            skin_crops_list.selected_element != -1 
+            && UIMap["w apply crop"]._data.b
+        ) {
+            WIDGET & w = GUI.getWidget(widgets_list.getSelected(), winID);
+            TexData td =  skin_crops[skin_crops_list.getSelected()].first;
+            region<float> crop = skin_crops[skin_crops_list.getSelected()].second;
+            td.texID = skinningShader.skin_tex_id;
+            td.w = GUI.skin_img_size.w;
+            td.h = GUI.skin_img_size.h;
+            w.useSkinImage(
+                td.texID,
+                td.w,
+                td.h,
+                crop,
+                (IMAGE_SKIN_ELEMENT)w_skinning_props_list.selected_element
+            );
+        }
 
+        if (UIMap["w drop crop"]._data.b) {
+            WIDGET & w = GUI.getWidget(widgets_list.getSelected(), winID);
+            w.skinned_style.props[(IMAGE_SKIN_ELEMENT)w_skinning_props_list.selected_element] = { -1, -1 };
+        }
+    }
     if (
         elements_list.selected_element != -1
         && skin_crops_list.selected_element != -1 

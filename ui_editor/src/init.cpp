@@ -440,9 +440,9 @@ void initWidgets() {
     UIMap["e selected element"].height = 0.15f;
 
     WIDGET fonts;
-    fonts.screen_region.x = 0.7f;
+    fonts.screen_region.x = 0.6f;
     fonts.screen_region.y = 0.f;
-    fonts.screen_region.w = 0.25f;
+    fonts.screen_region.w = 0.3f;
     fonts.screen_region.h = 0.25f;
     fonts.name = "Fonts";
     editorWidgets.push_back(fonts.name);
@@ -464,6 +464,10 @@ void initWidgets() {
 
     UIMap.addElement("apply font", UI_BUTTON, &fonts_widget, to_new_subrow);
     UIMap["apply font"].label = "apply font";
+
+    UIMap.addElement("current font", UI_STRING_LABEL, &fonts_widget, to_new_subrow);
+    UIMap["current font"].label = "None";
+    UIMap["current font"].text_align = IndieGo::UI::TEXT_ALIGN::LEFT;
 
     UIMap.addElement("loaded fonts", UI_ITEMS_LIST, &fonts_widget, to_new_col);
     UIMap["loaded fonts"].label = "loaded fonts";
@@ -548,29 +552,33 @@ void initWidgets() {
     UIMap.addElement("w apply crop", UI_BUTTON, &skinning_widget, to_new_row);
     UIMap["w apply crop"].label = "apply crop";
 
+    UIMap.addElement("w drop crop", UI_BUTTON, &skinning_widget, to_new_row);
+    UIMap["w drop crop"].label = "drop crop";
+
     UIMap.addElement("w selected prop", UI_STRING_LABEL, &skinning_widget, to_new_row);
     UIMap["w selected prop"].label = "selected property: None";
 
     UIMap.addElement("w selected widget", UI_STRING_LABEL, &skinning_widget, to_new_row);
     UIMap["w selected widget"].label = "selected widget: None";
 
-    skinning_widget.updateRowHeight(0, 0.03f);
-    skinning_widget.updateRowHeight(1, 0.03f);
-    skinning_widget.updateRowHeight(2, 0.03f);
-    skinning_widget.updateRowHeight(3, 0.03f);
-    skinning_widget.updateRowHeight(4, 0.03f);
-    skinning_widget.updateRowHeight(5, 0.03f);
-    skinning_widget.updateRowHeight(6, 0.03f);
-    skinning_widget.updateRowHeight(7, 0.03f);
-    skinning_widget.updateRowHeight(8, 0.03f);
-    skinning_widget.updateRowHeight(9, 0.03f);
-    skinning_widget.updateRowHeight(10, 0.03f);
-    skinning_widget.updateRowHeight(11, 0.03f);
-    skinning_widget.updateRowHeight(12, 0.03f);
-    skinning_widget.updateRowHeight(13, 0.4f); // crops list height
-    skinning_widget.updateRowHeight(14, 0.03f);
-    skinning_widget.updateRowHeight(15, 0.03f);
-    skinning_widget.updateRowHeight(16, 0.03f);
+    skinning_widget.updateRowHeight(0, 0.031f);
+    skinning_widget.updateRowHeight(1, 0.031f);
+    skinning_widget.updateRowHeight(2, 0.031f);
+    skinning_widget.updateRowHeight(3, 0.031f);
+    skinning_widget.updateRowHeight(4, 0.031f);
+    skinning_widget.updateRowHeight(5, 0.031f);
+    skinning_widget.updateRowHeight(6, 0.031f);
+    skinning_widget.updateRowHeight(7, 0.031f);
+    skinning_widget.updateRowHeight(8, 0.031f);
+    skinning_widget.updateRowHeight(9, 0.031f);
+    skinning_widget.updateRowHeight(10, 0.031f);
+    skinning_widget.updateRowHeight(11, 0.031f);
+    skinning_widget.updateRowHeight(12, 0.031f);
+    skinning_widget.updateRowHeight(13, 0.35f); // crops list height
+    skinning_widget.updateRowHeight(14, 0.031f);
+    skinning_widget.updateRowHeight(15, 0.031f);
+    skinning_widget.updateRowHeight(16, 0.031f);
+    skinning_widget.updateRowHeight(17, 0.031f);
 
     // Element props widget:
     // all things for element live here
