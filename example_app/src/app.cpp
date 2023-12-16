@@ -27,7 +27,10 @@ GLFWwindow * screen;
 
 using namespace IndieGo::UI;
 
+// Create Manager
+// Can also be created in runtime
 Manager GUI;
+
 WIDGET creator_widget;
 WIDGET styling_widget;
 std::string winID = "UI test app";
@@ -58,6 +61,10 @@ unsigned int buttons_count = 1;
 double curr_time = 0.0, prev_time = 0.0;
 unsigned int frames = 0;
 
+void clickCallback(void*) {
+    std::cout << "Clickable text was clicked!" << std::endl;
+}
+
 int main() {
 
   	glfwInit();
@@ -79,10 +86,15 @@ int main() {
     glfwSetKeyCallback(screen, key_callback);
 
     glViewport(0, 0, WIDTH, HEIGHT);
+    
+    // Initialize Manager with window's string name and pointer to window.
+    // Current backend version indeed uses GLFWwindow, but all usage can be replaced with other type
     GUI.init(winID, screen);
+
+    // Provide screen sizes - will be used for widgets positions calculation
     GUI.screen_size.w = WIDTH;
     GUI.screen_size.h = HEIGHT;
-
+    
     // PROJECT_DIR should contain created ui
     char * p = getenv("PROJECT_DIR");
     if (!p) {
@@ -97,6 +109,7 @@ int main() {
         return -1;
     }
 
+    // Init GUI.project_dir here. Will be used for loading images and fonts
     GUI.project_dir = path;
     GUI.deserialize(winID, path + "/ui_example_app.indg");
 
@@ -105,6 +118,19 @@ int main() {
 
     // Update text so it will be aligned to left border
     UIMap["FPS counter"].text_align = LEFT;
+    UIMap["FPS counter"].label = "This is some text with [color=#0011ff]clickable[/color] region";
+    
+    // Clickable text setup
+    // -------------------------------------------------
+    TextClickData clickData;
+    clickData.click_region.h = 22;
+    clickData.click_region.w = 31;
+    clickData.clickCallback = clickCallback;
+    UIMap["FPS counter"].clickable_regions.push_back(
+        clickData
+    );
+    UIMap["FPS counter"].hasClickableText = true;
+    // -------------------------------------------------
 
 	// set initial time to zero
 	glfwSetTime(0.0);
@@ -124,9 +150,11 @@ int main() {
         // update screen size each frame before calling immediate backend
         glfwGetWindowSize(screen, &width, &height);
 
+        // Update screen sizes, if screen changed
         GUI.screen_size.w = width;
         GUI.screen_size.h = height;
 
+        // Call frame updates!
         GUI.drawFrameStart(winID);
         GUI.displayWidgets(winID);
         GUI.drawFrameEnd(winID);
@@ -137,7 +165,7 @@ int main() {
         fps_counter++;
         if (glfwGetTime() >= 1.f) {
             glfwSetTime(0.0);
-            UIMap["FPS counter"].label = "FPS: " + std::to_string(fps_counter);
+            // UIMap["FPS counter"].label = "b";
             fps_counter = 0;
         }
     }

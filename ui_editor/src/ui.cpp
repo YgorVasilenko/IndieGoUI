@@ -99,7 +99,7 @@ void updateElementFromUI(
     e.label = *UIMap["elt label"]._data.strPtr;
 
     if (UIMap["rename element"]._data.b) {
-        std::string new_name = *UIMap["new element name"]._data.strPtr;
+        std::string new_name = *UIMap["elt name"]._data.strPtr;
         if (new_name.size() > 0 && UIMap.elements.find(new_name) == UIMap.elements.end()) {
 
             UIMap.renameElement(
@@ -137,6 +137,13 @@ void updateUIFromElement(
 
     *UIMap["elt label"]._data.strPtr = e.label;
     UIMap["element text align"].label = getTextAlignLabel(e.text_align);
+
+    // font
+    if (e.font != "None") {
+        UIMap["current font"].label = e.font + " " + std::to_string(e.font_size);
+    } else {
+        UIMap["current font"].label = "None";
+    }
 }
 
 void updateWidgetFromUI(
@@ -294,6 +301,13 @@ void updateUIFromWidget(
     UIMap["movable"]._data.b = w.movable;
     UIMap["has scrollbar"]._data.b = w.has_scrollbar;
 
+    // font
+    if (w.font != "None") {
+        UIMap["current font"].label = w.font + " " + std::to_string(w.font_size);
+    } else {
+        UIMap["current font"].label = "None";
+    }
+
     UIMap["widget border"]._data.f = w.border_size;
 
     // show/hide
@@ -353,6 +367,7 @@ void processAddOptions(std::string winID) {
             if (UIMap["switch type"]._data.b) {
                 new_element_name = elements_list.getSelected();
                 UIMap[new_element_name].type = t;
+                UIMap[new_element_name]._data.i = -1;
             } else {
                 addElement(
                     widgets_list.getSelected(), 
