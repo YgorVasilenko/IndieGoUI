@@ -234,10 +234,10 @@ int main() {
     TCHAR binary_path_[MAX_PATH] = { 0 };
     GetModuleFileName(NULL, binary_path_, MAX_PATH);
     binary_path = std::string(binary_path_);
+    home_dir = binary_path.parent_path().string();
 #else
     home_dir = fs::current_path();
 #endif
-    home_dir = binary_path.parent_path().string();
 
   	glfwInit();
 	glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 3);

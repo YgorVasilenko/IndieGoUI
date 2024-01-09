@@ -680,16 +680,17 @@ std::string getSkinPropName(IMAGE_SKIN_ELEMENT prop) {
 }
 
 // This is windows-specific part
-// #ifdef WIN32
+#ifdef WIN32
 #include <windows.h>
 #include <shobjidl.h> 
 #include <shlobj.h> 
-// #endif
+#endif
 // #include <list>
 
 // #include <list>
 #include <string>
 
+#ifdef WIN32
 std::string getStringFromWSTR(PWSTR wstrPtr) {
 	std::string ret_string;
 	int path_size = wcslen(wstrPtr);
@@ -700,6 +701,8 @@ std::string getStringFromWSTR(PWSTR wstrPtr) {
 	}
 	return ret_string;
 }
+#endif
+
 
 std::vector<std::string> getPaths(
 	bool single_item, 
@@ -708,7 +711,7 @@ std::vector<std::string> getPaths(
 ) {
 	std::string selected_path;
 	std::vector<std::string> selected_paths;
-
+#ifdef WIN32
 	HRESULT hr = CoInitializeEx(NULL, COINIT_APARTMENTTHREADED | COINIT_DISABLE_OLE1DDE);
 
 	if (SUCCEEDED(hr)) {
@@ -777,5 +780,6 @@ std::vector<std::string> getPaths(
 		}
 		CoUninitialize();
 	}
+#endif
 	return selected_paths;
 }

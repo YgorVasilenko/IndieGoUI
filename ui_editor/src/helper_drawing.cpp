@@ -35,7 +35,12 @@ extern std::string home_dir;
 
 void loadShader(const std::string & name) {
     std::string vertex = "", geometry = "", fragment = "";
+#ifdef WIN32
     std::string load_path = home_dir + "/../../" + name;
+#else 
+    std::string load_path = home_dir + "/../" + name;
+#endif
+
     for (auto f : fs::directory_iterator(load_path)) {
         if ( f.symlink_status().type() == fs::file_type::regular ) {
             // filter non-glsl files

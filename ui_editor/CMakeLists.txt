@@ -20,13 +20,20 @@ project(UI_editor VERSION 1.0)
 
 # protobuf setup
 set(PROTOBUF_SRC ${CMAKE_CURRENT_LIST_DIR}/../protobuf/src)
-set(PROTOBUF_LIB ${CMAKE_CURRENT_LIST_DIR}/../protobuf/build)
 
 if (${CMAKE_HOST_SYSTEM_NAME} MATCHES Windows)
-    set(PROTOBUF_LIB ${CMAKE_CURRENT_LIST_DIR}/../protobuf/build/Win)
+    set(GLFW_LIB ${CMAKE_SOURCE_DIR}/lib/glfw3)
+    set(PROTOBUF_LIB ${CMAKE_CURRENT_LIST_DIR}/../protobuf/build/Win/libprotobufd.lib)
+    set(CMAKE_CXX_FLAGS_DEBUG " /std:c++17 /DEBUG /Zi")
 else()
-    message(FATAL_ERROR "Only Windows currently supported!")
+    set(GLFW_LIB ${CMAKE_SOURCE_DIR}/lib/Darwin/libglfw.3.3.dylib)
+    set(PROTOBUF_LIBS ${CMAKE_CURRENT_LIST_DIR}/../protobuf/build/Darwin/libprotobuf.a ${CMAKE_CURRENT_LIST_DIR}/../protobuf/build/Darwin/libprotobuf-lite.a ${CMAKE_CURRENT_LIST_DIR}/../protobuf/build/Darwin/libprotoc.a)
+    set(CMAKE_VERBOSE_MAKEFILE ON)
+    set(CMAKE_CXX_COMPILER "/usr/bin/clang++")
+    set(CMAKE_C_COMPILER "/usr/bin/clang++")
+    add_compile_options( -std=c++17 -O0 -g )
 endif()
+message(STATUS "GLFW_LIB is ${GLFW_LIB}")
 
 set(RENDERER_INCLUDES src . .. ../os ${PROTOBUF_SRC})
 
@@ -70,10 +77,10 @@ target_include_directories(
 # link glfw library
 target_link_libraries(
     UI_editor
-    PUBLIC "../lib/glfw3"
+    PUBLIC ${GLFW_LIB}
 
     # serialization
-    PUBLIC ${PROTOBUF_LIB}/libprotobufd.lib
+    PUBLIC ${PROTOBUF_LIBS}
 )
 
 target_compile_definitions(
@@ -81,6 +88,5 @@ target_compile_definitions(
     WIDTH=1920
     HEIGHT=1080
     UI_FLT_VAL_SCALE=100
+    NDEBUG=1
 )
-
-set(CMAKE_CXX_FLAGS_DEBUG " /std:c++17 /DEBUG /Zi")

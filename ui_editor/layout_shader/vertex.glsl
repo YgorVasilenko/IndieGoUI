@@ -14,10 +14,10 @@
     You should have received a copy of the GNU General Public License
     along with this program.  If not, see <https://www.gnu.org/licenses/>.*/
 
-#version 420 core
-layout (location = 0) in vec2 position;
-layout (location = 1) in vec2 size;
-layout (location = 2) in vec4 color_;
+#version 150 core
+in vec2 position;
+in vec2 size;
+in vec4 color_;
 
 out vec2 sizes;
 out vec4 color;
