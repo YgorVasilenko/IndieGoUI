@@ -544,8 +544,25 @@ void UI_element::callUIfunction(float x, float y, float space_w, float space_h) 
         // TODO : add skinning
         full_name = "#" + label + ":";
         float currData = _data.f;
-        nk_property_float(ctx, full_name.c_str(), -300000.0f, &_data.f, 300000.0f, 1, flt_px_incr);
 
+        if (skinned_style.props[prop_active].first != -1) {
+            ctx->style.property.active = nk_style_item_image(
+                images[skinned_style.props[prop_active].first][skinned_style.props[prop_active].second].first
+            );
+        }
+        if (skinned_style.props[prop_normal].first != -1) {
+            ctx->style.property.normal = nk_style_item_image(
+                images[skinned_style.props[prop_normal].first][skinned_style.props[prop_normal].second].first
+            );
+        }
+        if (skinned_style.props[prop_hover].first != -1) {
+            ctx->style.property.hover = nk_style_item_image(
+                images[skinned_style.props[prop_hover].first][skinned_style.props[prop_hover].second].first
+            );
+        }
+
+        nk_property_float(ctx, full_name.c_str(), -300000.0f, &_data.f, 300000.0f, 1, flt_px_incr);
+        // ctx->style.property.
         if (currData != _data.f) {
             // evoke callbacks
             unsigned int cbIdx = 0;

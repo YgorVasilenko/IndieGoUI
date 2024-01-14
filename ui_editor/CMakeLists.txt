@@ -83,4 +83,4 @@ target_compile_definitions(
     UI_FLT_VAL_SCALE=100
 )
 
-set(CMAKE_CXX_FLAGS_DEBUG " /std:c++17 /DEBUG /Zi")
+set(CMAKE_CXX_FLAGS_DEBUG " /std:c++17 /DEBUG /Zi /Od")

@@ -536,6 +536,23 @@ void processAddOptions(std::string winID) {
             UIMap[new_element_name].label = new_element_name;
         }
     }
+
+    if (UIMap["add int"]._data.b) {
+        if (UIMap["switch type"]._data.b) {
+            UIMap[elements_list.getSelected()].type = UI_INT;
+        } else {
+            UI_ELEMENT_TYPE t = UI_INT;
+            addElement(
+                widgets_list.getSelected(), 
+                winID, 
+                new_element_name, 
+                anchor_element,
+                push_after_anchor,
+                t
+            );
+            UIMap[new_element_name].label = new_element_name;
+        }
+    }
 };
 
 void checkUIValues(std::string winID) {
@@ -676,6 +693,11 @@ std::string getSkinPropName(IMAGE_SKIN_ELEMENT prop) {
     if (prop == pressed_active) return "pressed_active";
     if (prop == normal_active) return "normal_active";
     if (prop == hover_active) return "hover_active";
+
+    if (prop == prop_active) return "prop_active";
+    if (prop == prop_normal) return "prop_normal";
+    if (prop == prop_hover) return "prop_hover";
+
     return "NO_SKIN_PROPERTY";
 }
 

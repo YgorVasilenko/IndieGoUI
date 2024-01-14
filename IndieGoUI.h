@@ -123,7 +123,11 @@ namespace IndieGo {
 			pressed,
 			pressed_active,
 			normal_active,
-			hover_active
+			hover_active,
+
+			prop_active,
+			prop_normal,
+			prop_hover
 		};
 
 		enum CUSTOM_ELEMENTS {
@@ -147,7 +151,10 @@ namespace IndieGo {
 				{ pressed, { -1, -1 } },
 				{ pressed_active, { -1, -1 } },
 				{ normal_active, { -1, -1 } },
-				{ hover_active , { -1, -1 } }
+				{ hover_active , { -1, -1 } },
+				{ prop_active, { -1, -1 } },
+				{ prop_normal, { -1, -1 } },
+				{ prop_hover, { -1, -1 } }
 			};
 		};
 

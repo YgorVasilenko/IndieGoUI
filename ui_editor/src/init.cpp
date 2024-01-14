@@ -371,7 +371,7 @@ void initWidgets() {
     UIMap["w skinning properties"].label = "skinning properties";
 
     ui_string_group & w_skinning_props_list = *UIMap["w skinning properties"]._data.usgPtr;
-    for (int i = background; i != hover_active; i++) {
+    for (int i = background; i < prop_hover + 1; i++) {
         w_skinning_props_list.elements.push_back(
             getSkinPropName((IMAGE_SKIN_ELEMENT)i)
         );
@@ -419,7 +419,7 @@ void initWidgets() {
     UIMap.addElement("e skinning properties", UI_ITEMS_LIST, &es_widget, to_new_col);
     UIMap["e skinning properties"].label = "skinning properties";
     ui_string_group & e_skinning_props_list = *UIMap["e skinning properties"]._data.usgPtr;
-    for (int i = background; i != hover_active; i++) {
+    for (int i = background; i < prop_hover + 1; i++) {
         e_skinning_props_list.elements.push_back(
             getSkinPropName((IMAGE_SKIN_ELEMENT)i)
         );
