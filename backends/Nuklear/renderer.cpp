@@ -578,7 +578,7 @@ void UI_element::callUIfunction(float x, float y, float space_w, float space_h) 
         // TODO : add skinning
         full_name = "#" + label + ":";
         int currData = _data.i;
-        nk_property_int(ctx, full_name.c_str(), -1024, &_data.i, 1024, 1, 0.5f);
+        nk_property_int(ctx, full_name.c_str(), min, &_data.i, max, 1, 0.5f);
 
         if (currData != _data.i) {
             // evoke callbacks
