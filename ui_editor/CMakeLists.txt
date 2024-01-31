@@ -51,6 +51,7 @@ add_executable(
     src/app.cpp
     src/ui.cpp
     src/init.cpp
+    src/callbacks.cpp
     src/helper_drawing.cpp
     src/skinning.cpp
     src/Shader.cpp

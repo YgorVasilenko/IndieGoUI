@@ -536,7 +536,17 @@ void UI_element::callUIfunction(float x, float y, float space_w, float space_h) 
         ctx->current->buffer.curr_cmd_idx = Manager::draw_idx;
         nk_val = _data.b;
         nk_checkbox_label(ctx, label.c_str(), &nk_val);
-        _data.b = nk_val;
+        if (nk_val != _data.b) {
+            _data.b = nk_val;
+            // evoke active callbacks
+            unsigned int cbIdx = 0;
+            for (auto callback : activeCallbacks) {
+                callback(activeDatas[cbIdx]);
+                cbIdx++;
+            }
+        } else {
+            _data.b = nk_val;
+        }
     }
 
     if (type == UI_FLOAT) {
@@ -561,7 +571,7 @@ void UI_element::callUIfunction(float x, float y, float space_w, float space_h) 
             );
         }
 
-        nk_property_float(ctx, full_name.c_str(), -300000.0f, &_data.f, 300000.0f, 1, flt_px_incr);
+        nk_property_float(ctx, full_name.c_str(), minf, &_data.f, maxf, 1, flt_px_incr);
         // ctx->style.property.
         if (currData != _data.f) {
             // evoke callbacks
@@ -594,7 +604,7 @@ void UI_element::callUIfunction(float x, float y, float space_w, float space_h) 
         ctx->current->buffer.curr_cmd_idx = Manager::draw_idx;
         // TODO : add skinning
         full_name = "#" + label + ":";
-        nk_property_int(ctx, full_name.c_str(), 0, &_data.i, 2040, 1, 0.5f);
+        nk_property_int(ctx, full_name.c_str(), 0, &_data.i, max, 1, 0.5f);
     }
 
     if (type == UI_STRING_INPUT) {

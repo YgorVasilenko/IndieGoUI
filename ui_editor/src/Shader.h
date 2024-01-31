@@ -31,6 +31,11 @@ struct Shader {
     float scale = 1.f;
     glm::mat4 orthogonal_proj = glm::mat4(0.f);
 
+    glm::vec4 main_square = glm::vec4(0);
+    glm::vec4 elements_square = glm::vec4(0);
+    glm::vec4 skinning_square = glm::vec4(0);
+    glm::vec4 fonts_square = glm::vec4(0);
+
     int viewWidth = WIDTH;
     int viewHeight = HEIGHT;
     
@@ -59,6 +64,9 @@ struct Shader {
 
     // ---------------------------------------------------------
     void setMat4(const std::string& name, const glm::mat4& mat);
+
+    // ---------------------------------------------------------
+    void setVec4(const std::string& name, const glm::vec4& vec4);
 
 private:
     void setUniforms();

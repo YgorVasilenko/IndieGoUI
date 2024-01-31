@@ -116,10 +116,20 @@ void Shader::setMat4(const std::string& name, const glm::mat4& mat) {
     glUniformMatrix4fv(glGetUniformLocation(ID, name.c_str()), 1, GL_FALSE, &mat[0][0]);
 }
 
+// ------------------------------------------------------------------------
+void Shader::setVec4(const std::string& name, const glm::vec4& vec4) {
+    glUniform4fv(glGetUniformLocation(ID, name.c_str()), 1, &vec4[0]);
+}
+
 void Shader::setUniforms() {
     if (skinning) {
         setInt("skin_image", 0);
         setFloat("scale", scale);
+    } else {
+        setVec4("main_square", main_square);
+        setVec4("elements_square", elements_square);
+        setVec4("skinning_square", skinning_square);
+        setVec4("fonts_square", fonts_square);
     }
     setMat4("projection", orthogonal_proj);
 }

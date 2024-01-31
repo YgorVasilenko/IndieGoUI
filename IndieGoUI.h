@@ -306,6 +306,8 @@ namespace IndieGo {
 			
 			int min = -1024;
 			int max = 1024;
+			float minf = -300000.0f;
+			float maxf = 300000.0f;
 			// For UI_STRING_LABEL:
 			// If true, and mouse is hovered over one of clickable_regions, 
 			// respective clickCallbacl is called (if set)

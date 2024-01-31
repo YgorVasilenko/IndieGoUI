@@ -18,54 +18,21 @@
 #include <glad/glad.h>
 #include <GLFW/glfw3.h>
 
+#include <editor_structs.h>
+#include <Shader.h>
 #include <vector>
 #include <list>
 #include <filesystem>
+
 namespace fs = std::filesystem;
 
 using namespace IndieGo::UI;
 
 extern Manager GUI;
+extern EditorState editorGlobals;
 
-void updateUIFromLayout(
-    std::string widID, 
-    std::string winID,
-    bool upd_row = false,
-    bool upd_col = false
-) {
-    WIDGET & w = GUI.getWidget(widID, winID);
-    UI_elements_map & UIMap = GUI.UIMaps[winID];
-    ui_string_group & rows_list = *UIMap["rows list"]._data.usgPtr;
-    ui_string_group & cols_list = *UIMap["cols list"]._data.usgPtr;
-
-    if (upd_row) {
-        UIMap["row height"]._data.f = w.layout_grid[ rows_list.selected_element ].min_height * UI_FLT_VAL_SCALE;
-
-        if (upd_col) {
-            UIMap["col width"]._data.f = w.layout_grid[ rows_list.selected_element ].cells[ cols_list.selected_element ].min_width * UI_FLT_VAL_SCALE;
-        }
-    }
-}
-
-void updateLayoutFromUI(
-    std::string widID, 
-    std::string winID,
-    bool upd_row = false,
-    bool upd_col = false
-) {
-    WIDGET & w = GUI.getWidget(widID, winID);
-    UI_elements_map & UIMap = GUI.UIMaps[winID];
-    ui_string_group & rows_list = *UIMap["rows list"]._data.usgPtr;
-    ui_string_group & cols_list = *UIMap["cols list"]._data.usgPtr;
-
-    if (upd_row) {
-        w.updateRowHeight(rows_list.selected_element, UIMap["row height"]._data.f / UI_FLT_VAL_SCALE);
-
-        if (upd_col) {
-            w.updateColWidth(rows_list.selected_element, cols_list.selected_element, UIMap["col width"]._data.f / UI_FLT_VAL_SCALE);
-        }
-    }
-}
+extern void serializeCropsData(const std::string & path);
+extern void deserializeCropsData(const std::string & path);
 
 std::string getTextAlignLabel(IndieGo::UI::TEXT_ALIGN align) {
     if (align == IndieGo::UI::TEXT_ALIGN::LEFT)
@@ -80,53 +47,19 @@ std::string getTextAlignLabel(IndieGo::UI::TEXT_ALIGN align) {
     return "Unexpected value!";
 }
 
-void updateElementFromUI(
-    std::string elementName, 
-    std::string winID,
-    std::string widID // required for element's renaming
-) {
 
-    UI_elements_map & UIMap = GUI.UIMaps[winID];
-    UI_element & e = UIMap[elementName];
+void updateUIFromElement(void*) {
+    UI_elements_map & UIMap = GUI.UIMaps[editorGlobals.winID];
+    ui_string_group & elements_list = *UIMap["elements list"]._data.usgPtr;
+    if (elements_list.selected_element == -1)
+        editorGlobals.selectedElement = "None";
 
-    e.border = UIMap["element border"]._data.f / UI_FLT_VAL_SCALE;
-    e.padding.w = UIMap["element pad x"]._data.f / UI_FLT_VAL_SCALE;
-    e.padding.h = UIMap["element pad y"]._data.f / UI_FLT_VAL_SCALE;
-    e.rounding = UIMap["element rounding"]._data.f / UI_FLT_VAL_SCALE;
-    e.width = UIMap["element width"]._data.f / UI_FLT_VAL_SCALE;
-    e.height = UIMap["element height"]._data.f / UI_FLT_VAL_SCALE;
+    editorGlobals.selectedElement = elements_list.getSelected();
 
-    e.label = *UIMap["elt label"]._data.strPtr;
+    if (editorGlobals.selectedElement == "None")
+        return;
 
-    if (UIMap["rename element"]._data.b) {
-        std::string new_name = *UIMap["elt name"]._data.strPtr;
-        if (new_name.size() > 0 && UIMap.elements.find(new_name) == UIMap.elements.end()) {
-
-            UIMap.renameElement(
-                elementName,
-                new_name,
-                & GUI.getWidget(widID, winID)
-            );
-        }
-    }
-
-    if (UIMap["element text align"]._data.b) {
-        if (e.text_align == IndieGo::UI::TEXT_ALIGN::CENTER) {
-            e.text_align = IndieGo::UI::TEXT_ALIGN::RIGHT;
-        } else if (e.text_align == IndieGo::UI::TEXT_ALIGN::RIGHT) {
-            e.text_align = IndieGo::UI::TEXT_ALIGN::LEFT;
-        } else if (e.text_align == IndieGo::UI::TEXT_ALIGN::LEFT) {
-            e.text_align = IndieGo::UI::TEXT_ALIGN::CENTER;
-        }
-    }
-}
-
-void updateUIFromElement(
-    std::string elementName, 
-    std::string winID
-) {
-    UI_elements_map & UIMap = GUI.UIMaps[winID];
-    UI_element & e = UIMap[elementName];
+    UI_element & e = UIMap[editorGlobals.selectedElement];
 
     UIMap["element border"]._data.f = e.border * UI_FLT_VAL_SCALE;
     UIMap["element pad x"]._data.f = e.padding.w * UI_FLT_VAL_SCALE;
@@ -146,144 +79,17 @@ void updateUIFromElement(
     }
 }
 
-void updateWidgetFromUI(
-    std::string widID, 
-    std::string winID, 
-    bool do_styling,
-    int styling_element
-) {
-    WIDGET & w = GUI.getWidget(widID, winID);
-    UI_elements_map & UIMap = GUI.UIMaps[winID];
+void updateUIFromWidget(void*) {
+    UI_elements_map & UIMap = GUI.UIMaps[editorGlobals.winID];
+    ui_string_group & widgets_list = *UIMap["widgets list"]._data.usgPtr;
 
-    // location
-    w.screen_region.x = UIMap["location x"]._data.f / 100.f;
-    w.screen_region.y = UIMap["location y"]._data.f / 100.f;
-
-    // sizes
-    w.screen_region.w = UIMap["size x"]._data.f / 100.f;
-    w.screen_region.h = UIMap["size y"]._data.f / 100.f;
-
-    // additional properties
-    w.border = UIMap["bordered"]._data.b;
-    w.title = UIMap["titled"]._data.b;
-    w.minimizable = UIMap["minimizable"]._data.b;
-    w.scalable = UIMap["scalable"]._data.b;
-    w.movable = UIMap["movable"]._data.b;
-    w.has_scrollbar = UIMap["has scrollbar"]._data.b;
-
-    w.border_size = UIMap["widget border"]._data.f;
-
-    // show/hide on screen
-    w.hidden = !UIMap["visible"]._data.b;
-
-    if (styling_element != -1) {
-        w.style.elements[styling_element].r = UIMap["red"]._data.ui;
-        w.style.elements[styling_element].g = UIMap["green"]._data.ui;
-        w.style.elements[styling_element].b = UIMap["blue"]._data.ui;
-        w.style.elements[styling_element].a = UIMap["alpha"]._data.ui;
-    }
-
-    if (UIMap["delete widget"]._data.b) {
-        GUI.deleteWidget(widID, winID);
-        ui_string_group& widgets_list = *UIMap["widgets list"]._data.usgPtr;
-        widgets_list.elements.erase(
-            std::find(
-                widgets_list.elements.begin(), 
-                widgets_list.elements.end(), 
-                widID
-            )
-        );
-        widgets_list.selected_element = -1;
+    if (widgets_list.selected_element == -1) {
+        editorGlobals.selectedWidget = "None";
         return;
     }
 
-    if (UIMap["rename widget"]._data.b) {
-        ui_string_group& widgets_list = *UIMap["widgets list"]._data.usgPtr;
-        std::string new_name = *UIMap["new widget name"]._data.strPtr;
-        if (new_name.size() > 0 && std::count(widgets_list.elements.begin(), widgets_list.elements.end(), new_name) <= 1) {
-            // can't use new name if there aleady is such widget
-            WIDGET & w = GUI.getWidget(widID, winID);
-            auto element = std::find(widgets_list.elements.begin(), widgets_list.elements.end(), w.name);
-            
-            *element = new_name;
-            GUI.widgets[winID][new_name] = w;
-            GUI.widgets[winID][new_name].name = new_name;
-            GUI.widgets[winID].erase(widID);        
-        }
-    }
-}
-
-void switchUIscreens(std::string winID) {
-    WIDGET & widgets = GUI.getWidget("UI creator", winID);
-    WIDGET & widgets_style = GUI.getWidget("Widgets style", winID);
-
-    WIDGET & elements = GUI.getWidget("Edit elements", winID);
-    WIDGET & elements_style = GUI.getWidget("Elements style", winID);
-    UI_elements_map & UIMap = GUI.UIMaps[winID];
-    ui_string_group & widgets_list = *UIMap["widgets list"]._data.usgPtr;
-    ui_string_group & elements_list = *UIMap["elements list"]._data.usgPtr;
-
-    if (!widgets.hidden) { // if "main widgets" visible
-        if (widgets_list.selected_element != -1) {
-            if(UIMap["edit widget elements"]._data.b) {
-                widgets.hidden = true;
-                elements.hidden = false;
-                elements.screen_region = widgets.screen_region;
-                UIMap["edit widget elements"]._data.b = false;
-                UIMap["selected widget"].label = "selected widget: " + widgets_list.getSelected();
-            } else if (UIMap["skins and styling"]._data.b) {
-                widgets.hidden = true;
-                widgets_style.hidden = false;
-                widgets_style.screen_region = widgets.screen_region;
-                UIMap["skins and styling"]._data.b = false;
-                UIMap["style selected widget"].label = "selected widget: " + widgets_list.getSelected();
-            }
-        }
-    }
-    
-    if (!elements.hidden) {
-        if (UIMap["back to widgets"]._data.b) {
-            widgets.hidden = false;
-            elements.hidden = true;
-            widgets.screen_region = elements.screen_region;
-            UIMap["back to widgets"]._data.b = false;
-        }
-        // } else if (UIMap["skins"]._data.b && elements_list.selected_element != -1) {
-        //     elements.hidden = true;
-        //     elements_style.hidden = false;
-        //     elements_style.screen_region = elements.screen_region;
-        //     UIMap["skins"]._data.b = false;
-        //     UIMap["e selected element"].label = "selected element: " + elements_list.getSelected();
-        // }
-    }
-
-    if (!widgets_style.hidden) {
-        if(UIMap["to widgets from style"]._data.b) {
-            widgets.hidden = false;
-            widgets_style.hidden = true;
-            widgets.screen_region = widgets_style.screen_region;
-            UIMap["to widgets from style"]._data.b = false;
-        }
-    }
-
-    if (!elements_style.hidden) {
-        if(UIMap["to elements from style"]._data.b) {
-            elements.hidden = false;
-            elements_style.hidden = true;
-            elements.screen_region = elements_style.screen_region;
-            UIMap["to elements from style"]._data.b = false;
-        }
-    }
-}
-
-void updateUIFromWidget(
-    std::string widID, 
-    std::string winID, 
-    bool do_styling,
-    int styling_element
-) {
-    WIDGET & w = GUI.getWidget(widID, winID);
-    UI_elements_map & UIMap = GUI.UIMaps[winID];
+    editorGlobals.selectedWidget = widgets_list.getSelected();
+    WIDGET & w = GUI.getWidget(editorGlobals.selectedWidget, editorGlobals.winID);
 
     // location
     UIMap["location x"]._data.f = w.screen_region.x * 100.f;
@@ -313,12 +119,36 @@ void updateUIFromWidget(
     // show/hide
     UIMap["visible"]._data.b = !w.hidden;
 
-    if (styling_element != -1) {
-        UIMap["red"]._data.ui = w.style.elements[styling_element].r;
-        UIMap["green"]._data.ui = w.style.elements[styling_element].g;
-        UIMap["blue"]._data.ui = w.style.elements[styling_element].b;
-        UIMap["alpha"]._data.ui = w.style.elements[styling_element].a;
+    if (editorGlobals.styling_element != -1) {
+        UIMap["red"]._data.ui = w.style.elements[editorGlobals.styling_element].r;
+        UIMap["green"]._data.ui = w.style.elements[editorGlobals.styling_element].g;
+        UIMap["blue"]._data.ui = w.style.elements[editorGlobals.styling_element].b;
+        UIMap["alpha"]._data.ui = w.style.elements[editorGlobals.styling_element].a;
     }
+
+    ui_string_group & elements_list = *UIMap["elements list"]._data.usgPtr;
+    ui_string_group & rows_list = *UIMap["rows list"]._data.usgPtr;
+    ui_string_group & cols_list = *UIMap["cols list"]._data.usgPtr;
+
+    elements_list.selected_element = -1;
+    elements_list.elements.clear();
+
+    rows_list.selected_element = -1;
+    rows_list.elements.clear();
+
+    cols_list.selected_element = -1;
+    cols_list.elements.clear();
+
+    // Udate displayed elements lists with what is in selected widget
+    for (auto element : w.widget_elements) {
+        elements_list.elements.push_back(element);
+    }
+
+    // update rows and cols lists
+    for (int i = 0; i < w.layout_grid.size(); i++) {
+        rows_list.elements.push_back(std::to_string(i));
+    }
+    UIMap["w selected widget"].label = "selected widget: " + editorGlobals.selectedWidget;
 }
 
 extern void addElement(
@@ -336,311 +166,210 @@ std::vector<std::string> getPaths(
     std::string start_folder = "None"
 );
 
-void processAddOptions(std::string winID) {
-    UI_elements_map & UIMap = GUI.UIMaps[winID];
-    ui_string_group & widgets_list = *UIMap["widgets list"]._data.usgPtr;
-    ui_string_group & elements_list = *UIMap["elements list"]._data.usgPtr;
-    bool use_anchor = UIMap["selected anchor"]._data.b;
-    bool push_after_anchor = UIMap["push after anchor"]._data.b;
-
-    if (UIMap["delete element"]._data.b && elements_list.selected_element != -1) {
-        WIDGET& w = GUI.getWidget(widgets_list.getSelected(), winID);
-        UIMap.deleteElement(elements_list.getSelected(), &w);
-        // delete element from list to avoid errors
-        elements_list.elements.erase(
-            elements_list.elements.begin() + elements_list.selected_element
-        );
-        elements_list.unselect();
-        ui_string_group& rows_list = *UIMap["rows list"]._data.usgPtr;
-        ui_string_group& cols_list = *UIMap["cols list"]._data.usgPtr;
-        rows_list.unselect();
-        cols_list.unselect();
-    }
-
-    std::string new_element_name = *UIMap["new element name"]._data.strPtr;
-    std::string anchor_element = use_anchor && elements_list.selected_element != -1 ? elements_list.getSelected() : "None";
-    if (new_element_name.size() == 0) return;
-
-    if ( UIMap["add image"]._data.b ) {
-        UI_ELEMENT_TYPE t = UI_IMAGE;
-        if (UIMap["crop as img"]._data.b) {
+void processAddImage(
+    const std::string & new_element_name,
+    const std::string & anchor_element,
+    bool push_after_anchor
+) {
+    UI_elements_map & UIMap = GUI.UIMaps[editorGlobals.winID];
+    UI_ELEMENT_TYPE t = UI_IMAGE;
+    if (UIMap["crop as img"]._data.b) {
+        if (UIMap["switch type"]._data.b) {
+            if (editorGlobals.selectedElement == "None")
+                return;
+            UIMap[editorGlobals.selectedElement].type = t;
+            UIMap[editorGlobals.selectedElement]._data.i = -1;
+        } else {
+            addElement(
+                editorGlobals.selectedWidget, 
+                editorGlobals.winID, 
+                new_element_name, 
+                anchor_element,
+                push_after_anchor,
+                t
+            );
+        }
+    } else {
+        std::vector<std::string> paths = getPaths(true, false, GUI.project_dir);
+        if (paths.size() > 0) {
+            std::string img_path = *paths.begin();
+            TexData td = Manager::load_image(img_path.c_str(), true);
             if (UIMap["switch type"]._data.b) {
-                new_element_name = elements_list.getSelected();
-                UIMap[new_element_name].type = t;
-                UIMap[new_element_name]._data.i = -1;
+                if (editorGlobals.selectedElement == "None")
+                    return;
+                UIMap[editorGlobals.selectedElement].type = t;
             } else {
                 addElement(
-                    widgets_list.getSelected(), 
-                    winID, new_element_name, 
+                    editorGlobals.selectedWidget, 
+                    editorGlobals.winID,
+                    new_element_name,
                     anchor_element,
                     push_after_anchor,
                     t
                 );
             }
-        } else {
-            std::vector<std::string> paths = getPaths(true, false, GUI.project_dir);
-            if (paths.size() > 0) {
-                std::string img_path = *paths.begin();
-                TexData td = Manager::load_image(img_path.c_str(), true);
-                if (UIMap["switch type"]._data.b) {
-                    new_element_name = elements_list.getSelected();
-                    UIMap[new_element_name].type = t;
-                } else {
-                    addElement(
-                        widgets_list.getSelected(), 
-                        winID, 
-                        new_element_name, 
-                        anchor_element,
-                        push_after_anchor,
-                        t
-                    );
-                }
-                region<float> crop = { 0.f, 0.f, 1.f, 1.f };
-                UIMap[new_element_name].initImage(td.texID, td.w, td.h, crop);
-                UIMap[new_element_name].label = td.path;
-                *UIMap["elt label"]._data.strPtr = UIMap[new_element_name].label;
-            }
+            region<float> crop = { 0.f, 0.f, 1.f, 1.f };
+            UIMap[new_element_name].initImage(td.texID, td.w, td.h, crop);
+            UIMap[new_element_name].label = td.path;
+            *UIMap["elt label"]._data.strPtr = UIMap[new_element_name].label;
         }
     }
-    if (UIMap["add text"]._data.b) {
-        if (UIMap["switch type"]._data.b) {
-            UIMap[elements_list.getSelected()].type = UI_STRING_TEXT;
-        } else {
-            UI_ELEMENT_TYPE t = UI_STRING_TEXT;
-            addElement(
-                widgets_list.getSelected(), 
-                winID, 
-                new_element_name, 
-                anchor_element,
-                push_after_anchor,
-                t
-            );
-            UIMap[new_element_name].label = new_element_name;
-        }
-    }
-    if (UIMap["add label"]._data.b) {
-        if (UIMap["switch type"]._data.b) {
-            UIMap[elements_list.getSelected()].type = UI_STRING_LABEL;
-        } else {
-            UI_ELEMENT_TYPE t = UI_STRING_LABEL;
-            addElement(
-                widgets_list.getSelected(), 
-                winID, 
-                new_element_name, 
-                anchor_element,
-                push_after_anchor,
-                t
-            );
-            UIMap[new_element_name].label = new_element_name;
-        }
-    }
-    if (UIMap["add progress"]._data.b) {
-        if (UIMap["switch type"]._data.b) {
-            UIMap[elements_list.getSelected()].type = UI_PROGRESS;
-        } else {
-            UI_ELEMENT_TYPE t = UI_PROGRESS;
-            addElement(
-                widgets_list.getSelected(), 
-                winID, 
-                new_element_name, 
-                anchor_element,
-                push_after_anchor,
-                t
-            );
-            UIMap[new_element_name].modifyable_progress_bar = true; // hard-code for now
-        }
-    }
-    if (UIMap["add button"]._data.b) {
-        if (UIMap["switch type"]._data.b) {
-            UIMap[elements_list.getSelected()].type = UI_BUTTON;
-        } else {
-            UI_ELEMENT_TYPE t = UI_BUTTON;
-            addElement(
-                widgets_list.getSelected(), 
-                winID, 
-                new_element_name, 
-                anchor_element,
-                push_after_anchor,
-                t
-            );
-            UIMap[new_element_name].label = new_element_name;
-        }
-    }
-    if (UIMap["add checkbox"]._data.b) {
-        if (UIMap["switch type"]._data.b) {
-            UIMap[elements_list.getSelected()].type = UI_BOOL;
-        } else {
-            UI_ELEMENT_TYPE t = UI_BOOL;
-            addElement(
-                widgets_list.getSelected(), 
-                winID, 
-                new_element_name, 
-                anchor_element,
-                push_after_anchor,
-                t
-            );
-            UIMap[new_element_name].label = new_element_name;
-        }
-    }
-    // TODO : 
-    // add items list, 
-    // string input field, 
-    // int, uint, float, 
-    if (UIMap["add empty"]._data.b) {
-        if (UIMap["switch type"]._data.b) {
-            UIMap[elements_list.getSelected()].type = UI_EMPTY;
-        } else {
-            UI_ELEMENT_TYPE t = UI_EMPTY;
-            addElement(
-                widgets_list.getSelected(), 
-                winID, 
-                new_element_name, 
-                anchor_element,
-                push_after_anchor,
-                t
-            );
-            UIMap[new_element_name].label = new_element_name;
-        }
+}
+
+std::string addElement(UI_ELEMENT_TYPE et) {
+    UI_elements_map & UIMap = GUI.UIMaps[editorGlobals.winID];
+    bool use_anchor = UIMap["selected anchor"]._data.b;
+    bool push_after_anchor = UIMap["push after anchor"]._data.b;
+    
+    std::string new_element_name = *UIMap["new element name"]._data.strPtr;
+    if (new_element_name.size() == 0) 
+        return "None";
+    
+    std::string anchor_element = use_anchor ? editorGlobals.selectedElement : "None";
+
+    if (et == UI_IMAGE) {
+        processAddImage(
+            new_element_name,
+            anchor_element,
+            push_after_anchor
+        );
+        return "None";
     }
 
-    if (UIMap["add input"]._data.b) {
-        if (UIMap["switch type"]._data.b) {
-            UIMap[elements_list.getSelected()].type = UI_STRING_INPUT;
-        } else {
-            UI_ELEMENT_TYPE t = UI_STRING_INPUT;
-            addElement(
-                widgets_list.getSelected(), 
-                winID, 
-                new_element_name, 
-                anchor_element,
-                push_after_anchor,
-                t
-            );
-            UIMap[new_element_name].label = new_element_name;
-        }
+    if (UIMap["switch type"]._data.b) {
+        if (editorGlobals.selectedElement == "None")
+            return "None";
+        UIMap[editorGlobals.selectedElement].type = et;
+    } else {
+        addElement(
+            editorGlobals.selectedWidget, 
+            editorGlobals.winID, 
+            new_element_name, 
+            anchor_element,
+            push_after_anchor,
+            et
+        );
+        UIMap[new_element_name].label = new_element_name;
     }
+    return editorGlobals.selectedElement;
+}
 
-    if (UIMap["add float"]._data.b) {
-        if (UIMap["switch type"]._data.b) {
-            UIMap[elements_list.getSelected()].type = UI_FLOAT;
-        } else {
-            UI_ELEMENT_TYPE t = UI_FLOAT;
-            addElement(
-                widgets_list.getSelected(), 
-                winID, 
-                new_element_name, 
-                anchor_element,
-                push_after_anchor,
-                t
-            );
-            UIMap[new_element_name].label = new_element_name;
-        }
-    }
-
-    if (UIMap["add int"]._data.b) {
-        if (UIMap["switch type"]._data.b) {
-            UIMap[elements_list.getSelected()].type = UI_INT;
-        } else {
-            UI_ELEMENT_TYPE t = UI_INT;
-            addElement(
-                widgets_list.getSelected(), 
-                winID, 
-                new_element_name, 
-                anchor_element,
-                push_after_anchor,
-                t
-            );
-            UIMap[new_element_name].label = new_element_name;
-        }
-    }
+std::vector<std::string> skip_save_widgets = { 
+    "UI creator", 
+    "Edit elements", 
+    "Widgets style", 
+    "Elements style",
+    "Fonts",
+    "Skinning",
+    "Element properties"
 };
 
-void checkUIValues(std::string winID) {
-    UI_elements_map& UIMap = GUI.UIMaps[winID];
+void saveUI(void*) {
+    std::vector<std::string> paths = getPaths(true, false, GUI.project_dir);
+    if (paths.size() > 0) {
+        GUI.serialize(
+            editorGlobals.winID,
+            paths.front(),
+            skip_save_widgets
+        );
+        std::string editor_file_name = fs::path( paths.front() ).stem().string();
+        std::string editor_file = fs::path( paths.front() ).parent_path().append(editor_file_name + "_editor.ui").string();
+        serializeCropsData(editor_file);
+    }
+}
 
-    if (UIMap["location x"]._data.f > 100.f)
-        UIMap["location x"]._data.f = 100.f;
+extern LayoutRect skin_img_rect;
+extern Shader skinningShader;
 
-    if (UIMap["location y"]._data.f > 100.f)
-        UIMap["location y"]._data.f = 100.f;
+void loadUI(void*) {
+    UI_elements_map & UIMap = GUI.UIMaps[editorGlobals.winID];
+    ui_string_group & widgets_list = *UIMap["widgets list"]._data.usgPtr;
+    ui_string_group & fonts_list = *UIMap["loaded fonts"]._data.usgPtr;
 
-    if (UIMap["size x"]._data.f > 100.f)
-        UIMap["size x"]._data.f = 100.f;
+    std::vector<std::string> paths = getPaths(false, false, GUI.project_dir);
+    for (auto path : paths) {
+        GUI.deserialize(editorGlobals.winID, path);
+        std::string editor_file_name = fs::path( paths.front() ).stem().string();
+        std::string editor_file = fs::path( paths.front() ).parent_path().append(editor_file_name + "_editor.ui").string();
+        if (fs::exists(editor_file)) {
+            deserializeCropsData(editor_file);
+        }
+        
+        for (auto widget = GUI.widgets[editorGlobals.winID].begin(); widget != GUI.widgets[editorGlobals.winID].end(); widget++) {
+            if (std::find(skip_save_widgets.begin(), skip_save_widgets.end(), widget->first) != skip_save_widgets.end())
+                continue;
+            
+            widget->second.hidden = true;
+            // don't add already added elements
+            if (std::find(widgets_list.elements.begin(), widgets_list.elements.end(), widget->first) != widgets_list.elements.end())
+                continue;
+            widgets_list.elements.push_back(widget->first);
+        }
+        for (auto font : GUI.loaded_fonts) {
+            if (font.first == GUI.main_font) 
+                continue;
 
-    if (UIMap["size y"]._data.f > 100.f)
-        UIMap["size y"]._data.f = 100.f;
+            if (std::find(fonts_list.elements.begin(), fonts_list.elements.end(), font.first) != fonts_list.elements.end())
+                continue;
 
-    if (UIMap["location x"]._data.f < 0.f)
-        UIMap["location x"]._data.f = 0.f;
+            fonts_list.elements.push_back(font.first);
+        }
+        // set skinning image texID if loaded, populate crops list 
+        if (GUI.skinning_image != "None") {
+            TexData skin_tex = Manager::load_image(GUI.skinning_image);
+            skinningShader.skin_tex_id = skin_tex.texID;
+            skin_img_rect.width = 1.f;
+            skin_img_rect.height = (float)skin_tex.h / (float)skin_tex.w;
+        }
+    }
+}
 
-    if (UIMap["location y"]._data.f < 0.f)
-        UIMap["location y"]._data.f = 0.f;
+extern std::vector<float> font_load_sizes;
+void loadFont(void*) {
+    UI_elements_map & UIMap = GUI.UIMaps[editorGlobals.winID];
+    ui_string_group & fonts_list = *UIMap["loaded fonts"]._data.usgPtr;
+    std::vector<std::string> paths = getPaths(false, false, GUI.project_dir);
+    if (paths.size() > 0) {
+        // load several sizes
+        for (auto size : font_load_sizes) {
+            GUI.loadFont(
+                paths[0],
+                editorGlobals.winID, 
+                size,
+                true
+            );
+        }
+        // additionally load specified font
+        GUI.loadFont(
+            paths[0],
+            editorGlobals.winID, 
+            UIMap["load size"]._data.f,
+            true
+        );
+        // update fonts list
+        fonts_list.elements.clear();
+        for (auto font_path : GUI.loaded_fonts) {
+            if (fs::path(font_path.first).stem().string() == GUI.main_font) 
+                continue; // don't display main font
+            fonts_list.elements.push_back( fs::path(font_path.first).stem().string() );
+        }
+    }
+}
 
-    if (UIMap["size x"]._data.f < 0.f)
-        UIMap["size x"]._data.f = 0.f;
-
-    if (UIMap["size y"]._data.f < 0.f)
-        UIMap["size y"]._data.f = 0.f;
-
-    if (UIMap["red"]._data.ui > 255)
-        UIMap["red"]._data.ui = 255;
-
-    if (UIMap["green"]._data.ui > 255)
-        UIMap["green"]._data.ui = 255;
-    
-    if (UIMap["blue"]._data.ui > 255)
-        UIMap["blue"]._data.ui = 255;
-    
-    if (UIMap["alpha"]._data.ui > 255)
-        UIMap["alpha"]._data.ui = 255;
-
-    if (UIMap["w crop x"]._data.f > 100.f)
-        UIMap["w crop x"]._data.f = 100.f;
-
-    if (UIMap["w crop x"]._data.f < 0.f)
-        UIMap["w crop x"]._data.f = 0.f;
-
-    if (UIMap["w crop y"]._data.f > 100.f)
-        UIMap["w crop y"]._data.f = 100.f;
-
-    if (UIMap["w crop y"]._data.f < 0.f)
-        UIMap["w crop y"]._data.f = 0.f;
-
-    if (UIMap["w crop h"]._data.f > 100.f)
-        UIMap["w crop h"]._data.f = 100.f;
-
-    if (UIMap["w crop h"]._data.f < 0.f)
-        UIMap["w crop h"]._data.f = 0.f;
-
-    if (UIMap["w crop w"]._data.f > 100.f)
-        UIMap["w crop w"]._data.f = 100.f;
-
-    if (UIMap["w crop w"]._data.f < 0.f)
-        UIMap["w crop w"]._data.f = 0.f;
-
-    if (UIMap["e crop x"]._data.f > 100.f)
-        UIMap["e crop x"]._data.f = 100.f;
-
-    if (UIMap["e crop x"]._data.f < 0.f)
-        UIMap["e crop x"]._data.f = 0.f;
-
-    if (UIMap["e crop y"]._data.f > 100.f)
-        UIMap["e crop y"]._data.f = 100.f;
-
-    if (UIMap["e crop y"]._data.f < 0.f)
-        UIMap["e crop y"]._data.f = 0.f;
-
-    if (UIMap["e crop h"]._data.f > 100.f)
-        UIMap["e crop h"]._data.f = 100.f;
-
-    if (UIMap["e crop h"]._data.f < 0.f)
-        UIMap["e crop h"]._data.f = 0.f;
-
-    if (UIMap["e crop w"]._data.f > 100.f)
-        UIMap["e crop w"]._data.f = 100.f;
-
-    if (UIMap["e crop w"]._data.f < 0.f)
-        UIMap["e crop w"]._data.f = 0.f;
+void loadSkinImage(void*) {
+    UI_elements_map & UIMap = GUI.UIMaps[editorGlobals.winID];
+    std::vector<std::string> paths = getPaths(false, false, GUI.project_dir);
+    if (paths.size() > 0) {
+        std::string skinning_img_path = *paths.begin();
+        TexData skin_tex = Manager::load_image(skinning_img_path.c_str());
+        UIMap["w skin image path"].label = skinning_img_path;
+        UIMap["e skin image path"].label = skinning_img_path;
+        skinningShader.skin_tex_id = skin_tex.texID;
+        skin_img_rect.height = (float)skin_tex.h / (float)skin_tex.w;
+        GUI.skinning_image = skin_tex.path;
+        GUI.skin_img_size.w = skin_tex.w;
+        GUI.skin_img_size.h = skin_tex.h;
+    }
 }
 
 std::string getColorPropName(COLOR_ELEMENTS prop) {

@@ -16,6 +16,7 @@
 
 #include <IndieGoUI.h>
 #include <filesystem>
+#include <editor_structs.h>
 
 namespace fs = std::filesystem;
 using namespace IndieGo::UI;
@@ -24,10 +25,14 @@ extern Manager GUI;
 extern WIDGET creator_widget;
 extern WIDGET styling_widget;
 extern std::string winID;
+extern EditorState editorGlobals;
 
 extern std::string getColorPropName(COLOR_ELEMENTS prop);
 extern std::string getSkinPropName(IMAGE_SKIN_ELEMENT prop);
 std::vector<std::string> editorWidgets = {};
+
+extern void setCallbacks();
+
 
 void initWidgets() {
     // initialize creator widget
@@ -64,6 +69,7 @@ void initWidgets() {
     UIMap["bordered"].label = "bordered";
     UIMap["bordered"].height = 0.055f;
     UIMap.addElement("titled", UI_BOOL, &c_widget, to_new_subrow);
+
     UIMap["titled"].label = "titled";
     UIMap["titled"].height = 0.055f;
     UIMap.addElement("minimizable", UI_BOOL, &c_widget, to_new_subrow);
@@ -91,7 +97,6 @@ void initWidgets() {
     UIMap["load ui"].label = "load ui";
 
     UIMap.addElement("new widget name", UI_STRING_INPUT, &c_widget, to_new_col);
-    // UIMap.addElement("space fill", UI_EMPTY, &c_widget, to_new_subrow);
 
     UIMap.addElement("delete widget", UI_BUTTON, &c_widget, to_new_subrow);
     UIMap["delete widget"].label = "delete widget";
@@ -100,17 +105,25 @@ void initWidgets() {
 
     // coordinates of new widget
     UIMap.addElement("location x", UI_FLOAT, &c_widget, to_new_subrow);
+    UIMap["location x"].minf = 0.f;
+    UIMap["location x"].maxf = 100.f;
     UIMap["location x"].label = "loc x";
     UIMap["location x"]._data.f = 10.f;
     UIMap.addElement("location y", UI_FLOAT, &c_widget, to_new_subrow);
+    UIMap["location y"].minf = 0.f;
+    UIMap["location y"].maxf = 100.f;
     UIMap["location y"].label = "loc y";
     UIMap["location y"]._data.f = 10.f;
     UIMap.addElement("size x", UI_FLOAT, &c_widget, to_new_subrow);
     UIMap["size x"].label = "size x";
+    UIMap["size x"].minf = 0.f;
+    UIMap["size x"].maxf = 100.f;
     UIMap["size x"]._data.f = 20.f;
     UIMap.addElement("size y", UI_FLOAT, &c_widget, to_new_subrow);
     UIMap["size y"].label = "size y";
     UIMap["size y"]._data.f = 20.f;
+    UIMap["size y"].minf = 0.f;
+    UIMap["size y"].maxf = 100.f;
     UIMap.addElement("widget border", UI_FLOAT, &c_widget, to_new_subrow);
     UIMap["widget border"].label = "border";
     UIMap["widget border"]._data.f = 1.f;
@@ -126,7 +139,6 @@ void initWidgets() {
     UIMap.addElement("select_project_dir", UI_BUTTON, &c_widget, to_new_col);
     UIMap["select_project_dir"].label = "Select PROJECT_DIR";
 
-    // UIMap["project_dir_label"].width = 0.2f;
     c_widget.updateColWidth(1, 0, 0.15f);
     c_widget.updateColWidth(1, 1, 0.6f);
     c_widget.updateColWidth(1, 2, 0.24f);
@@ -270,6 +282,7 @@ void initWidgets() {
     // Column 3 - last column
     // --------------------------------------------------------
     UIMap.addElement("add image", UI_BUTTON, &e_widget, to_new_col);
+
     UIMap["add image"].label = "add image";
 
     UIMap.addElement("add label", UI_BUTTON, &e_widget, to_new_subrow);
@@ -346,13 +359,16 @@ void initWidgets() {
     }
     UIMap.addElement("red", UI_UINT, &ws_widget, to_new_subrow);
     UIMap["red"].label = "red";
+    UIMap["red"].max = 255;
     UIMap.addElement("green", UI_UINT, &ws_widget, to_new_subrow);
     UIMap["green"].label = "green";
+    UIMap["green"].max = 255;
     UIMap.addElement("blue", UI_UINT, &ws_widget, to_new_subrow);
     UIMap["blue"].label = "blue";
+    UIMap["blue"].max = 255;
     UIMap.addElement("alpha", UI_UINT, &ws_widget, to_new_subrow);
     UIMap["alpha"].label = "alpha";
-    
+    UIMap["alpha"].max = 255;
     UIMap.addElement("to widgets from style", UI_BUTTON, &ws_widget, to_new_subrow);
     UIMap["to widgets from style"].label = "back to widgets";
 
@@ -400,12 +416,20 @@ void initWidgets() {
 
     UIMap.addElement("e crop x", UI_FLOAT, &es_widget, to_new_subrow);
     UIMap["e crop x"].label = "crop x";
+    UIMap["e crop x"].maxf = 100.f;
+    UIMap["e crop x"].minf = 0.f;
     UIMap.addElement("e crop y", UI_FLOAT, &es_widget, to_new_subrow);
     UIMap["e crop y"].label = "crop y";
+    UIMap["e crop y"].maxf = 100.f;
+    UIMap["e crop y"].minf = 0.f;
     UIMap.addElement("e crop w", UI_FLOAT, &es_widget, to_new_subrow);
     UIMap["e crop w"].label = "crop w";
+    UIMap["e crop w"].maxf = 100.f;
+    UIMap["e crop w"].minf = 0.f;
     UIMap.addElement("e crop h", UI_FLOAT, &es_widget, to_new_subrow);
     UIMap["e crop h"].label = "crop h";
+    UIMap["e crop h"].maxf = 100.f;
+    UIMap["e crop h"].minf = 0.f;
 
     UIMap.addElement("e apply skin", UI_BUTTON, &es_widget, to_new_subrow);
     UIMap["e apply skin"].label = "apply skin";
@@ -454,7 +478,7 @@ void initWidgets() {
     // load button, fonts list, sizes per font list, size on load spec
     UIMap.addElement("load font", UI_BUTTON, &fonts_widget);
     UIMap["load font"].label = "load font";
-    
+
     UIMap.addElement("load size", UI_FLOAT, &fonts_widget, to_new_subrow);
     UIMap["load size"].label = "load size";
     UIMap["load size"]._data.f = 16.f;
@@ -505,33 +529,47 @@ void initWidgets() {
     UIMap["w display skin image"].label = "show skin image";
 
     UIMap.addElement("w skin image scale", UI_FLOAT, &skinning_widget, to_new_row);
+    UIMap["w skin image scale"].maxf = 100000.f;
+    UIMap["w skin image scale"].minf = 0.f;
     UIMap["w skin image scale"].label = "skin image scale";
     UIMap["w skin image scale"]._data.f = 1000.f;
 
     UIMap.addElement("w skin image x", UI_FLOAT, &skinning_widget, to_new_row);
+    UIMap["w skin image x"].maxf = 100000.f;
+    UIMap["w skin image x"].minf = -100000.f;
     UIMap["w skin image x"].label = "skin image loc x";
     UIMap["w skin image x"]._data.f = 0.f;
     UIMap.addElement("w skin image y", UI_FLOAT, &skinning_widget, to_new_row);
+    UIMap["w skin image y"].maxf = 100000.f;
+    UIMap["w skin image y"].minf = -100000.f;
     UIMap["w skin image y"].label = "skin image loc y";
     UIMap["w skin image y"]._data.f = 0.f;
 
     UIMap.addElement("w crop x", UI_FLOAT, &skinning_widget, to_new_row);
     UIMap["w crop x"].label = "crop x";
+    UIMap["w crop x"].maxf = 100.f;
+    UIMap["w crop x"].minf = 0.f;
     UIMap["w crop x"]._data.f = 0.25f * UI_FLT_VAL_SCALE;
     UIMap["w crop x"].flt_px_incr = 0.005f;
 
     UIMap.addElement("w crop y", UI_FLOAT, &skinning_widget, to_new_row);
     UIMap["w crop y"].label = "crop y";
+    UIMap["w crop y"].maxf = 100.f;
+    UIMap["w crop y"].minf = 0.f;
     UIMap["w crop y"]._data.f = 0.25f * UI_FLT_VAL_SCALE;
     UIMap["w crop y"].flt_px_incr = 0.005f;
 
     UIMap.addElement("w crop w", UI_FLOAT, &skinning_widget, to_new_row);
     UIMap["w crop w"].label = "crop w";
+    UIMap["w crop w"].maxf = 100.f;
+    UIMap["w crop w"].minf = 0.f;
     UIMap["w crop w"]._data.f = 0.5f * UI_FLT_VAL_SCALE;
     UIMap["w crop w"].flt_px_incr = 0.005f;
 
     UIMap.addElement("w crop h", UI_FLOAT, &skinning_widget, to_new_row);
     UIMap["w crop h"].label = "crop h";
+    UIMap["w crop h"].maxf = 100.f;
+    UIMap["w crop h"].minf = 0.f;
     UIMap["w crop h"]._data.f = 0.5f * UI_FLT_VAL_SCALE;
     UIMap["w crop h"].flt_px_incr = 0.005f;
 
@@ -611,6 +649,7 @@ void initWidgets() {
     UIMap["elt label label"].label = "label:";
     UIMap["elt label label"].text_align = IndieGo::UI::TEXT_ALIGN::LEFT;
 
+    // TODO: input callbacks
     UIMap.addElement("elt label", UI_STRING_INPUT, &elt_props_widget);
 
     UIMap.addElement("init button img", UI_BUTTON, &elt_props_widget);
@@ -651,6 +690,8 @@ void initWidgets() {
 
     // Comment out this line to use dafule backend's font
     GUI.loadFont(font_path, winID, 18.f);
+
+    setCallbacks();
 }
 
 extern std::string home_dir;
