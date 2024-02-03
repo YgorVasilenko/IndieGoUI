@@ -22,6 +22,8 @@
 #include <filesystem>
 #include <editor_structs.h>
 #include <Shader.h>
+#include <queue>
+#include <functional>
 
 namespace fs = std::filesystem;
 
@@ -50,8 +52,6 @@ void drawLayout(LayoutRect element);
 extern void renderLayout();
 extern void displaySkinImage();
 
-// [widID] = current_line
-std::map<std::string, unsigned int> widgets_fill;
 extern Shader skinningShader;
 extern Shader layoutShader;
 
@@ -172,7 +172,7 @@ std::vector<float> font_load_sizes = {
 // load_items.first -> resources path
 // load_items.second -> project name
 std::pair<std::string, std::string> getResourcesPath() {
-    char * p = getenv("PROJECT_DIR");
+    char* p = getenv("PROJECT_DIR");
     std::string path = "";
     std::string project_name = "";
     if (p) {
@@ -198,6 +198,8 @@ fs::path binary_path = "";
 std::string home_dir = "";
 
 extern std::vector<std::string> editorWidgets;
+
+std::queue<std::function<void()>> delayedFunctions;
 
 int main() {
     // Get current application path
@@ -306,7 +308,7 @@ int main() {
         //         }
         //     }
         // }
-        if (UIMap["w display skin image"]._data.b) {
+        if (GUI.UIMaps[winID]["w display skin image"]._data.b) {
             displaySkinImage();
         }
 
@@ -321,6 +323,12 @@ int main() {
 
         glfwSwapBuffers(screen);
 	    glfwPollEvents();
+
+        while(delayedFunctions.size())
+        {
+            delayedFunctions.front()();
+            delayedFunctions.pop();
+        }
     }
     return 0;
 }

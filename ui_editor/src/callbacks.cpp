@@ -26,7 +26,6 @@ extern Manager GUI;
 extern std::string winID;
 extern EditorState editorGlobals;
 
-
 extern void updateUIFromWidget(void*);
 extern void updateUIFromElement(void*);
 extern std::string addElement(UI_ELEMENT_TYPE et);
@@ -37,8 +36,21 @@ extern std::map<std::string, std::pair<TexData, region<float>>> skin_crops;
 
 extern void saveUI(void*);
 extern void loadUI(void*);
+extern void closeUICallback(void*);
 extern void loadFont(void*);
 extern void loadSkinImage(void*);
+
+extern void createNewWidget(
+    std::string newWidName, 
+    region<float> screen_region,
+    bool bordered,
+    bool titled,
+    bool minimizable,
+    bool scalable,
+    bool movable,
+    bool has_scrollbar,
+    const std::string & winID
+);
 
 extern std::vector<std::string> getPaths(
     bool single_item = false,
@@ -60,6 +72,37 @@ void setCallbacks() {
 
     // Add new widget, rename widget, delete widget
     // -------------------------------------------
+    UIMap["add new widget"].setActiveCallback(
+        [] (void*) {
+            auto& UIMap = GUI.UIMaps[editorGlobals.winID];
+            ui_string_group& widgets_list = *UIMap["widgets list"]._data.usgPtr;
+
+            std::string new_widget_name = *UIMap["new widget name"]._data.strPtr;
+            if (!(new_widget_name.size() > 0 && editorGlobals.widgets_fill.find(new_widget_name) == editorGlobals.widgets_fill.end()))
+                return;
+
+            region<float> new_widget_size_loc;
+            new_widget_size_loc.w = UIMap["size x"]._data.f / 100.f;
+            new_widget_size_loc.h = UIMap["size y"]._data.f / 100.f;
+            new_widget_size_loc.x = UIMap["location x"]._data.f / 100.f;
+            new_widget_size_loc.y = UIMap["location y"]._data.f / 100.f;
+            createNewWidget(
+                new_widget_name,
+                new_widget_size_loc,
+                UIMap["bordered"]._data.b,
+                UIMap["titled"]._data.b,
+                UIMap["minimizable"]._data.b,
+                UIMap["scalable"]._data.b,
+                UIMap["movable"]._data.b,
+                UIMap["has scrollbar"]._data.b,
+                winID
+            );
+            // add new widget to list
+            widgets_list.elements.push_back(new_widget_name);
+            editorGlobals.widgets_fill[new_widget_name] = 0;
+        }
+    );
+
     UIMap["rename widget"].setActiveCallback(
         [] (void*) {
             if (editorGlobals.selectedWidget == "None")
@@ -749,6 +792,9 @@ void setCallbacks() {
     );
     UIMap["load ui"].setActiveCallback(
         loadUI
+    );
+    UIMap["close ui"].setActiveCallback(
+        closeUICallback
     );
     UIMap["select_project_dir"].setActiveCallback(
         [] (void*) {
