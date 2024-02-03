@@ -18,9 +18,13 @@
 #include <filesystem>
 #include <editor_structs.h>
 #include <Shader.h>
+#include <queue>
+#include <functional>
 
 namespace fs = std::filesystem;
 using namespace IndieGo::UI;
+
+extern std::queue<std::function<void()>> delayedFunctions;
 
 extern Manager GUI;
 extern std::string winID;
@@ -259,46 +263,54 @@ void setCallbacks() {
         [] (void*) {
             if (editorGlobals.selectedWidget == "None")
                 return;
-            WIDGET & widgets = GUI.getWidget("UI creator", winID);
-            WIDGET & elements = GUI.getWidget("Edit elements", winID);
-            widgets.hidden = true;
-            elements.hidden = false;
-            elements.screen_region = widgets.screen_region;
-            editorGlobals.updateWidgetFont = false;
+            delayedFunctions.emplace([]() {
+                WIDGET & widgets = GUI.getWidget("UI creator", winID);
+                WIDGET & elements = GUI.getWidget("Edit elements", winID);
+                widgets.hidden = true;
+                elements.hidden = false;
+                elements.screen_region = widgets.screen_region;
+                editorGlobals.updateWidgetFont = false;
+            });
         }
     );
     UIMap["skins and styling"].setActiveCallback(
         [] (void*) {
             if (editorGlobals.selectedWidget == "None")
                 return;
-            WIDGET & widgets = GUI.getWidget("UI creator", winID);
-            WIDGET & widgets_style = GUI.getWidget("Widgets style", winID);
-            widgets.hidden = true;
-            widgets_style.hidden = false;
-            widgets_style.screen_region = widgets.screen_region;
-            UI_elements_map & UIMap = GUI.UIMaps[winID];
-            UIMap["style selected widget"].label = "selected widget: " + editorGlobals.selectedWidget;
+            delayedFunctions.emplace([]() {
+                WIDGET & widgets = GUI.getWidget("UI creator", winID);
+                WIDGET & widgets_style = GUI.getWidget("Widgets style", winID);
+                widgets.hidden = true;
+                widgets_style.hidden = false;
+                widgets_style.screen_region = widgets.screen_region;
+                UI_elements_map & UIMap = GUI.UIMaps[winID];
+                UIMap["style selected widget"].label = "selected widget: " + editorGlobals.selectedWidget;
+            });
         }
     );
     UIMap["back to widgets"].setActiveCallback(
         [] (void*) {
-            WIDGET & widgets = GUI.getWidget("UI creator", winID);
-            WIDGET & elements = GUI.getWidget("Edit elements", winID);
-            widgets.hidden = false;
-            elements.hidden = true;
-            widgets.screen_region = elements.screen_region;
-            editorGlobals.updateWidgetFont = true;
+            delayedFunctions.emplace([]() {
+                WIDGET & widgets = GUI.getWidget("UI creator", winID);
+                WIDGET & elements = GUI.getWidget("Edit elements", winID);
+                widgets.hidden = false;
+                elements.hidden = true;
+                widgets.screen_region = elements.screen_region;
+                editorGlobals.updateWidgetFont = true;
+            });
         }
     );
     UIMap["to widgets from style"].setActiveCallback(
         [] (void*) {
             if (editorGlobals.selectedWidget == "None")
                 return;
-            WIDGET & widgets = GUI.getWidget("UI creator", winID);
-            WIDGET & widgets_style = GUI.getWidget("Widgets style", winID);
-            widgets.hidden = false;
-            widgets_style.hidden = true;
-            widgets.screen_region = widgets_style.screen_region;
+            delayedFunctions.emplace([]() {
+                WIDGET & widgets = GUI.getWidget("UI creator", winID);
+                WIDGET & widgets_style = GUI.getWidget("Widgets style", winID);
+                widgets.hidden = false;
+                widgets_style.hidden = true;
+                widgets.screen_region = widgets_style.screen_region;
+            });
         }
     );
 
@@ -311,6 +323,7 @@ void setCallbacks() {
         [] (void*) {
             if (editorGlobals.selectedWidget == "None")
                 return;
+
             WIDGET & w = GUI.getWidget(editorGlobals.selectedWidget, editorGlobals.winID);
             UI_elements_map & UIMap = GUI.UIMaps[editorGlobals.winID];
             ui_string_group & rows_list = *UIMap["rows list"]._data.usgPtr;
