@@ -250,6 +250,7 @@ void setCallbacks() {
         [] (void*) {
             if (editorGlobals.selectedWidget == "None")
                 return;
+
             WIDGET & w = GUI.getWidget(editorGlobals.selectedWidget, editorGlobals.winID);
             UI_elements_map & UIMap = GUI.UIMaps[editorGlobals.winID];
             w.border_size = UIMap["widget border"]._data.f;
@@ -259,58 +260,52 @@ void setCallbacks() {
 
     // "Main" editor widget switching (screens switching)
     // -------------------------------------------
-    UIMap["edit widget elements"].setActiveCallback(
+    UIMap["edit widget elements"].setClickCallback(
         [] (void*) {
             if (editorGlobals.selectedWidget == "None")
                 return;
-            delayedFunctions.emplace([]() {
-                WIDGET & widgets = GUI.getWidget("UI creator", winID);
-                WIDGET & elements = GUI.getWidget("Edit elements", winID);
-                widgets.hidden = true;
-                elements.hidden = false;
-                elements.screen_region = widgets.screen_region;
-                editorGlobals.updateWidgetFont = false;
-            });
+
+            WIDGET & widgets = GUI.getWidget("UI creator", winID);
+            WIDGET & elements = GUI.getWidget("Edit elements", winID);
+            widgets.hidden = true;
+            elements.hidden = false;
+            elements.screen_region = widgets.screen_region;
+            editorGlobals.updateWidgetFont = false;
         }
     );
-    UIMap["skins and styling"].setActiveCallback(
+    UIMap["skins and styling"].setClickCallback(
         [] (void*) {
             if (editorGlobals.selectedWidget == "None")
                 return;
-            delayedFunctions.emplace([]() {
-                WIDGET & widgets = GUI.getWidget("UI creator", winID);
-                WIDGET & widgets_style = GUI.getWidget("Widgets style", winID);
-                widgets.hidden = true;
-                widgets_style.hidden = false;
-                widgets_style.screen_region = widgets.screen_region;
-                UI_elements_map & UIMap = GUI.UIMaps[winID];
-                UIMap["style selected widget"].label = "selected widget: " + editorGlobals.selectedWidget;
-            });
+
+            WIDGET & widgets = GUI.getWidget("UI creator", winID);
+            WIDGET & widgets_style = GUI.getWidget("Widgets style", winID);
+            widgets.hidden = true;
+            widgets_style.hidden = false;
+            widgets_style.screen_region = widgets.screen_region;
+            UI_elements_map & UIMap = GUI.UIMaps[winID];
+            UIMap["style selected widget"].label = "selected widget: " + editorGlobals.selectedWidget;
         }
     );
-    UIMap["back to widgets"].setActiveCallback(
+    UIMap["back to widgets"].setClickCallback(
         [] (void*) {
-            delayedFunctions.emplace([]() {
-                WIDGET & widgets = GUI.getWidget("UI creator", winID);
-                WIDGET & elements = GUI.getWidget("Edit elements", winID);
-                widgets.hidden = false;
-                elements.hidden = true;
-                widgets.screen_region = elements.screen_region;
-                editorGlobals.updateWidgetFont = true;
-            });
+            WIDGET & widgets = GUI.getWidget("UI creator", winID);
+            WIDGET & elements = GUI.getWidget("Edit elements", winID);
+            widgets.hidden = false;
+            elements.hidden = true;
+            widgets.screen_region = elements.screen_region;
+            editorGlobals.updateWidgetFont = true;
         }
     );
-    UIMap["to widgets from style"].setActiveCallback(
+    UIMap["to widgets from style"].setClickCallback(
         [] (void*) {
             if (editorGlobals.selectedWidget == "None")
                 return;
-            delayedFunctions.emplace([]() {
-                WIDGET & widgets = GUI.getWidget("UI creator", winID);
-                WIDGET & widgets_style = GUI.getWidget("Widgets style", winID);
-                widgets.hidden = false;
-                widgets_style.hidden = true;
-                widgets.screen_region = widgets_style.screen_region;
-            });
+            WIDGET & widgets = GUI.getWidget("UI creator", winID);
+            WIDGET & widgets_style = GUI.getWidget("Widgets style", winID);
+            widgets.hidden = false;
+            widgets_style.hidden = true;
+            widgets.screen_region = widgets_style.screen_region;
         }
     );
 
