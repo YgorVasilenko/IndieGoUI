@@ -61,7 +61,7 @@ unsigned int buttons_count = 1;
 double curr_time = 0.0, prev_time = 0.0;
 unsigned int frames = 0;
 
-void clickCallback(void*) {
+void clickCallback(std::string &) {
     std::cout << "Clickable text was clicked!" << std::endl;
 }
 

@@ -174,8 +174,6 @@ void createNewWidget(
     WIDGET & widget = GUI.addWidget(newWidget, winID);
 }
 
-extern void updateUIFromWidget(void*);
-
 ELT_PUSH_OPT push_opt = to_new_row;
 void addElement(
     std::string widID, 
@@ -200,8 +198,6 @@ void addElement(
     UI_elements_map & UIMap = GUI.UIMaps[winID];
     // add element to widget
     UIMap.addElement(elt_name, type, &w, push_opt, anchor, push_after);
-    updateUIFromWidget(nullptr);
-
 }
 
 #ifdef RELEASE_BUILD
