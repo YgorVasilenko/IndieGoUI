@@ -61,10 +61,6 @@ unsigned int buttons_count = 1;
 double curr_time = 0.0, prev_time = 0.0;
 unsigned int frames = 0;
 
-void clickCallback(std::string &) {
-    std::cout << "Clickable text was clicked!" << std::endl;
-}
-
 int main() {
 
   	glfwInit();
@@ -103,34 +99,31 @@ int main() {
         return -1;
     }
     std::string path = p;
-    if (!fs::exists(path + "/ui_example_app.indg")) {
-        std::cout << "[ERROR] " << path << "is not <IndieGoUI dir>\\example_app or ui_example_app.indg was deleted!" << std::endl;
-        std::cout << "Please, make sure PROJECT_DIR env var points to <IndieGoUI dir>\\example_app and ui_example_app.indg exists." << std::endl;
-        return -1;
-    }
+    // if (!fs::exists(path + "/ui_example_app.indg")) {
+    //     std::cout << "[ERROR] " << path << "is not <IndieGoUI dir>\\example_app or ui_example_app.indg was deleted!" << std::endl;
+    //     std::cout << "Please, make sure PROJECT_DIR env var points to <IndieGoUI dir>\\example_app and ui_example_app.indg exists." << std::endl;
+    //     return -1;
+    // }
 
     // Init GUI.project_dir here. Will be used for loading images and fonts
     GUI.project_dir = path;
-    GUI.deserialize(winID, path + "/ui_example_app.indg");
+    GUI.loadFont(
+        path + "/Roboto-Regular_main.ttf",
+        winID,
+        18.f
+    );
+
+    GUI.deserialize(
+        winID, 
+        // path + "/ui_example_app.indg"
+        path + "/Sprites/ui_map/game/game_ui_elf_state_widget_ui"
+    );
 
     // get reference for UIMap
     UI_elements_map & UIMap = GUI.UIMaps[winID];
 
     // Update text so it will be aligned to left border
-    UIMap["FPS counter"].text_align = LEFT;
-    UIMap["FPS counter"].label = "This is some text with [color=#0011ff]clickable[/color] region";
-    
-    // Clickable text setup
-    // -------------------------------------------------
-    TextClickData clickData;
-    clickData.click_region.h = 22;
-    clickData.click_region.w = 31;
-    clickData.clickCallback = clickCallback;
-    UIMap["FPS counter"].clickable_regions.push_back(
-        clickData
-    );
-    UIMap["FPS counter"].hasClickableText = true;
-    // -------------------------------------------------
+    // UIMap["FPS counter"].text_align = LEFT;
 
 	// set initial time to zero
 	glfwSetTime(0.0);
@@ -141,11 +134,12 @@ int main() {
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT | GL_STENCIL_BUFFER_BIT);
 
         // Check ui element state
-        if (UIMap["press me"]._data.b) {
+         if (UIMap["game_ui_elf_state_widget_re-education_button"]._data.b) {
 
-            // Do stuff
-            std::cout << "[INFO] button pressed!" << std::endl;
-        }
+             // Do stuff
+             WIDGET& w = GUI.getWidget("game_ui_elf_state_widget", winID);
+             w.apply_custom_shader = !w.apply_custom_shader;
+         }
 
         // update screen size each frame before calling immediate backend
         glfwGetWindowSize(screen, &width, &height);
@@ -165,7 +159,7 @@ int main() {
         fps_counter++;
         if (glfwGetTime() >= 1.f) {
             glfwSetTime(0.0);
-            // UIMap["FPS counter"].label = "b";
+            // UIMap["FPS counter"].label = "FPS: " + std::to_string(fps_counter);
             fps_counter = 0;
         }
     }

@@ -30,6 +30,7 @@
 #include <string>
 #include <regex>
 #include <filesystem>
+#include <unordered_map>
 namespace fs = std::filesystem;
 
 enum nk_glfw_init_state{
@@ -79,13 +80,15 @@ struct nk_glfw_vertex {
     float position[2];
     float uv[2];
     nk_byte col[4];
+    float idx;
 };
 
-#ifdef __APPLE__
-  #define NK_SHADER_VERSION "#version 150\n"
-#else
-  #define NK_SHADER_VERSION "#version 300 es\n"
-#endif
+#include <backends/Nuklear/shader_codes.h>
+// #ifdef __APPLE__
+//   #define NK_SHADER_VERSION "#version 150\n"
+// #else
+//   #define NK_SHADER_VERSION "#version 300 es\n"
+// #endif
 
 #define MAX_VERTEX_BUFFER 512 * 1024
 #define MAX_ELEMENT_BUFFER 128 * 1024
@@ -94,13 +97,13 @@ struct nk_glfw_vertex {
 std::map<std::string, std::map<float, struct nk_font *>> backend_loaded_fonts;
 
 // texture_iid = vector<sub_images>
-std::map<unsigned int, std::vector<std::pair<struct nk_image, IndieGo::UI::region<float>>>> images;
+std::unordered_map<unsigned int, std::vector<std::pair<struct nk_image, IndieGo::UI::region<float>>>> images;
 
 // Use winID to store window's context. If window destroyed and re-initializes
 // context should be same for respective winID
-std::map<std::string, struct nk_glfw*> glfw_storage;
+std::unordered_map<std::string, struct nk_glfw*> glfw_storage;
 
-std::map<std::string, struct nk_font> fonts;
+std::unordered_map<std::string, struct nk_font> fonts;
 
 // TODO - struct for several atlases loading
 struct nk_font_atlas atlas;
@@ -141,40 +144,17 @@ void nk_glfw3_clipboard_copy(nk_handle usr, const char *text, int len) {
     free(str);
 }
 
-static const GLchar* vertex_shader =
-        NK_SHADER_VERSION
-        "uniform mat4 ProjMtx;\n"
-        "in vec2 Position;\n"
-        "in vec2 TexCoord;\n"
-        "in vec4 Color;\n"
-        "out vec2 Frag_UV;\n"
-        "out vec4 Frag_Color;\n"
-        "void main() {\n"
-        "   Frag_UV = TexCoord;\n"
-        "   Frag_Color = Color;\n"
-        "   gl_Position = ProjMtx * vec4(Position.xy, 0, 1);\n"
-        "}\n";
-static const GLchar* fragment_shader =
-        NK_SHADER_VERSION
-        "precision mediump float;\n"
-        "uniform sampler2D Texture;\n"
-        "in vec2 Frag_UV;\n"
-        "in vec4 Frag_Color;\n"
-        "out vec4 Out_Color;\n"
-        "void main(){\n"
-        "   Out_Color = Frag_Color * texture(Texture, Frag_UV.st);\n"
-        "}\n";
-
 NK_API void nk_glfw3_device_create(struct nk_glfw* glfw) {
     GLint status;
 
+    shader_codes shaders;
     struct nk_glfw_device* dev = &glfw->ogl;
     nk_buffer_init_default(&dev->cmds);
     dev->prog = glCreateProgram();
     dev->vert_shdr = glCreateShader(GL_VERTEX_SHADER);
     dev->frag_shdr = glCreateShader(GL_FRAGMENT_SHADER);
-    glShaderSource(dev->vert_shdr, 1, &vertex_shader, 0);
-    glShaderSource(dev->frag_shdr, 1, &fragment_shader, 0);
+    glShaderSource(dev->vert_shdr, 1, &shaders.vertex_shader, 0);
+    glShaderSource(dev->frag_shdr, 1, &shaders.fragment_shader, 0);
     glCompileShader(dev->vert_shdr);
     glCompileShader(dev->frag_shdr);
     glGetShaderiv(dev->vert_shdr, GL_COMPILE_STATUS, &status);
@@ -192,6 +172,7 @@ NK_API void nk_glfw3_device_create(struct nk_glfw* glfw) {
     dev->attrib_pos = glGetAttribLocation(dev->prog, "Position");
     dev->attrib_uv = glGetAttribLocation(dev->prog, "TexCoord");
     dev->attrib_col = glGetAttribLocation(dev->prog, "Color");
+    GLint attrib_idx = glGetAttribLocation(dev->prog, "Index");
 
     {
         /* buffer setup */
@@ -199,6 +180,7 @@ NK_API void nk_glfw3_device_create(struct nk_glfw* glfw) {
         size_t vp = offsetof(struct nk_glfw_vertex, position);
         size_t vt = offsetof(struct nk_glfw_vertex, uv);
         size_t vc = offsetof(struct nk_glfw_vertex, col);
+        size_t vi = offsetof(struct nk_glfw_vertex, idx);
 
         glGenBuffers(1, &dev->vbo);
         glGenBuffers(1, &dev->ebo);
@@ -211,10 +193,12 @@ NK_API void nk_glfw3_device_create(struct nk_glfw* glfw) {
         glEnableVertexAttribArray((GLuint)dev->attrib_pos);
         glEnableVertexAttribArray((GLuint)dev->attrib_uv);
         glEnableVertexAttribArray((GLuint)dev->attrib_col);
+        glEnableVertexAttribArray((GLuint)attrib_idx);
 
         glVertexAttribPointer((GLuint)dev->attrib_pos, 2, GL_FLOAT, GL_FALSE, vs, (void*)vp);
         glVertexAttribPointer((GLuint)dev->attrib_uv, 2, GL_FLOAT, GL_FALSE, vs, (void*)vt);
         glVertexAttribPointer((GLuint)dev->attrib_col, 4, GL_UNSIGNED_BYTE, GL_TRUE, vs, (void*)vc);
+        glVertexAttribPointer((GLuint)attrib_idx, 1, GL_FLOAT, GL_FALSE, vs, (void*)vi);
     }
 
     glBindTexture(GL_TEXTURE_2D, 0);
@@ -240,6 +224,27 @@ void nk_glfw3_font_stash_end(struct nk_glfw* glfw) {
         nk_style_set_font(&glfw->ctx, &atlas.default_font->handle);
 }
 // ----------------------------------------------------------
+using namespace IndieGo::UI;
+void (*Manager::custom_ui_uniforms)(void*) = 0;
+void * Manager::uniforms_data_ptr = NULL;
+int Manager::draw_idx = 0;
+
+float apply_highlight_indices[50] = { 
+    -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, 
+    -1, -1, -1, -1, -1, -1, -1, -1, -1, -1,
+    -1, -1, -1, -1, -1, -1, -1, -1, -1, -1,
+    -1, -1, -1, -1, -1, -1, -1, -1, -1, -1,
+    -1, -1, -1, -1, -1, -1, -1, -1, -1, -1
+};
+float apply_shading_indices[50] = { 
+    -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, 
+    -1, -1, -1, -1, -1, -1, -1, -1, -1, -1,
+    -1, -1, -1, -1, -1, -1, -1, -1, -1, -1,
+    -1, -1, -1, -1, -1, -1, -1, -1, -1, -1,
+    -1, -1, -1, -1, -1, -1, -1, -1, -1, -1
+};
+int last_apply_highlight_idx = -1;
+int last_apply_shading_idx = -1;
 
 NK_API void nk_glfw3_render(struct nk_glfw* glfw, enum nk_anti_aliasing AA, int max_vertex_buffer, int max_element_buffer) {
 
@@ -265,6 +270,23 @@ NK_API void nk_glfw3_render(struct nk_glfw* glfw, enum nk_anti_aliasing AA, int 
     glUseProgram(dev->prog);
     glUniform1i(dev->uniform_tex, 0);
     glUniformMatrix4fv(dev->uniform_proj, 1, GL_FALSE, &ortho[0][0]);
+
+    // set apply_indices array
+    for (int i = 0; i < 50; i++) {
+        std::string name = "apply_highlight_indices[" + std::to_string(i) + "]";
+        glUniform1f(glGetUniformLocation(dev->prog, name.c_str()), apply_highlight_indices[i]);
+    }
+    for (int i = 0; i < 50; i++) {
+        std::string name = "apply_shading_indices[" + std::to_string(i) + "]";
+        glUniform1f(glGetUniformLocation(dev->prog, name.c_str()), apply_shading_indices[i]);
+    }
+
+    if (Manager::custom_ui_uniforms) {
+        Manager::custom_ui_uniforms(
+            Manager::uniforms_data_ptr
+        );
+    }
+
     glViewport(0, 0, (GLsizei)glfw->display_width, (GLsizei)glfw->display_height);
     {
         /* convert from command queue into draw list and draw to screen */
@@ -296,7 +318,7 @@ NK_API void nk_glfw3_render(struct nk_glfw* glfw, enum nk_anti_aliasing AA, int 
             config.vertex_layout = vertex_layout;
             config.vertex_size = sizeof(struct nk_glfw_vertex);
             config.vertex_alignment = NK_ALIGNOF(struct nk_glfw_vertex);
-            config.null = dev->null;
+            config.tex_null = dev->null;
             config.circle_segment_count = 22;
             config.curve_segment_count = 22;
             config.arc_segment_count = 22;
@@ -313,15 +335,18 @@ NK_API void nk_glfw3_render(struct nk_glfw* glfw, enum nk_anti_aliasing AA, int 
         glUnmapBuffer(GL_ELEMENT_ARRAY_BUFFER);
 
         /* iterate over and execute each draw command */
+        unsigned int times_call = 0;
         nk_draw_foreach(cmd, &glfw->ctx, &dev->cmds)
         {
             if (!cmd->elem_count) continue;
+            times_call++;
             glBindTexture(GL_TEXTURE_2D, (GLuint)cmd->texture.id);
             glScissor(
                 (GLint)(cmd->clip_rect.x * glfw->fb_scale.x),
                 (GLint)((glfw->height - (GLint)(cmd->clip_rect.y + cmd->clip_rect.h)) * glfw->fb_scale.y),
                 (GLint)(cmd->clip_rect.w * glfw->fb_scale.x),
                 (GLint)(cmd->clip_rect.h * glfw->fb_scale.y));
+            // TODO : insert additional calls for effects here?
             glDrawElements(GL_TRIANGLES, (GLsizei)cmd->elem_count, GL_UNSIGNED_SHORT, offset);
             offset += cmd->elem_count;
         }
@@ -362,6 +387,7 @@ void prepareUIRenderer(GLFWwindow* window, std::string & winID) {
     nk_glfw3_font_stash_begin(glfw);
     nk_glfw3_font_stash_end(glfw);
 }
+
 
 using namespace IndieGo::UI;
 void (*Manager::buttonClickCallback)(void*) = NULL;
@@ -468,7 +494,21 @@ void textToString(std::string & str) {
 // callUIfunction abstracts away different UI elements.
 //
 //-------------------------------------------------------
+
+int max_shading_idx = -1;
+
+std::map<std::string, int> debug_array;
 void UI_element::callUIfunction(float x, float y, float space_w, float space_h) {
+    if (apply_highlight) {
+        last_apply_highlight_idx++;
+        apply_highlight_indices[last_apply_highlight_idx] = Manager::draw_idx;
+    }
+    if (apply_shading) {
+        last_apply_shading_idx++;
+        apply_shading_indices[last_apply_shading_idx] = Manager::draw_idx;
+        if (max_shading_idx < last_apply_shading_idx)
+            max_shading_idx = last_apply_shading_idx;
+    }
 
     if (font != "None") {
         nk_style_set_font(
@@ -493,50 +533,93 @@ void UI_element::callUIfunction(float x, float y, float space_w, float space_h) 
     static const float ratio[] = { 100, 120 };
     float dbgVal;
     if (type == UI_BOOL) {
-        // TODO : add skinning
-        /*struct nk_key_selector ks;
-        if (hovered_by_keys) {
-            ks.focused = true;
-        }*/
+        ctx->current->buffer.curr_cmd_idx = Manager::draw_idx;
         nk_val = _data.b;
-        //nk_checkbox_label(ctx, label.c_str(), &nk_val, &ks);
         nk_checkbox_label(ctx, label.c_str(), &nk_val);
-        _data.b = nk_val;
-        // return;
+        if (nk_val != _data.b) {
+            _data.b = nk_val;
+            // evoke active callbacks
+            unsigned int cbIdx = 0;
+            for (auto callback : activeCallbacks) {
+                callback(activeDatas[cbIdx]);
+                cbIdx++;
+            }
+        } else {
+            _data.b = nk_val;
+        }
     }
 
     if (type == UI_FLOAT) {
+        ctx->current->buffer.curr_cmd_idx = Manager::draw_idx;
         // TODO : add skinning
         full_name = "#" + label + ":";
-        nk_property_float(ctx, full_name.c_str(), -300000.0f, &_data.f, 300000.0f, 1, flt_px_incr);
-        // return;
+        float currData = _data.f;
+
+        if (skinned_style.props[prop_active].first != -1) {
+            ctx->style.property.active = nk_style_item_image(
+                images[skinned_style.props[prop_active].first][skinned_style.props[prop_active].second].first
+            );
+        }
+        if (skinned_style.props[prop_normal].first != -1) {
+            ctx->style.property.normal = nk_style_item_image(
+                images[skinned_style.props[prop_normal].first][skinned_style.props[prop_normal].second].first
+            );
+        }
+        if (skinned_style.props[prop_hover].first != -1) {
+            ctx->style.property.hover = nk_style_item_image(
+                images[skinned_style.props[prop_hover].first][skinned_style.props[prop_hover].second].first
+            );
+        }
+
+        nk_property_float(ctx, full_name.c_str(), minf, &_data.f, maxf, 1, flt_px_incr);
+        // ctx->style.property.
+        if (currData != _data.f) {
+            // evoke callbacks
+            unsigned int cbIdx = 0;
+            for (auto callback : activeCallbacks) {
+                callback(activeDatas[cbIdx]);
+                cbIdx++;
+            }
+        }
     }
 
     if (type == UI_INT) {
+        ctx->current->buffer.curr_cmd_idx = Manager::draw_idx;
         // TODO : add skinning
         full_name = "#" + label + ":";
-        nk_property_int(ctx, full_name.c_str(), -1024, &_data.i, 1024, 1, 0.5f);
-        // return;
+        int currData = _data.i;
+        nk_property_int(ctx, full_name.c_str(), min, &_data.i, max, 1, 0.5f);
+
+        if (currData != _data.i) {
+            // evoke callbacks
+            unsigned int cbIdx = 0;
+            for (auto callback : activeCallbacks) {
+                callback(activeDatas[cbIdx]);
+                cbIdx++;
+            }
+        }
     }
 
     if (type == UI_UINT) {
+        ctx->current->buffer.curr_cmd_idx = Manager::draw_idx;
         // TODO : add skinning
         full_name = "#" + label + ":";
-        nk_property_int(ctx, full_name.c_str(), 0, &_data.i, 2040, 1, 0.5f);
-        // return;
+        nk_property_int(ctx, full_name.c_str(), 0, &_data.i, max, 1, 0.5f);
     }
 
     if (type == UI_STRING_INPUT) {
+        ctx->current->buffer.curr_cmd_idx = Manager::draw_idx;
         // TODO : add skinning
         std::string& stringRef = *_data.strPtr;
         stringToText(stringRef);
-        // ctx->style.edit.normal
-        nk_edit_string(ctx, NK_EDIT_SIMPLE, text, &text_len, 512, nk_filter_default);
+
+        nk_draw_set_color_inline(ctx, NK_COLOR_INLINE_NONE);
+        nk_edit_string(ctx, NK_EDIT_SIMPLE | NK_EDIT_SELECTABLE, text, &text_len, 512, nk_filter_default);
         textToString(stringRef);
-        // return;
     }
 
     if (type == UI_BUTTON) {
+        ctx->current->buffer.curr_cmd_idx = Manager::draw_idx;
         ctx->style.button.border = border;
         ctx->style.button.rounding = rounding;
         if (skinned_style.props[button_normal].first != -1) {
@@ -569,53 +652,89 @@ void UI_element::callUIfunction(float x, float y, float space_w, float space_h) 
                 images[skinned_style.props[cursor_active].first][skinned_style.props[cursor_active].second].first
             );
         }*/
-        nk_bool button_state;
+        // struct nk_rect bounds = nk_widget_bounds(ctx);
         if (ui_button_image != -1) {
-            button_state = nk_button_image(ctx, images[ui_button_image][cropId].first);
+            _data.b = nk_button_image(ctx, images[ui_button_image][cropId].first);
         } else {
-            button_state = nk_button_label(ctx, label.c_str());
+            _data.b = nk_button_label(ctx, label.c_str());
         }
         nk_bool button_hovered = nk_widget_is_hovered(ctx);
         if (button_hovered) {
             isHovered = true;
+            // evoke hovered callbacks
+            unsigned int cbIdx = 0;
+            for (auto callback : hoverCallbacks) {
+                callback(hoverDatas[cbIdx]);
+                cbIdx++;
+            }
         } else {
             isHovered = false;
         }
 
-        if (button_state) {
-            _data.b = true;
-            if (Manager::buttonClickCallback) {
-                Manager::buttonClickCallback(NULL);
+        if (tooltip_display) {
+            struct nk_rect bounds = nk_widget_bounds(ctx);
+            if (nk_input_is_mouse_hovering_rect(&ctx->input, bounds)) {
+                // color_table tooltip_style = style;
+                // tooltip_style.elements[UI_COLOR_TEXT].r = 255;
+                // tooltip_style.elements[UI_COLOR_TEXT].g = 255;
+                // tooltip_style.elements[UI_COLOR_TEXT].b = 255;
+                nk_style_from_table(ctx, (struct nk_color*)tooltip_style.elements);
+                nk_tooltip(ctx, tooltip_text.c_str());
+                nk_style_from_table(ctx, (struct nk_color*)style.elements);
             }
-        } else {
+        }
+
+        if (disabled) {
+            rmb_click = false;
             _data.b = false;
+        }
+
+        if (_data.b && Manager::buttonClickCallback) {
+            Manager::buttonClickCallback(NULL);
         }
 
         if (selected_by_keys)
             _data.b = true;
 
-        if (nk_widget_is_mouse_clicked(ctx, NK_BUTTON_RIGHT)) {
-            rmb_click = true;
-        } else {
-            rmb_click = false;
+        lmb_click = nk_widget_is_mouse_clicked(ctx, NK_BUTTON_LEFT);
+        rmb_click = nk_widget_is_mouse_clicked(ctx, NK_BUTTON_RIGHT);
+
+        // evoke callbacks
+        if(lmb_click) {
+            unsigned int cbIdx = 0;
+            for(auto&& callback : clickCallbacks)
+                callback(clickDatas[cbIdx++]);
         }
 
         if (_data.b) {
-            // evoke callbacks
             unsigned int cbIdx = 0;
-            for (auto callback : activeCallbacks) {
-                callback(activeDatas[cbIdx]);
-                cbIdx++;
-            }
+            for (auto&& callback : activeCallbacks)
+                callback(activeDatas[cbIdx++]);
         }
     }
 
     // nk_button_image_label
     if (type == UI_EMPTY) {
         nk_spacing(ctx, 1);
+
+        if (tooltip_display) {
+            struct nk_rect bounds = nk_widget_bounds(ctx);
+            if (nk_input_is_mouse_hovering_rect(&ctx->input, bounds)) {
+                // color_table tooltip_style = style;
+                // tooltip_style.elements[UI_COLOR_TEXT].r = 255;
+                // tooltip_style.elements[UI_COLOR_TEXT].g = 255;
+                // tooltip_style.elements[UI_COLOR_TEXT].b = 255;
+                nk_style_from_table(ctx, (struct nk_color*)tooltip_style.elements);
+                nk_tooltip(ctx, tooltip_text.c_str());
+                nk_style_from_table(ctx, (struct nk_color*)style.elements);
+            }
+        }
     }
 
     if (type == UI_BUTTON_SWITCH) {
+        ctx->current->buffer.curr_cmd_idx = Manager::draw_idx;
+        bool prev_val = _data.b;
+
         if (skinned_style.props[button_normal].first != -1) {
             ctx->style.button.normal = nk_style_item_image(
                 images[skinned_style.props[button_normal].first][skinned_style.props[button_normal].second].first
@@ -655,13 +774,22 @@ void UI_element::callUIfunction(float x, float y, float space_w, float space_h) 
                 ctx->style.button.text_active = nk_rgb(60, 60, 60);
                 ctx->style.button = button;
             }
-            if (nk_button_label(ctx, label.c_str()))
+            if (nk_button_label(ctx, label.c_str())) {
                 _data.b = false;
-        } else if (nk_button_label(ctx, label.c_str()))
+            }
+        } else if (nk_button_label(ctx, label.c_str())) 
             _data.b = true;
         else
             _data.b = false;
-        // return;
+        
+        if (prev_val != _data.b) {
+            // button was switched, evoke callbacks
+            unsigned int cbIdx = 0;
+            for (auto callback : activeCallbacks) {
+                callback(activeDatas[cbIdx]);
+                cbIdx++;
+            }
+        }
     }
 
     if (type == UI_DROPDOWN) {
@@ -690,11 +818,14 @@ void UI_element::callUIfunction(float x, float y, float space_w, float space_h) 
     }
     
     if (type == UI_IMAGE) {
+        ctx->current->buffer.curr_cmd_idx = Manager::draw_idx;
         if (_data.i != -1)
             nk_image(ctx, images[_data.i][cropId].first);
     }
 
     if (type == UI_STRING_LABEL) {
+        ctx->current->buffer.curr_cmd_idx = Manager::draw_idx;
+
         nk_flags align;
         switch(text_align){
           case LEFT:
@@ -707,14 +838,86 @@ void UI_element::callUIfunction(float x, float y, float space_w, float space_h) 
             align = NK_TEXT_RIGHT;
             break;
         }
+        nk_draw_set_color_inline(ctx, NK_COLOR_INLINE_TAG);
         nk_label(ctx, label.c_str(), align);
+
+        if (hasClickableText) {
+            // check for coloring and set original, if it was saved
+            for (auto clk_rgn = clickable_regions.begin(); clk_rgn != clickable_regions.end(); clk_rgn++) {
+                if (clk_rgn->original_color != "") {
+                    label.replace(
+                        label.find("[color=#") + 8, 6, clk_rgn->original_color
+                    );
+                    clk_rgn->original_color = "";
+                }
+            }
+            if (nk_widget_is_hovered(ctx)) {
+                // Note: we don't use any scrollbars!
+                struct nk_rect area;
+                struct nk_rect bounds = nk_widget_bounds(ctx);
+                area.y = bounds.y + ctx->style.edit.padding.y + ctx->style.edit.border;
+                float mouse_y = (ctx->input.mouse.pos.y - area.y);
+                if (mouse_y > 0.f) {
+                    area.x = bounds.x + ctx->style.edit.padding.x + ctx->style.edit.border;
+                    float mouse_x = (ctx->input.mouse.pos.x - area.x);
+                    int glyph_len = 0;
+                    nk_rune unicode = 0;
+                    glyph_len = nk_utf_decode(label.data(), &unicode, 1);
+                    float glyph_width = ctx->style.font->width(
+                        ctx->style.font->userdata,
+                        ctx->style.font->height,
+                        label.data(),
+                        glyph_len
+                    );
+                    int cursor = mouse_x / glyph_width;
+                    for (auto click_region = clickable_regions.begin(); click_region != clickable_regions.end(); click_region++) {
+                        // w == left, h == right
+                        if (click_region->click_region.h <= cursor && cursor <= click_region->click_region.w) {
+                            if (nk_input_has_mouse_click(&ctx->input, NK_BUTTON_LEFT)) {
+                                if (click_region->clickCallback)
+                                    click_region->clickCallback(click_region->objectID);
+                            } else {
+                                // update color
+                                bool mouse_down = nk_input_is_mouse_down(&ctx->input, NK_BUTTON_LEFT);
+                                click_region->original_color = label.substr(
+                                    label.find("[color=#") + 8, 6
+                                );
+                                if (label.find("[color=#") != std::string::npos && label.find("[/color]") != std::string::npos) {
+                                    label.replace(
+                                        label.find("[color=#") + 8, 6, mouse_down ? "aaaaff" : "ff00ff"
+                                    );
+                                }
+                                if (click_region->hoverCallback)
+                                    click_region->hoverCallback(click_region->objectID);
+                            }
+                        }
+                    }
+                }
+            }
+        }
     }
 
     if (type == UI_STRING_TEXT) {
+        ctx->current->buffer.curr_cmd_idx = Manager::draw_idx;
+
+        nk_draw_set_color_inline(ctx, NK_COLOR_INLINE_TAG);
         nk_label_wrap(ctx, label.c_str());
     }
     
     if (type == UI_PROGRESS) {
+        ctx->current->buffer.curr_cmd_idx = Manager::draw_idx;
+        if (use_custom_element_style) {
+            ctx->style.progress.cursor_normal = nk_style_item_color(
+                *(struct nk_color*)&style.elements[COLOR_ELEMENTS::UI_COLOR_SLIDER_CURSOR]
+            );
+            ctx->style.progress.cursor_hover = nk_style_item_color(
+                *(struct nk_color*)&style.elements[COLOR_ELEMENTS::UI_COLOR_SLIDER_CURSOR_HOVER]
+            );
+            ctx->style.progress.cursor_active = nk_style_item_color(
+                *(struct nk_color*)&style.elements[COLOR_ELEMENTS::UI_COLOR_SLIDER_CURSOR_ACTIVE]
+            );
+        }
+
         if (skinned_style.props[progress_normal].first != -1) {
             ctx->style.progress.normal = nk_style_item_image(
                 images[skinned_style.props[progress_normal].first][skinned_style.props[progress_normal].second].first
@@ -756,6 +959,8 @@ void UI_element::callUIfunction(float x, float y, float space_w, float space_h) 
     }
 
     if (type == UI_ITEMS_LIST) {
+        ctx->current->buffer.curr_cmd_idx = Manager::draw_idx;
+
         // TODO : add skinning
         ui_string_group& uiGroupRef = *_data.usgPtr;
         uiGroupRef.selection_switch = false;
@@ -798,7 +1003,7 @@ void UI_element::callUIfunction(float x, float y, float space_w, float space_h) 
                     nk_layout_row_dynamic(ctx, 20, 1);
                     nk_selectable_label(ctx, uiGroupRef.elements[i].c_str(), align, &selected);
                     if (selected) {
-                        if ( uiGroupRef.selected_element != i )
+                        if (uiGroupRef.selected_element != i)
                             uiGroupRef.selection_switch = true;
                         uiGroupRef.selected_element = i;
                     }
@@ -847,8 +1052,16 @@ void UI_element::callUIfunction(float x, float y, float space_w, float space_h) 
                 i++;
             }
         }
+        if (uiGroupRef.selection_switch) {
+            // active callbacks
+            unsigned int cbIdx = 0;
+            for (auto callback : activeCallbacks) {
+                callback(activeDatas[cbIdx]);
+                cbIdx++;
+            }
+        }
     }
-
+    Manager::draw_idx++;
     struct nk_rect wid_rect = nk_widget_bounds(ctx);
     layout_border.x = wid_rect.x; 
     layout_border.y = wid_rect.y;
@@ -925,7 +1138,7 @@ void WIDGET::callImmediateBackend(UI_elements_map & UIMap){
         flags = flags | NK_WINDOW_NO_SCROLLBAR;
 
     if (forceNoFocus)
-        flags = flags | NK_WINDOW_NO_INPUT;
+        flags = flags | NK_WINDOW_NO_INPUT | NK_WINDOW_BACKGROUND;
 
     if (custom_style)
         nk_style_from_table(ctx, (struct nk_color*)style.elements);
@@ -975,7 +1188,15 @@ void WIDGET::callImmediateBackend(UI_elements_map & UIMap){
             );
         }
     }
-
+    ctx->draw_idx = Manager::draw_idx;
+    if (apply_highlight) {
+        last_apply_highlight_idx++;
+        apply_highlight_indices[last_apply_highlight_idx] = Manager::draw_idx;
+    }
+    if (apply_shading) {
+        last_apply_shading_idx++;
+        apply_shading_indices[last_apply_shading_idx] = Manager::draw_idx;
+    }
     if (
         nk_begin(
             ctx,
@@ -1016,7 +1237,8 @@ void WIDGET::callImmediateBackend(UI_elements_map & UIMap){
         
         if (title || movable || minimizable)
             header_height = ctx->current->layout->header_height;
-
+        
+        Manager::draw_idx++;
         callWidgetUI(UIMap);
         minimized = false;
     } else {
@@ -1129,15 +1351,15 @@ void Manager::drawFrameStart(std::string & winID) {
     ctx = &glfw->ctx;
 
     //struct nk_context *ctx = &glfw->ctx;
-    struct GLFWwindow *win = glfw->win;
-    
+    struct GLFWwindow* win = glfw->win;
+
     // Update current window
     glfw->win = win;
 
     glfwGetWindowSize(win, &glfw->width, &glfw->height);
     glfwGetFramebufferSize(win, &glfw->display_width, &glfw->display_height);
-    glfw->fb_scale.x = (float)glfw->display_width/(float)glfw->width;
-    glfw->fb_scale.y = (float)glfw->display_height/(float)glfw->height;
+    glfw->fb_scale.x = (float)glfw->display_width / (float)glfw->width;
+    glfw->fb_scale.y = (float)glfw->display_height / (float)glfw->height;
 
     nk_input_begin(ctx);
     for (i = 0; i < glfw->text_len; ++i)
@@ -1178,8 +1400,8 @@ void Manager::drawFrameStart(std::string & winID) {
     nk_input_key(ctx, NK_KEY_SCROLL_END, glfwGetKey(win, GLFW_KEY_END) == GLFW_PRESS);
     nk_input_key(ctx, NK_KEY_SCROLL_DOWN, glfwGetKey(win, GLFW_KEY_PAGE_DOWN) == GLFW_PRESS);
     nk_input_key(ctx, NK_KEY_SCROLL_UP, glfwGetKey(win, GLFW_KEY_PAGE_UP) == GLFW_PRESS);
-    nk_input_key(ctx, NK_KEY_SHIFT, glfwGetKey(win, GLFW_KEY_LEFT_SHIFT) == GLFW_PRESS||
-                                    glfwGetKey(win, GLFW_KEY_RIGHT_SHIFT) == GLFW_PRESS);
+    nk_input_key(ctx, NK_KEY_SHIFT, glfwGetKey(win, GLFW_KEY_LEFT_SHIFT) == GLFW_PRESS ||
+        glfwGetKey(win, GLFW_KEY_RIGHT_SHIFT) == GLFW_PRESS);
 
     if (glfwGetKey(win, GLFW_KEY_LEFT_CONTROL) == GLFW_PRESS ||
         glfwGetKey(win, GLFW_KEY_RIGHT_CONTROL) == GLFW_PRESS) {
@@ -1192,7 +1414,8 @@ void Manager::drawFrameStart(std::string & winID) {
         nk_input_key(ctx, NK_KEY_TEXT_WORD_RIGHT, glfwGetKey(win, GLFW_KEY_RIGHT) == GLFW_PRESS);
         nk_input_key(ctx, NK_KEY_TEXT_LINE_START, glfwGetKey(win, GLFW_KEY_B) == GLFW_PRESS);
         nk_input_key(ctx, NK_KEY_TEXT_LINE_END, glfwGetKey(win, GLFW_KEY_E) == GLFW_PRESS);
-    } else {
+    }
+    else {
         // nk_input_key(ctx, NK_KEY_LEFT, glfwGetKey(win, GLFW_KEY_LEFT) == GLFW_PRESS);
         // nk_input_key(ctx, NK_KEY_RIGHT, glfwGetKey(win, GLFW_KEY_RIGHT) == GLFW_PRESS);
         nk_input_key(ctx, NK_KEY_COPY, 0);
@@ -1217,15 +1440,25 @@ void Manager::drawFrameStart(std::string & winID) {
     nk_input_scroll(ctx, glfw->scroll);
     nk_input_end(&glfw->ctx);
     glfw->text_len = 0;
-    glfw->scroll = nk_vec2(0,0);
+    glfw->scroll = nk_vec2(0, 0);
 
     // set "default global" font
     if (main_font != "None") {
         nk_style_set_font(
-            &glfw->ctx, 
+            &glfw->ctx,
             &backend_loaded_fonts[main_font][main_font_size]->handle
         );
     }
+
+    // reset apply_indices
+    for (int i = 0; i < 50; i++) {
+        apply_highlight_indices[i] = -1;
+    }
+    for (int i = 0; i < 50; i++) {
+        apply_shading_indices[i] = -1;
+    }
+    last_apply_highlight_idx = -1;
+    last_apply_shading_idx = -1;
 }
 
 void Manager::drawFrameEnd(std::string & winID) {

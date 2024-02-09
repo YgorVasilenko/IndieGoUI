@@ -19,7 +19,42 @@ out vec4 FragColor;
 
 in vec4 fragColor;
 
+// "Discard" squares:
+// - main
+uniform vec4 main_square;
+// - element properties
+uniform vec4 elements_square;
+// - skinning
+uniform vec4 skinning_square;
+// - fonts
+uniform vec4 fonts_square;
+
 void main() {
+    // TODO : get coords from editor UI widgets, discard if fall to them
+    if (
+        gl_FragCoord.x > main_square.x && gl_FragCoord.x < main_square.z
+        && gl_FragCoord.y > main_square.y && gl_FragCoord.y < main_square.w
+    )
+        discard;
+
+    if (
+        gl_FragCoord.x > elements_square.x && gl_FragCoord.x < elements_square.z
+        && gl_FragCoord.y > elements_square.y && gl_FragCoord.y < elements_square.w
+    )
+        discard;
+
+    if (
+        gl_FragCoord.x > skinning_square.x && gl_FragCoord.x < skinning_square.z
+        && gl_FragCoord.y > skinning_square.y && gl_FragCoord.y < skinning_square.w
+    )
+        discard;
+    
+    if (
+        gl_FragCoord.x > fonts_square.x && gl_FragCoord.x < fonts_square.z
+        && gl_FragCoord.y > fonts_square.y && gl_FragCoord.y < fonts_square.w
+    )
+        discard;
+
     FragColor = fragColor;
     FragColor.a = 1.f;
 };

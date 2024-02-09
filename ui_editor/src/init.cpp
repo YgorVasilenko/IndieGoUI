@@ -16,6 +16,7 @@
 
 #include <IndieGoUI.h>
 #include <filesystem>
+#include <editor_structs.h>
 
 namespace fs = std::filesystem;
 using namespace IndieGo::UI;
@@ -24,17 +25,35 @@ extern Manager GUI;
 extern WIDGET creator_widget;
 extern WIDGET styling_widget;
 extern std::string winID;
+extern EditorState editorGlobals;
 
 extern std::string getColorPropName(COLOR_ELEMENTS prop);
 extern std::string getSkinPropName(IMAGE_SKIN_ELEMENT prop);
 std::vector<std::string> editorWidgets = {};
+
+extern void setCallbacks();
+extern std::string home_dir;
+
+void initProjectDir() {
+    char* pd = getenv("PROJECT_DIR");
+    if (pd) {
+        GUI.project_dir = pd;
+        std::cout << "PROJECT_DIR initialized from env var with: " << GUI.project_dir << std::endl;
+        std::cout << "All paths to resources will be saved relative to " << GUI.project_dir << std::endl;
+    } else {
+        GUI.project_dir = home_dir;
+        std::cout << "PROJECT_DIR initialized with current home folder: " << GUI.project_dir << std::endl;
+        std::cout << "All paths to resources will be saved relative to " << GUI.project_dir << std::endl;
+    }
+    *GUI.UIMaps[winID]["project_dir_path"]._data.strPtr = GUI.project_dir;
+}
 
 void initWidgets() {
     // initialize creator widget
     creator_widget.screen_region.x = (float)(WIDTH / 4) / ((float)WIDTH);
     creator_widget.screen_region.y = ((float)HEIGHT / 4) / ((float)HEIGHT);
     creator_widget.screen_region.w = 0.4f;
-    creator_widget.screen_region.h = 0.45f;
+    creator_widget.screen_region.h = 0.56f;
     creator_widget.name = "UI creator";
     editorWidgets.push_back(creator_widget.name);
     creator_widget.has_scrollbar = false;
@@ -47,7 +66,7 @@ void initWidgets() {
     UIMap.addElement("widgets list", UI_ITEMS_LIST, &c_widget);
     UIMap["widgets list"].label = "widgets list";
     UIMap["widgets list"].text_align = IndieGo::UI::TEXT_ALIGN::LEFT;
-    c_widget.updateRowHeight(c_widget.layout_grid.size() - 1, 0.8f);
+    c_widget.updateRowHeight(c_widget.layout_grid.size() - 1, 0.855f);
 
     UIMap.addElement("new widget name label", UI_STRING_LABEL, &c_widget, to_new_col);
     UIMap["new widget name label"].label = "new widget name";
@@ -64,6 +83,7 @@ void initWidgets() {
     UIMap["bordered"].label = "bordered";
     UIMap["bordered"].height = 0.055f;
     UIMap.addElement("titled", UI_BOOL, &c_widget, to_new_subrow);
+
     UIMap["titled"].label = "titled";
     UIMap["titled"].height = 0.055f;
     UIMap.addElement("minimizable", UI_BOOL, &c_widget, to_new_subrow);
@@ -89,9 +109,10 @@ void initWidgets() {
     UIMap["save ui"].label = "save ui";
     UIMap.addElement("load ui", UI_BUTTON, &c_widget, to_new_subrow);
     UIMap["load ui"].label = "load ui";
+    UIMap.addElement("close ui", UI_BUTTON, &c_widget, to_new_subrow);
+    UIMap["close ui"].label = "close ui";
 
     UIMap.addElement("new widget name", UI_STRING_INPUT, &c_widget, to_new_col);
-    // UIMap.addElement("space fill", UI_EMPTY, &c_widget, to_new_subrow);
 
     UIMap.addElement("delete widget", UI_BUTTON, &c_widget, to_new_subrow);
     UIMap["delete widget"].label = "delete widget";
@@ -100,17 +121,25 @@ void initWidgets() {
 
     // coordinates of new widget
     UIMap.addElement("location x", UI_FLOAT, &c_widget, to_new_subrow);
+    UIMap["location x"].minf = 0.f;
+    UIMap["location x"].maxf = 100.f;
     UIMap["location x"].label = "loc x";
     UIMap["location x"]._data.f = 10.f;
     UIMap.addElement("location y", UI_FLOAT, &c_widget, to_new_subrow);
+    UIMap["location y"].minf = 0.f;
+    UIMap["location y"].maxf = 100.f;
     UIMap["location y"].label = "loc y";
     UIMap["location y"]._data.f = 10.f;
     UIMap.addElement("size x", UI_FLOAT, &c_widget, to_new_subrow);
     UIMap["size x"].label = "size x";
+    UIMap["size x"].minf = 0.f;
+    UIMap["size x"].maxf = 100.f;
     UIMap["size x"]._data.f = 20.f;
     UIMap.addElement("size y", UI_FLOAT, &c_widget, to_new_subrow);
     UIMap["size y"].label = "size y";
     UIMap["size y"]._data.f = 20.f;
+    UIMap["size y"].minf = 0.f;
+    UIMap["size y"].maxf = 100.f;
     UIMap.addElement("widget border", UI_FLOAT, &c_widget, to_new_subrow);
     UIMap["widget border"].label = "border";
     UIMap["widget border"]._data.f = 1.f;
@@ -126,7 +155,6 @@ void initWidgets() {
     UIMap.addElement("select_project_dir", UI_BUTTON, &c_widget, to_new_col);
     UIMap["select_project_dir"].label = "Select PROJECT_DIR";
 
-    // UIMap["project_dir_label"].width = 0.2f;
     c_widget.updateColWidth(1, 0, 0.15f);
     c_widget.updateColWidth(1, 1, 0.6f);
     c_widget.updateColWidth(1, 2, 0.24f);
@@ -156,6 +184,8 @@ void initWidgets() {
     UIMap["save ui"].height = 0.065f;
     UIMap["load ui"].width = 0.493f;
     UIMap["load ui"].height = 0.065f;
+    UIMap["close ui"].width = 0.493f;
+    UIMap["close ui"].height = 0.065f;
 
     // third column and it's elements
     c_widget.updateColWidth(0, 2, 0.24f);
@@ -197,6 +227,7 @@ void initWidgets() {
     UIMap["elements list"].text_align = IndieGo::UI::TEXT_ALIGN::LEFT;
 
     // --------------------------------------------------------
+
 
     // Column 1 - under it "width" and "height" elements, also "selected widget" text
     // --------------------------------------------------------
@@ -263,13 +294,13 @@ void initWidgets() {
     // UIMap["add input"].label = "add input";
 
     // UIMap.addElement("empty_1", UI_EMPTY, &e_widget, to_new_subrow);
-
     // UIMap.addElement("empty_2", UI_EMPTY, &e_widget, to_new_subrow);
     // UIMap["add int"].label = "add int";
 
     // Column 3 - last column
     // --------------------------------------------------------
     UIMap.addElement("add image", UI_BUTTON, &e_widget, to_new_col);
+
     UIMap["add image"].label = "add image";
 
     UIMap.addElement("add label", UI_BUTTON, &e_widget, to_new_subrow);
@@ -346,13 +377,16 @@ void initWidgets() {
     }
     UIMap.addElement("red", UI_UINT, &ws_widget, to_new_subrow);
     UIMap["red"].label = "red";
+    UIMap["red"].max = 255;
     UIMap.addElement("green", UI_UINT, &ws_widget, to_new_subrow);
     UIMap["green"].label = "green";
+    UIMap["green"].max = 255;
     UIMap.addElement("blue", UI_UINT, &ws_widget, to_new_subrow);
     UIMap["blue"].label = "blue";
+    UIMap["blue"].max = 255;
     UIMap.addElement("alpha", UI_UINT, &ws_widget, to_new_subrow);
     UIMap["alpha"].label = "alpha";
-    
+    UIMap["alpha"].max = 255;
     UIMap.addElement("to widgets from style", UI_BUTTON, &ws_widget, to_new_subrow);
     UIMap["to widgets from style"].label = "back to widgets";
 
@@ -371,7 +405,7 @@ void initWidgets() {
     UIMap["w skinning properties"].label = "skinning properties";
 
     ui_string_group & w_skinning_props_list = *UIMap["w skinning properties"]._data.usgPtr;
-    for (int i = background; i != hover_active; i++) {
+    for (int i = background; i < prop_hover + 1; i++) {
         w_skinning_props_list.elements.push_back(
             getSkinPropName((IMAGE_SKIN_ELEMENT)i)
         );
@@ -400,12 +434,20 @@ void initWidgets() {
 
     UIMap.addElement("e crop x", UI_FLOAT, &es_widget, to_new_subrow);
     UIMap["e crop x"].label = "crop x";
+    UIMap["e crop x"].maxf = 100.f;
+    UIMap["e crop x"].minf = 0.f;
     UIMap.addElement("e crop y", UI_FLOAT, &es_widget, to_new_subrow);
     UIMap["e crop y"].label = "crop y";
+    UIMap["e crop y"].maxf = 100.f;
+    UIMap["e crop y"].minf = 0.f;
     UIMap.addElement("e crop w", UI_FLOAT, &es_widget, to_new_subrow);
     UIMap["e crop w"].label = "crop w";
+    UIMap["e crop w"].maxf = 100.f;
+    UIMap["e crop w"].minf = 0.f;
     UIMap.addElement("e crop h", UI_FLOAT, &es_widget, to_new_subrow);
     UIMap["e crop h"].label = "crop h";
+    UIMap["e crop h"].maxf = 100.f;
+    UIMap["e crop h"].minf = 0.f;
 
     UIMap.addElement("e apply skin", UI_BUTTON, &es_widget, to_new_subrow);
     UIMap["e apply skin"].label = "apply skin";
@@ -419,7 +461,7 @@ void initWidgets() {
     UIMap.addElement("e skinning properties", UI_ITEMS_LIST, &es_widget, to_new_col);
     UIMap["e skinning properties"].label = "skinning properties";
     ui_string_group & e_skinning_props_list = *UIMap["e skinning properties"]._data.usgPtr;
-    for (int i = background; i != hover_active; i++) {
+    for (int i = background; i < prop_hover + 1; i++) {
         e_skinning_props_list.elements.push_back(
             getSkinPropName((IMAGE_SKIN_ELEMENT)i)
         );
@@ -440,9 +482,9 @@ void initWidgets() {
     UIMap["e selected element"].height = 0.15f;
 
     WIDGET fonts;
-    fonts.screen_region.x = 0.7f;
+    fonts.screen_region.x = 0.6f;
     fonts.screen_region.y = 0.f;
-    fonts.screen_region.w = 0.25f;
+    fonts.screen_region.w = 0.3f;
     fonts.screen_region.h = 0.25f;
     fonts.name = "Fonts";
     editorWidgets.push_back(fonts.name);
@@ -454,7 +496,7 @@ void initWidgets() {
     // load button, fonts list, sizes per font list, size on load spec
     UIMap.addElement("load font", UI_BUTTON, &fonts_widget);
     UIMap["load font"].label = "load font";
-    
+
     UIMap.addElement("load size", UI_FLOAT, &fonts_widget, to_new_subrow);
     UIMap["load size"].label = "load size";
     UIMap["load size"]._data.f = 16.f;
@@ -464,6 +506,10 @@ void initWidgets() {
 
     UIMap.addElement("apply font", UI_BUTTON, &fonts_widget, to_new_subrow);
     UIMap["apply font"].label = "apply font";
+
+    UIMap.addElement("current font", UI_STRING_LABEL, &fonts_widget, to_new_subrow);
+    UIMap["current font"].label = "None";
+    UIMap["current font"].text_align = IndieGo::UI::TEXT_ALIGN::LEFT;
 
     UIMap.addElement("loaded fonts", UI_ITEMS_LIST, &fonts_widget, to_new_col);
     UIMap["loaded fonts"].label = "loaded fonts";
@@ -501,33 +547,47 @@ void initWidgets() {
     UIMap["w display skin image"].label = "show skin image";
 
     UIMap.addElement("w skin image scale", UI_FLOAT, &skinning_widget, to_new_row);
+    UIMap["w skin image scale"].maxf = 100000.f;
+    UIMap["w skin image scale"].minf = 0.f;
     UIMap["w skin image scale"].label = "skin image scale";
     UIMap["w skin image scale"]._data.f = 1000.f;
 
     UIMap.addElement("w skin image x", UI_FLOAT, &skinning_widget, to_new_row);
+    UIMap["w skin image x"].maxf = 100000.f;
+    UIMap["w skin image x"].minf = -100000.f;
     UIMap["w skin image x"].label = "skin image loc x";
     UIMap["w skin image x"]._data.f = 0.f;
     UIMap.addElement("w skin image y", UI_FLOAT, &skinning_widget, to_new_row);
+    UIMap["w skin image y"].maxf = 100000.f;
+    UIMap["w skin image y"].minf = -100000.f;
     UIMap["w skin image y"].label = "skin image loc y";
     UIMap["w skin image y"]._data.f = 0.f;
 
     UIMap.addElement("w crop x", UI_FLOAT, &skinning_widget, to_new_row);
     UIMap["w crop x"].label = "crop x";
+    UIMap["w crop x"].maxf = 100.f;
+    UIMap["w crop x"].minf = 0.f;
     UIMap["w crop x"]._data.f = 0.25f * UI_FLT_VAL_SCALE;
     UIMap["w crop x"].flt_px_incr = 0.005f;
 
     UIMap.addElement("w crop y", UI_FLOAT, &skinning_widget, to_new_row);
     UIMap["w crop y"].label = "crop y";
+    UIMap["w crop y"].maxf = 100.f;
+    UIMap["w crop y"].minf = 0.f;
     UIMap["w crop y"]._data.f = 0.25f * UI_FLT_VAL_SCALE;
     UIMap["w crop y"].flt_px_incr = 0.005f;
 
     UIMap.addElement("w crop w", UI_FLOAT, &skinning_widget, to_new_row);
     UIMap["w crop w"].label = "crop w";
+    UIMap["w crop w"].maxf = 100.f;
+    UIMap["w crop w"].minf = 0.f;
     UIMap["w crop w"]._data.f = 0.5f * UI_FLT_VAL_SCALE;
     UIMap["w crop w"].flt_px_incr = 0.005f;
 
     UIMap.addElement("w crop h", UI_FLOAT, &skinning_widget, to_new_row);
     UIMap["w crop h"].label = "crop h";
+    UIMap["w crop h"].maxf = 100.f;
+    UIMap["w crop h"].minf = 0.f;
     UIMap["w crop h"]._data.f = 0.5f * UI_FLT_VAL_SCALE;
     UIMap["w crop h"].flt_px_incr = 0.005f;
 
@@ -548,29 +608,33 @@ void initWidgets() {
     UIMap.addElement("w apply crop", UI_BUTTON, &skinning_widget, to_new_row);
     UIMap["w apply crop"].label = "apply crop";
 
+    UIMap.addElement("w drop crop", UI_BUTTON, &skinning_widget, to_new_row);
+    UIMap["w drop crop"].label = "drop crop";
+
     UIMap.addElement("w selected prop", UI_STRING_LABEL, &skinning_widget, to_new_row);
     UIMap["w selected prop"].label = "selected property: None";
 
     UIMap.addElement("w selected widget", UI_STRING_LABEL, &skinning_widget, to_new_row);
     UIMap["w selected widget"].label = "selected widget: None";
 
-    skinning_widget.updateRowHeight(0, 0.03f);
-    skinning_widget.updateRowHeight(1, 0.03f);
-    skinning_widget.updateRowHeight(2, 0.03f);
-    skinning_widget.updateRowHeight(3, 0.03f);
-    skinning_widget.updateRowHeight(4, 0.03f);
-    skinning_widget.updateRowHeight(5, 0.03f);
-    skinning_widget.updateRowHeight(6, 0.03f);
-    skinning_widget.updateRowHeight(7, 0.03f);
-    skinning_widget.updateRowHeight(8, 0.03f);
-    skinning_widget.updateRowHeight(9, 0.03f);
-    skinning_widget.updateRowHeight(10, 0.03f);
-    skinning_widget.updateRowHeight(11, 0.03f);
-    skinning_widget.updateRowHeight(12, 0.03f);
-    skinning_widget.updateRowHeight(13, 0.4f); // crops list height
-    skinning_widget.updateRowHeight(14, 0.03f);
-    skinning_widget.updateRowHeight(15, 0.03f);
-    skinning_widget.updateRowHeight(16, 0.03f);
+    skinning_widget.updateRowHeight(0, 0.031f);
+    skinning_widget.updateRowHeight(1, 0.031f);
+    skinning_widget.updateRowHeight(2, 0.031f);
+    skinning_widget.updateRowHeight(3, 0.031f);
+    skinning_widget.updateRowHeight(4, 0.031f);
+    skinning_widget.updateRowHeight(5, 0.031f);
+    skinning_widget.updateRowHeight(6, 0.031f);
+    skinning_widget.updateRowHeight(7, 0.031f);
+    skinning_widget.updateRowHeight(8, 0.031f);
+    skinning_widget.updateRowHeight(9, 0.031f);
+    skinning_widget.updateRowHeight(10, 0.031f);
+    skinning_widget.updateRowHeight(11, 0.031f);
+    skinning_widget.updateRowHeight(12, 0.031f);
+    skinning_widget.updateRowHeight(13, 0.35f); // crops list height
+    skinning_widget.updateRowHeight(14, 0.031f);
+    skinning_widget.updateRowHeight(15, 0.031f);
+    skinning_widget.updateRowHeight(16, 0.031f);
+    skinning_widget.updateRowHeight(17, 0.031f);
 
     // Element props widget:
     // all things for element live here
@@ -603,6 +667,7 @@ void initWidgets() {
     UIMap["elt label label"].label = "label:";
     UIMap["elt label label"].text_align = IndieGo::UI::TEXT_ALIGN::LEFT;
 
+    // TODO: input callbacks
     UIMap.addElement("elt label", UI_STRING_INPUT, &elt_props_widget);
 
     UIMap.addElement("init button img", UI_BUTTON, &elt_props_widget);
@@ -643,19 +708,6 @@ void initWidgets() {
 
     // Comment out this line to use dafule backend's font
     GUI.loadFont(font_path, winID, 18.f);
-}
 
-extern std::string home_dir;
-
-void initProjectDir() {
-    char* pd = getenv("PROJECT_DIR");
-    if (pd) {
-        GUI.project_dir = pd;
-        std::cout << "PROJECT_DIR initialized from env var with: " << GUI.project_dir << std::endl;
-        std::cout << "All paths to resources will be saved relative to " << GUI.project_dir << std::endl;
-    } else {
-        GUI.project_dir = home_dir;
-        std::cout << "PROJECT_DIR initialized with current home folder: " << GUI.project_dir << std::endl;
-        std::cout << "All paths to resources will be saved relative to " << GUI.project_dir << std::endl;
-    }
+    setCallbacks();
 }

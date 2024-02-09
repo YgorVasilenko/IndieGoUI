@@ -1,4 +1,4 @@
-#   runtime state-saving Map for Immediate-mode libraries
+#  runtime state-saving Map for Immediate-mode libraries
 #     Copyright (C) 2022  Igor Vasilenko
 
 #     This program is free software: you can redistribute it and/or modify
@@ -16,23 +16,24 @@
 
 cmake_minimum_required(VERSION 3.10)
 
-project(UI_editor VERSION 1.0)
+project(GUI_test VERSION 1.0)
 
 # protobuf setup
 set(PROTOBUF_SRC ${CMAKE_CURRENT_LIST_DIR}/../protobuf/src)
 set(PROTOBUF_LIB ${CMAKE_CURRENT_LIST_DIR}/../protobuf/build)
 
-if (${CMAKE_HOST_SYSTEM_NAME} MATCHES Windows)
+if (CMAKE_HOST_SYSTEM_NAME MATCHES Windows)
     set(PROTOBUF_LIB ${CMAKE_CURRENT_LIST_DIR}/../protobuf/build/Win)
 else()
     message(FATAL_ERROR "Only Windows currently supported!")
 endif()
 
-set(RENDERER_INCLUDES src . .. ../os ${PROTOBUF_SRC})
+set(RENDERER_INCLUDES .. ../os ${PROTOBUF_SRC})
+set(RENDERER_SRC ../../IndieGoUI.cpp ../../IndieGoUI.pb.cc)
 
 if (DEFINED BACKEND)
     message("BACKEND: ${BACKEND}")
-    set(RENDERER_SRC ../../backends/${BACKEND}/renderer.cpp)
+    set(RENDERER_SRC ${RENDERER_SRC} ../../backends/${BACKEND}/renderer.cpp)
     if ("${BACKEND}" MATCHES "imgui")
         file(GLOB IMGUI_SRC_FILES "../../backends/imgui/imgui*.cpp")
         set(RENDERER_SRC ${RENDERER_SRC} ../../backends/imgui/backends/imgui_impl_glfw.cpp ../../backends/imgui/backends/imgui_impl_opengl3.cpp ${IMGUI_SRC_FILES})
@@ -40,37 +41,27 @@ if (DEFINED BACKEND)
     endif()
 else()
     # Nuklear backend is default
-    set(RENDERER_SRC ../../backends/Nuklear/renderer.cpp)
+    set(RENDERER_SRC ${RENDERER_SRC} ../../backends/Nuklear/renderer.cpp)
 endif()
 
 message("RENDERER_SRC: ${RENDERER_SRC}")
 message("RENDERER_INCLUDES: ${RENDERER_INCLUDES}")
 
 add_executable(
-    UI_editor
+    GUI_example
     src/app.cpp
-    src/ui.cpp
-    src/init.cpp
-    src/callbacks.cpp
-    src/helper_drawing.cpp
-    src/skinning.cpp
-    src/Shader.cpp
     src/glad.c
-    ../IndieGoUI.cpp
-    ../IndieGoUI.pb.cc
-    editor_data.pb.cc
     ${RENDERER_SRC}
 )
 
 target_include_directories(
-    UI_editor
+    GUI_example
     PUBLIC 
     ${RENDERER_INCLUDES}
 )
 
-# link glfw library
 target_link_libraries(
-    UI_editor
+    GUI_example
     PUBLIC "../lib/glfw3"
 
     # serialization
@@ -78,10 +69,9 @@ target_link_libraries(
 )
 
 target_compile_definitions(
-    UI_editor PUBLIC
+    GUI_example PUBLIC
     WIDTH=1920
     HEIGHT=1080
-    UI_FLT_VAL_SCALE=100
 )
 
-set(CMAKE_CXX_FLAGS_DEBUG " /std:c++17 /DEBUG /Zi /Od")
+set(CMAKE_CXX_FLAGS_DEBUG " /std:c++17 /DEBUG /Zi")
