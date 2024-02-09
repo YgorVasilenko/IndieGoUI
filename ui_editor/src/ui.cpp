@@ -318,16 +318,19 @@ void closeUI() {
     for(const auto& [path, texData] : loaded_textures)
         glDeleteTextures(1, &texData.texID);
 
-    delayedFunctions.emplace([]() {
-        GUI = Manager{};
+    loaded_textures.clear();
+    delayedFunctions.emplace(
+        []() {
+            GUI = Manager{};
 
-        GUI.init(editorGlobals.winID, screen);
-        GUI.screen_size.w = WIDTH;
-        GUI.screen_size.h = HEIGHT;
+            GUI.init(editorGlobals.winID, screen);
+            GUI.screen_size.w = WIDTH;
+            GUI.screen_size.h = HEIGHT;
 
-        initWidgets();
-        initProjectDir();
-    });
+            initWidgets();
+            initProjectDir();
+        }
+    );
 }
 
 void closeUICallback(void*) {

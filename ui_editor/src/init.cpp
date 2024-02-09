@@ -32,7 +32,21 @@ extern std::string getSkinPropName(IMAGE_SKIN_ELEMENT prop);
 std::vector<std::string> editorWidgets = {};
 
 extern void setCallbacks();
+extern std::string home_dir;
 
+void initProjectDir() {
+    char* pd = getenv("PROJECT_DIR");
+    if (pd) {
+        GUI.project_dir = pd;
+        std::cout << "PROJECT_DIR initialized from env var with: " << GUI.project_dir << std::endl;
+        std::cout << "All paths to resources will be saved relative to " << GUI.project_dir << std::endl;
+    } else {
+        GUI.project_dir = home_dir;
+        std::cout << "PROJECT_DIR initialized with current home folder: " << GUI.project_dir << std::endl;
+        std::cout << "All paths to resources will be saved relative to " << GUI.project_dir << std::endl;
+    }
+    *GUI.UIMaps[winID]["project_dir_path"]._data.strPtr = GUI.project_dir;
+}
 
 void initWidgets() {
     // initialize creator widget
@@ -696,19 +710,4 @@ void initWidgets() {
     GUI.loadFont(font_path, winID, 18.f);
 
     setCallbacks();
-}
-
-extern std::string home_dir;
-
-void initProjectDir() {
-    char* pd = getenv("PROJECT_DIR");
-    if (pd) {
-        GUI.project_dir = pd;
-        std::cout << "PROJECT_DIR initialized from env var with: " << GUI.project_dir << std::endl;
-        std::cout << "All paths to resources will be saved relative to " << GUI.project_dir << std::endl;
-    } else {
-        GUI.project_dir = home_dir;
-        std::cout << "PROJECT_DIR initialized with current home folder: " << GUI.project_dir << std::endl;
-        std::cout << "All paths to resources will be saved relative to " << GUI.project_dir << std::endl;
-    }
 }
