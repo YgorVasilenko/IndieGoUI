@@ -697,19 +697,20 @@ void UI_element::callUIfunction(float x, float y, float space_w, float space_h) 
         if (selected_by_keys)
             _data.b = true;
 
-        if (nk_widget_is_mouse_clicked(ctx, NK_BUTTON_RIGHT)) {
-            rmb_click = true;
-        } else {
-            rmb_click = false;
+        lmb_click = nk_widget_is_mouse_clicked(ctx, NK_BUTTON_LEFT);
+        rmb_click = nk_widget_is_mouse_clicked(ctx, NK_BUTTON_RIGHT);
+
+        // evoke callbacks
+        if(lmb_click) {
+            unsigned int cbIdx = 0;
+            for(auto&& callback : clickCallbacks)
+                callback(clickDatas[cbIdx++]);
         }
 
         if (_data.b) {
-            // evoke callbacks
             unsigned int cbIdx = 0;
-            for (auto callback : activeCallbacks) {
-                callback(activeDatas[cbIdx]);
-                cbIdx++;
-            }
+            for (auto&& callback : activeCallbacks)
+                callback(activeDatas[cbIdx++]);
         }
     }
 

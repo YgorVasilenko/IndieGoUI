@@ -15,6 +15,7 @@
     along with this program.  If not, see <https://www.gnu.org/licenses/>.*/
 
 #include <string>
+#include <map>
 
 struct LayoutRect {
     // position and size
@@ -44,4 +45,7 @@ struct EditorState {
     std::string winID = "None";
 
     std::string selectedSkinCrop = "None";
+
+    // [widID] = current_line
+    std::map<std::string, unsigned int> widgets_fill;
 };

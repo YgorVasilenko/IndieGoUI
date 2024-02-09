@@ -23,6 +23,15 @@
 #include <vector>
 #include <list>
 #include <filesystem>
+#include <queue>
+#include <functional>
+
+#ifdef _WIN32
+#define GLFW_EXPOSE_NATIVE_WIN32
+#include <glfw/glfw3native.h>
+#endif
+
+#include "backends/Nuklear/nuklear.h"
 
 namespace fs = std::filesystem;
 
@@ -30,6 +39,7 @@ using namespace IndieGo::UI;
 
 extern Manager GUI;
 extern EditorState editorGlobals;
+extern std::queue<std::function<void()>> delayedFunctions;
 
 extern void serializeCropsData(const std::string & path);
 extern void deserializeCropsData(const std::string & path);
@@ -280,33 +290,82 @@ void saveUI(void*) {
 
 extern LayoutRect skin_img_rect;
 extern Shader skinningShader;
+extern std::map<std::string, std::pair<TexData, region<float>>> skin_crops;
+extern std::unordered_map<unsigned int, std::vector<std::pair<struct nk_image, IndieGo::UI::region<float>>>> images;
+extern std::map<std::string, TexData> loaded_textures;
+extern GLFWwindow* screen;
+extern void initWidgets();
+extern void initProjectDir();
 
-void loadUI(void*) {
-    UI_elements_map & UIMap = GUI.UIMaps[editorGlobals.winID];
-    ui_string_group & widgets_list = *UIMap["widgets list"]._data.usgPtr;
-    ui_string_group & fonts_list = *UIMap["loaded fonts"]._data.usgPtr;
+void closeUI() {
+    auto& UIMap = GUI.UIMaps[editorGlobals.winID];
+    auto& widgets_list = *UIMap["widgets list"]._data.usgPtr;
 
-    std::vector<std::string> paths = getPaths(false, false, GUI.project_dir);
-    for (auto path : paths) {
+    for (const auto& widgetName : widgets_list.elements)
+        GUI.deleteWidget(widgetName, editorGlobals.winID);
+
+    widgets_list.elements.clear();
+    widgets_list.selected_element = -1;
+    skinningShader.skin_tex_id = 0;
+    skin_crops.clear();
+    
+    EditorState es;
+    std::swap(editorGlobals.winID, es.winID);
+    editorGlobals = std::move(es);
+
+    images.clear();
+
+    for(const auto& [path, texData] : loaded_textures)
+        glDeleteTextures(1, &texData.texID);
+
+    loaded_textures.clear();
+    delayedFunctions.emplace(
+        []() {
+            GUI = Manager{};
+
+            GUI.init(editorGlobals.winID, screen);
+            GUI.screen_size.w = WIDTH;
+            GUI.screen_size.h = HEIGHT;
+
+            initWidgets();
+            initProjectDir();
+        }
+    );
+}
+
+void closeUICallback(void*) {
+#ifdef _WIN32
+    if(MessageBoxA(glfwGetWin32Window(screen), "Close project?", "Confirmation", MB_OKCANCEL) == IDCANCEL)
+        return;
+#endif
+    closeUI();
+}
+
+void loadUIInternal(std::vector<std::string> paths) {
+    UI_elements_map& UIMap = GUI.UIMaps[editorGlobals.winID];
+    ui_string_group& widgets_list = *UIMap["widgets list"]._data.usgPtr;
+    ui_string_group& fonts_list = *UIMap["loaded fonts"]._data.usgPtr;
+
+    for (const auto& path : paths) {
         GUI.deserialize(editorGlobals.winID, path);
-        std::string editor_file_name = fs::path( paths.front() ).stem().string();
-        std::string editor_file = fs::path( paths.front() ).parent_path().append(editor_file_name + "_editor.ui").string();
+        std::string editor_file_name = fs::path(paths.front()).stem().string();
+        std::string editor_file = fs::path(paths.front()).parent_path().append(editor_file_name + "_editor.ui").string();
         if (fs::exists(editor_file)) {
             deserializeCropsData(editor_file);
         }
-        
+
         for (auto widget = GUI.widgets[editorGlobals.winID].begin(); widget != GUI.widgets[editorGlobals.winID].end(); widget++) {
             if (std::find(skip_save_widgets.begin(), skip_save_widgets.end(), widget->first) != skip_save_widgets.end())
                 continue;
-            
+
             widget->second.hidden = true;
             // don't add already added elements
             if (std::find(widgets_list.elements.begin(), widgets_list.elements.end(), widget->first) != widgets_list.elements.end())
                 continue;
             widgets_list.elements.push_back(widget->first);
         }
-        for (auto font : GUI.loaded_fonts) {
-            if (font.first == GUI.main_font) 
+        for (const auto& font : GUI.loaded_fonts) {
+            if (font.first == GUI.main_font)
                 continue;
 
             if (std::find(fonts_list.elements.begin(), fonts_list.elements.end(), font.first) != fonts_list.elements.end())
@@ -322,6 +381,14 @@ void loadUI(void*) {
             skin_img_rect.height = (float)skin_tex.h / (float)skin_tex.w;
         }
     }
+}
+void loadUI(void*) {
+    auto paths = getPaths(false, false, GUI.project_dir);
+    if(paths.empty())
+        return;
+
+    closeUI();
+    delayedFunctions.emplace(std::bind(loadUIInternal, std::move(paths)));
 }
 
 extern std::vector<float> font_load_sizes;
@@ -443,12 +510,11 @@ std::string getSkinPropName(IMAGE_SKIN_ELEMENT prop) {
 
 std::string getStringFromWSTR(PWSTR wstrPtr) {
 	std::string ret_string;
-	int path_size = wcslen(wstrPtr);
-	wchar_t* wstr_pointer = (wchar_t*)wstrPtr;
-	for (int i = 0; i < path_size; i++) {
-		ret_string += *wstr_pointer;
-		wstr_pointer++;
-	}
+	size_t path_size = wcslen(wstrPtr);
+
+	for (size_t i = 0; i < path_size; i++)
+		ret_string += static_cast<char>(*(wstrPtr++));
+
 	return ret_string;
 }
 

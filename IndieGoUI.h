@@ -318,6 +318,7 @@ namespace IndieGo {
 			bool apply_shading = false;
 
 			bool isHovered = false;
+			bool lmb_click = false;
 			bool rmb_click = false;
 
 			// disabled button don't save state
@@ -338,20 +339,31 @@ namespace IndieGo {
 			std::vector<std::function<void(void*)>> hoverCallbacks;
 			std::vector<void *> hoverDatas;
 
+			std::vector<std::function<void(void*)>> clickCallbacks;
+			std::vector<void*> clickDatas;
+
 			void setHoverCallback(
-				void (*callbackPtr)(void*), 
-				void * dataPtr = NULL
+				std::function<void(void*)> callbackPtr,
+				void* dataPtr = NULL
 			) {
-				hoverCallbacks.push_back(callbackPtr);
+				hoverCallbacks.emplace_back(std::move(callbackPtr));
 				hoverDatas.push_back(dataPtr);
 			};
 
 			void setActiveCallback(
-				void (*callbackPtr)(void*), 
-				void * dataPtr = NULL
+				std::function<void(void*)> callbackPtr,
+				void* dataPtr = NULL
 			) {
-				activeCallbacks.push_back(callbackPtr);
+				activeCallbacks.emplace_back(std::move(callbackPtr));
 				activeDatas.push_back(dataPtr);
+			};
+
+			void setClickCallback(
+				std::function<void(void*)> callbackPtr,
+				void* dataPtr = NULL
+			) {
+				clickCallbacks.emplace_back(std::move(callbackPtr));
+				clickDatas.push_back(dataPtr);
 			};
 
 			bool modifyable_progress_bar = false;

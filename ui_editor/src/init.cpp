@@ -32,14 +32,28 @@ extern std::string getSkinPropName(IMAGE_SKIN_ELEMENT prop);
 std::vector<std::string> editorWidgets = {};
 
 extern void setCallbacks();
+extern std::string home_dir;
 
+void initProjectDir() {
+    char* pd = getenv("PROJECT_DIR");
+    if (pd) {
+        GUI.project_dir = pd;
+        std::cout << "PROJECT_DIR initialized from env var with: " << GUI.project_dir << std::endl;
+        std::cout << "All paths to resources will be saved relative to " << GUI.project_dir << std::endl;
+    } else {
+        GUI.project_dir = home_dir;
+        std::cout << "PROJECT_DIR initialized with current home folder: " << GUI.project_dir << std::endl;
+        std::cout << "All paths to resources will be saved relative to " << GUI.project_dir << std::endl;
+    }
+    *GUI.UIMaps[winID]["project_dir_path"]._data.strPtr = GUI.project_dir;
+}
 
 void initWidgets() {
     // initialize creator widget
     creator_widget.screen_region.x = (float)(WIDTH / 4) / ((float)WIDTH);
     creator_widget.screen_region.y = ((float)HEIGHT / 4) / ((float)HEIGHT);
     creator_widget.screen_region.w = 0.4f;
-    creator_widget.screen_region.h = 0.45f;
+    creator_widget.screen_region.h = 0.56f;
     creator_widget.name = "UI creator";
     editorWidgets.push_back(creator_widget.name);
     creator_widget.has_scrollbar = false;
@@ -52,7 +66,7 @@ void initWidgets() {
     UIMap.addElement("widgets list", UI_ITEMS_LIST, &c_widget);
     UIMap["widgets list"].label = "widgets list";
     UIMap["widgets list"].text_align = IndieGo::UI::TEXT_ALIGN::LEFT;
-    c_widget.updateRowHeight(c_widget.layout_grid.size() - 1, 0.8f);
+    c_widget.updateRowHeight(c_widget.layout_grid.size() - 1, 0.855f);
 
     UIMap.addElement("new widget name label", UI_STRING_LABEL, &c_widget, to_new_col);
     UIMap["new widget name label"].label = "new widget name";
@@ -95,6 +109,8 @@ void initWidgets() {
     UIMap["save ui"].label = "save ui";
     UIMap.addElement("load ui", UI_BUTTON, &c_widget, to_new_subrow);
     UIMap["load ui"].label = "load ui";
+    UIMap.addElement("close ui", UI_BUTTON, &c_widget, to_new_subrow);
+    UIMap["close ui"].label = "close ui";
 
     UIMap.addElement("new widget name", UI_STRING_INPUT, &c_widget, to_new_col);
 
@@ -168,6 +184,8 @@ void initWidgets() {
     UIMap["save ui"].height = 0.065f;
     UIMap["load ui"].width = 0.493f;
     UIMap["load ui"].height = 0.065f;
+    UIMap["close ui"].width = 0.493f;
+    UIMap["close ui"].height = 0.065f;
 
     // third column and it's elements
     c_widget.updateColWidth(0, 2, 0.24f);
@@ -692,19 +710,4 @@ void initWidgets() {
     GUI.loadFont(font_path, winID, 18.f);
 
     setCallbacks();
-}
-
-extern std::string home_dir;
-
-void initProjectDir() {
-    char* pd = getenv("PROJECT_DIR");
-    if (pd) {
-        GUI.project_dir = pd;
-        std::cout << "PROJECT_DIR initialized from env var with: " << GUI.project_dir << std::endl;
-        std::cout << "All paths to resources will be saved relative to " << GUI.project_dir << std::endl;
-    } else {
-        GUI.project_dir = home_dir;
-        std::cout << "PROJECT_DIR initialized with current home folder: " << GUI.project_dir << std::endl;
-        std::cout << "All paths to resources will be saved relative to " << GUI.project_dir << std::endl;
-    }
 }
