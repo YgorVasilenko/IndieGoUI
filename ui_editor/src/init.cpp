@@ -695,64 +695,6 @@ void initWidgets() {
         elt_props_widget.updateRowHeight(i, 0.055f);
     }
 
-    // Element props widget:
-    // all things for element live here
-    WIDGET element_props;
-    element_props.screen_region.x = 0.7f;
-    element_props.screen_region.y = 0.29f;
-    element_props.screen_region.w = 0.12f;
-    element_props.screen_region.h = 0.5f;
-    element_props.name = "Element properties";
-    editorWidgets.push_back(element_props.name);
-
-    WIDGET & elt_props_widget = GUI.addWidget(element_props, winID);
-    elt_props_widget.has_scrollbar = false;
-
-    // width and height of specific element
-    UIMap.addElement("element width", UI_FLOAT, &elt_props_widget);
-    UIMap["element width"].label = "width";
-    UIMap.addElement("element height", UI_FLOAT, &elt_props_widget);
-    UIMap["element height"].label = "height";
-    UIMap.addElement("element pad x", UI_FLOAT, &elt_props_widget);
-    UIMap["element pad x"].label = "pad x";
-    UIMap.addElement("element pad y", UI_FLOAT, &elt_props_widget);
-    UIMap["element pad y"].label = "pad y";
-    UIMap.addElement("element border", UI_FLOAT, &elt_props_widget);
-    UIMap["element border"].label = "border";
-    UIMap.addElement("element rounding", UI_FLOAT, &elt_props_widget);
-    UIMap["element rounding"].label = "rounding";
-
-    UIMap.addElement("elt label label", UI_STRING_LABEL, &elt_props_widget);
-    UIMap["elt label label"].label = "label:";
-    UIMap["elt label label"].text_align = IndieGo::UI::TEXT_ALIGN::LEFT;
-
-    UIMap.addElement("elt label", UI_STRING_INPUT, &elt_props_widget);
-
-    UIMap.addElement("init button img", UI_BUTTON, &elt_props_widget);
-    UIMap["init button img"].label = "init button img";
-
-    UIMap.addElement("crop as img", UI_BOOL, &elt_props_widget);
-    UIMap["crop as img"].label = "use crop as img";
-
-    UIMap.addElement("crop to img", UI_BUTTON, &elt_props_widget);
-    UIMap["crop to img"].label = "apply crop";
-
-    UIMap.addElement("elt name label", UI_STRING_LABEL, &elt_props_widget);
-    UIMap["elt name label"].label = "name:";
-    UIMap["elt name label"].text_align = IndieGo::UI::TEXT_ALIGN::LEFT;
-
-    UIMap.addElement("elt name", UI_STRING_INPUT, &elt_props_widget);
-
-    UIMap.addElement("rename element", UI_BUTTON, &elt_props_widget);
-    UIMap["rename element"].label = "rename element";
-    
-    UIMap.addElement("element text align", UI_BUTTON, &elt_props_widget);
-    UIMap["element text align"].label = "text align: left";
-
-    for (int i = 0; i < 15; i++) {
-        elt_props_widget.updateRowHeight(i, 0.055f);
-    }
-
     std::string home_dir = fs::current_path().string();
     if (home_dir.find("ui_editor") == std::string::npos) {
         std::cout << "[WARNING] cwd does not contain 'ui_editor'! Can't find default font" << std::endl;

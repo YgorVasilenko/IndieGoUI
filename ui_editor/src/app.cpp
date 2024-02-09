@@ -312,29 +312,6 @@ int main() {
             displaySkinImage();
         }
 
-
-        // hotkey to close all windows except technical
-        if (ctrl_press && h_press) {
-            for (
-                auto widget = GUI.widgets[winID].begin();
-                widget != GUI.widgets[winID].end();
-                widget++
-            ) {
-                if (
-                    std::find(
-                        skip_save_widgets.begin(), 
-                        skip_save_widgets.end(), 
-                        widget->first
-                    ) == skip_save_widgets.end()
-                ) {
-                    widget->second.hidden = true;
-                    if (widgets_list.selected_element != -1 && widgets_list.getSelected() == widget->first) {
-                        UIMap["visible"]._data.b = false;
-                    }
-                }
-            }
-        }
-
         GUI.drawFrameStart(winID);
         GUI.displayWidgets(winID);
         GUI.drawFrameEnd(winID);

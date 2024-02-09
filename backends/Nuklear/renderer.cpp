@@ -670,14 +670,7 @@ void UI_element::callUIfunction(float x, float y, float space_w, float space_h) 
         } else {
             isHovered = false;
         }
-        nk_bool button_hovered = nk_widget_is_hovered(ctx);
-        if (button_hovered) {
-            isHovered = true;
-        } else {
-            isHovered = false;
-        }
-      
-        isHovered = nk_widget_is_hovered(ctx);
+
         if (tooltip_display) {
             struct nk_rect bounds = nk_widget_bounds(ctx);
             if (nk_input_is_mouse_hovering_rect(&ctx->input, bounds)) {
@@ -717,15 +710,6 @@ void UI_element::callUIfunction(float x, float y, float space_w, float space_h) 
             unsigned int cbIdx = 0;
             for (auto&& callback : activeCallbacks)
                 callback(activeDatas[cbIdx++]);
-        }
-
-        if (_data.b) {
-            // evoke callbacks
-            unsigned int cbIdx = 0;
-            for (auto callback : activeCallbacks) {
-                callback(activeDatas[cbIdx]);
-                cbIdx++;
-            }
         }
     }
 
