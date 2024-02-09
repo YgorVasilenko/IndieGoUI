@@ -100,6 +100,7 @@ void WIDGET::copyWidget(const std::string & add_name, WIDGET * other) {
                 UIMap[add_name + elt].hidden = UIMap[elt].hidden;
                 UIMap[add_name + elt].font_size = UIMap[elt].font_size;
                 UIMap[add_name + elt].font = UIMap[elt].font;
+
                 e++;
                 if (UIMap[elt].type == UI_IMAGE) {
                     // load image
@@ -199,8 +200,8 @@ void addElement(
     UI_elements_map & UIMap = GUI.UIMaps[winID];
     // add element to widget
     UIMap.addElement(elt_name, type, &w, push_opt, anchor, push_after);
-
     updateUIFromWidget(nullptr);
+
 }
 
 #ifdef RELEASE_BUILD

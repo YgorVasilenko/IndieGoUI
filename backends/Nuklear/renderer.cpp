@@ -670,7 +670,13 @@ void UI_element::callUIfunction(float x, float y, float space_w, float space_h) 
         } else {
             isHovered = false;
         }
-
+        nk_bool button_hovered = nk_widget_is_hovered(ctx);
+        if (button_hovered) {
+            isHovered = true;
+        } else {
+            isHovered = false;
+        }
+      
         isHovered = nk_widget_is_hovered(ctx);
         if (tooltip_display) {
             struct nk_rect bounds = nk_widget_bounds(ctx);
@@ -712,6 +718,15 @@ void UI_element::callUIfunction(float x, float y, float space_w, float space_h) 
             for (auto&& callback : activeCallbacks)
                 callback(activeDatas[cbIdx++]);
         }
+
+        if (_data.b) {
+            // evoke callbacks
+            unsigned int cbIdx = 0;
+            for (auto callback : activeCallbacks) {
+                callback(activeDatas[cbIdx]);
+                cbIdx++;
+            }
+        }
     }
 
     // nk_button_image_label
@@ -735,6 +750,7 @@ void UI_element::callUIfunction(float x, float y, float space_w, float space_h) 
     if (type == UI_BUTTON_SWITCH) {
         ctx->current->buffer.curr_cmd_idx = Manager::draw_idx;
         bool prev_val = _data.b;
+
         if (skinned_style.props[button_normal].first != -1) {
             ctx->style.button.normal = nk_style_item_image(
                 images[skinned_style.props[button_normal].first][skinned_style.props[button_normal].second].first

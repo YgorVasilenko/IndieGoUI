@@ -366,6 +366,18 @@ namespace IndieGo {
 				clickDatas.push_back(dataPtr);
 			};
 
+			// interaction callbacks
+			std::vector<std::function<void(void*)>> activeCallbacks;
+			std::vector<void *> activeDatas;
+
+			void setActiveCallback(
+				void (*callbackPtr)(void*), 
+				void * dataPtr = NULL
+			) {
+				activeCallbacks.push_back(callbackPtr);
+				activeDatas.push_back(dataPtr);
+			};
+
 			bool modifyable_progress_bar = false;
 
 			TEXT_ALIGN text_align = CENTER;
@@ -643,7 +655,6 @@ namespace IndieGo {
 							new_cell
 						);
 					}
-
 
 					if (push_opt == to_new_subrow) {
 						// push to specified cell.elements after required element

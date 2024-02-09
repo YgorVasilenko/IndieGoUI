@@ -65,9 +65,9 @@ void updateUIFromElement(void*) {
         editorGlobals.selectedElement = "None";
 
     editorGlobals.selectedElement = elements_list.getSelected();
-
     if (editorGlobals.selectedElement == "None")
         return;
+
 
     UI_element & e = UIMap[editorGlobals.selectedElement];
 
@@ -184,6 +184,7 @@ void processAddImage(
     UI_elements_map & UIMap = GUI.UIMaps[editorGlobals.winID];
     UI_ELEMENT_TYPE t = UI_IMAGE;
     if (UIMap["crop as img"]._data.b) {
+
         if (UIMap["switch type"]._data.b) {
             if (editorGlobals.selectedElement == "None")
                 return;
