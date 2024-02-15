@@ -316,7 +316,7 @@ int main() {
         GUI.displayWidgets(winID);
         GUI.drawFrameEnd(winID);
 
-        if (widgets_list.selected_element != -1) {
+        if (editorGlobals.selectedWidget != "None") {
             renderLayout();
         }
 

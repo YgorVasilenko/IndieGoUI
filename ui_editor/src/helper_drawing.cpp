@@ -146,7 +146,7 @@ void renderLayout() {
     ui_string_group & cols_list = *UIMap["cols list"]._data.usgPtr;
 
     // draw layout of currently selected widget
-    std::string widID = widgets_list.getSelected();
+    std::string widID = editorGlobals.selectedWidget;
     if (!std::any_of(editorWidgets.begin(), editorWidgets.end(), [widID](const std::string & elt) { return widID == elt; }) ) {
         float row_bias = 0.f;
         unsigned int curr_row = 0;
