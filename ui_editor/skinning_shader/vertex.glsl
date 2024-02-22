@@ -14,7 +14,7 @@
     You should have received a copy of the GNU General Public License
     along with this program.  If not, see <https://www.gnu.org/licenses/>.*/
 
-#version 420 core
+#version 410 core
 layout (location = 0) in vec2 position;
 layout (location = 1) in vec2 size;
 layout (location = 2) in vec4 tex;

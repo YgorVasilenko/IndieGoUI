@@ -201,16 +201,16 @@ extern std::vector<std::string> editorWidgets;
 
 std::queue<std::function<void()>> delayedFunctions;
 
-int main() {
+int main(int argc, char** argv) {
     // Get current application path
 #ifdef _WIN32
     TCHAR binary_path_[MAX_PATH] = { 0 };
     GetModuleFileName(NULL, binary_path_, MAX_PATH);
     binary_path = std::string(binary_path_);
-#else
-    home_dir = fs::current_path();
-#endif
     home_dir = binary_path.parent_path().string();
+#else
+    home_dir = fs::path(argv[0]).parent_path();
+#endif
     editorGlobals.winID = winID;
 
   	glfwInit();
@@ -316,7 +316,7 @@ int main() {
         GUI.displayWidgets(winID);
         GUI.drawFrameEnd(winID);
 
-        if (widgets_list.selected_element != -1) {
+        if (editorGlobals.selectedWidget != "None") {
             renderLayout();
         }
 

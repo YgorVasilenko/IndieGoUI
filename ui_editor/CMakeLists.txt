@@ -22,10 +22,27 @@ project(UI_editor VERSION 1.0)
 set(PROTOBUF_SRC ${CMAKE_CURRENT_LIST_DIR}/../protobuf/src)
 set(PROTOBUF_LIB ${CMAKE_CURRENT_LIST_DIR}/../protobuf/build)
 
+message(STATUS "CMAKE_HOST_SYSTEM_NAME: ${CMAKE_HOST_SYSTEM_NAME}")
+
 if (${CMAKE_HOST_SYSTEM_NAME} MATCHES Windows)
     set(PROTOBUF_LIB ${CMAKE_CURRENT_LIST_DIR}/../protobuf/build/Win)
+    set(CMAKE_CXX_FLAGS_DEBUG " /std:c++17 /DEBUG /Zi /Od")
 else()
-    message(FATAL_ERROR "Only Windows currently supported!")
+    set(PROTOBUF_LIBS ${CMAKE_CURRENT_LIST_DIR}/../protobuf/build/Darwin/libprotobuf.a ${CMAKE_CURRENT_LIST_DIR}/../protobuf/build/Darwin/libprotobuf-lite.a ${CMAKE_CURRENT_LIST_DIR}/../protobuf/build/Darwin/libprotoc.a)
+
+    # Mac OS custom static glfw lib
+    set(GLFW_LIB_NAME libglfw3.a)
+    set(GLFW_VERSION_MAJOR 3) 
+    set(GLFW_VERSION_MINOR 4)
+    set(GLFW_VERSION 3.4)
+    set(GLFW_SOURCE_DIR $ENV{GLFW_PATH})
+    set(GLAD_GL "${GLFW_SOURCE_DIR}/deps")
+
+    # glfw requirements
+    find_package(Threads REQUIRED)
+    find_package(OpenGL REQUIRED)
+
+    add_subdirectory($ENV{GLFW_PATH} $ENV{GLFW_PATH}/build)
 endif()
 
 set(RENDERER_INCLUDES src . .. ../os ${PROTOBUF_SRC})
@@ -47,7 +64,7 @@ message("RENDERER_SRC: ${RENDERER_SRC}")
 message("RENDERER_INCLUDES: ${RENDERER_INCLUDES}")
 
 add_executable(
-    UI_editor
+    UI_editor MACOSX_BUNDLE
     src/app.cpp
     src/ui.cpp
     src/init.cpp
@@ -55,7 +72,7 @@ add_executable(
     src/helper_drawing.cpp
     src/skinning.cpp
     src/Shader.cpp
-    src/glad.c
+    src/glad.cpp
     ../IndieGoUI.cpp
     ../IndieGoUI.pb.cc
     editor_data.pb.cc
@@ -68,20 +85,49 @@ target_include_directories(
     ${RENDERER_INCLUDES}
 )
 
-# link glfw library
-target_link_libraries(
-    UI_editor
-    PUBLIC "../lib/glfw3"
+if (${CMAKE_HOST_SYSTEM_NAME} MATCHES Darwin)
+    set_source_files_properties(
+        src/glfw.icns PROPERTIES
+            MACOSX_PACKAGE_LOCATION "Resources"
+    )
 
-    # serialization
-    PUBLIC ${PROTOBUF_LIB}/libprotobufd.lib
-)
+    set_target_properties(
+        UI_editor PROPERTIES
+            MACOSX_BUNDLE_BUNDLE_NAME "UI_editor"
+            MACOSX_BUNDLE_SHORT_VERSION_STRING ${GLFW_VERSION}
+            MACOSX_BUNDLE_LONG_VERSION_STRING ${GLFW_VERSION}
+            MACOSX_BUNDLE_ICON_FILE src/glfw.icns
+            MACOSX_BUNDLE_INFO_PLIST "${GLFW_SOURCE_DIR}/CMake/Info.plist.in"
+    )
+
+    target_compile_options(
+        UI_editor PUBLIC 
+            -framework OpenGL -std=c++17 -O0 -g
+    )
+
+    target_link_libraries(
+        UI_editor
+
+        PUBLIC glfw
+        PUBLIC OpenGL::GL
+        
+        # serialization
+        PUBLIC ${PROTOBUF_LIBS}
+    )
+else()
+    target_link_libraries(
+        UI_editor
+        PUBLIC "../lib/glfw3"
+
+        # serialization
+        PUBLIC ${PROTOBUF_LIB}/libprotobufd.lib
+    )    
+endif()
 
 target_compile_definitions(
     UI_editor PUBLIC
     WIDTH=1920
     HEIGHT=1080
     UI_FLT_VAL_SCALE=100
+    NDEBUG=1
 )
-
-set(CMAKE_CXX_FLAGS_DEBUG " /std:c++17 /DEBUG /Zi /Od")

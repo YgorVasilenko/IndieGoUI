@@ -14,7 +14,7 @@
     You should have received a copy of the GNU General Public License
     along with this program.  If not, see <https://www.gnu.org/licenses/>.*/
 
-#version 420 core
+#version 410 core
 layout (points) in;
 layout (line_strip, max_vertices = 11) out;
 

@@ -18,6 +18,11 @@
 #include <filesystem>
 #include <editor_structs.h>
 
+#define DEFAULF_FONT_SIZE 14
+#ifdef WIN32
+#define DEFAULF_FONT_SIZE 16
+#endif 
+
 namespace fs = std::filesystem;
 using namespace IndieGo::UI;
 
@@ -706,8 +711,8 @@ void initWidgets() {
         0, home_dir.find("ui_editor")
     ) + "ui_editor/editor_font/Roboto-Regular_main.ttf";
 
-    // Comment out this line to use dafule backend's font
-    GUI.loadFont(font_path, winID, 18.f);
+    // Comment out this line to use default backend's font
+    GUI.loadFont(font_path, winID, DEFAULF_FONT_SIZE);
 
     setCallbacks();
 }
