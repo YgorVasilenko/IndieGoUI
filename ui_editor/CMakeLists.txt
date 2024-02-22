@@ -64,7 +64,7 @@ message("RENDERER_SRC: ${RENDERER_SRC}")
 message("RENDERER_INCLUDES: ${RENDERER_INCLUDES}")
 
 add_executable(
-    UI_editor WIN32 MACOSX_BUNDLE
+    UI_editor MACOSX_BUNDLE
     src/app.cpp
     src/ui.cpp
     src/init.cpp
