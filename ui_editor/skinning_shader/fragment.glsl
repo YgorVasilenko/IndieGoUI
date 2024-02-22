@@ -14,7 +14,7 @@
     You should have received a copy of the GNU General Public License
     along with this program.  If not, see <https://www.gnu.org/licenses/>.*/
 
-#version 420 core
+#version 410 core
 out vec4 FragColor;
 
 uniform sampler2D skin_image;
@@ -23,4 +23,4 @@ in vec2 texCoords;
 
 void main() {
     FragColor = texture(skin_image, texCoords);
-};
+}

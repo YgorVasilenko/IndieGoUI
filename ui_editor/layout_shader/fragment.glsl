@@ -14,7 +14,7 @@
     You should have received a copy of the GNU General Public License
     along with this program.  If not, see <https://www.gnu.org/licenses/>.*/
 
-#version 420 core
+#version 410 core
 out vec4 FragColor;
 
 in vec4 fragColor;
@@ -57,4 +57,4 @@ void main() {
 
     FragColor = fragColor;
     FragColor.a = 1.f;
-};
+}
