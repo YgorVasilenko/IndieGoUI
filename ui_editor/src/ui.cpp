@@ -261,8 +261,32 @@ std::string addElement(UI_ELEMENT_TYPE et) {
             et
         );
         UIMap[new_element_name].label = new_element_name;
+        updateUIFromWidget(0);
     }
     return editorGlobals.selectedElement;
+}
+
+void deleteElement() {
+    if (editorGlobals.selectedElement == "None")
+        return;
+
+    if (editorGlobals.selectedWidget == "None")
+        return;
+    
+    WIDGET & w = GUI.getWidget(editorGlobals.selectedWidget, editorGlobals.winID);
+    UI_elements_map & UIMap = GUI.UIMaps[editorGlobals.winID];
+    UIMap.deleteElement(editorGlobals.selectedElement, &w);
+    // ui_string_group & elements_list = *UIMap["elements list"]._data.usgPtr;
+    // elements_list.elements.erase(
+    //     std::find(
+    //         elements_list.elements.begin(),
+    //         elements_list.elements.end(),
+    //         editorGlobals.selectedElement
+    //     )
+    // );
+    // elements_list.selected_element = -1;
+    editorGlobals.selectedElement = "None";
+    updateUIFromWidget(0);
 }
 
 std::vector<std::string> skip_save_widgets = { 
@@ -494,6 +518,11 @@ std::string getSkinPropName(IMAGE_SKIN_ELEMENT prop) {
     if (prop == prop_active) return "prop_active";
     if (prop == prop_normal) return "prop_normal";
     if (prop == prop_hover) return "prop_hover";
+
+    if (prop == checkbox_active) return "checkbox_active";
+    if (prop == checkbox_normal) return "checkbox_normal";
+    if (prop == checkbox_hover) return "checkbox_hover";
+    if (prop == checkbox_cursor) return "checkbox_cursor";
 
     return "NO_SKIN_PROPERTY";
 }

@@ -34,6 +34,7 @@ extern void updateUIFromWidget(void*);
 extern void updateUIFromElement(void*);
 extern std::string addElement(UI_ELEMENT_TYPE et);
 extern std::string getTextAlignLabel(IndieGo::UI::TEXT_ALIGN align);
+extern void deleteElement();
 extern ELT_PUSH_OPT push_opt;
 
 extern std::map<std::string, std::pair<TexData, region<float>>> skin_crops;
@@ -487,6 +488,13 @@ void setCallbacks() {
         }
     );
 
+    // Delete element
+    // -------------------------------------------
+    UIMap["delete element"].setActiveCallback(
+        [] (void*) {
+            deleteElement();
+        }
+    );
 
 
     // Element's numeric properties

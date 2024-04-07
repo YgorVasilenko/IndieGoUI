@@ -25,7 +25,7 @@
 #include <fstream>
 #include <algorithm>
 #include <cassert>
-// #include <unordered_set>
+#include <unordered_map>
 
 #ifndef DEFAULT_WINDOW_NAME
 // If app will maintain sinlge window, designer may define it's defautl name
@@ -127,7 +127,12 @@ namespace IndieGo {
 
 			prop_active,
 			prop_normal,
-			prop_hover
+			prop_hover,
+
+			checkbox_active,
+			checkbox_normal,
+			checkbox_hover,
+			checkbox_cursor
 		};
 
 		enum CUSTOM_ELEMENTS {
@@ -154,7 +159,11 @@ namespace IndieGo {
 				{ hover_active , { -1, -1 } },
 				{ prop_active, { -1, -1 } },
 				{ prop_normal, { -1, -1 } },
-				{ prop_hover, { -1, -1 } }
+				{ prop_hover, { -1, -1 } },
+				{ checkbox_active, { -1, -1 } },
+				{ checkbox_normal, { -1, -1 } },
+				{ checkbox_hover, { -1, -1 } },
+				{ checkbox_cursor, { -1, -1 } }
 			};
 		};
 
@@ -697,7 +706,7 @@ namespace IndieGo {
 		};
 
 		struct UI_elements_map {
-			std::map<std::string, UI_element> elements;
+			std::unordered_map<std::string, UI_element> elements;
 
 			// convenience operator
 			UI_element & operator[](const std::string& id){

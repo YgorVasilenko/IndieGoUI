@@ -19,13 +19,13 @@ cmake_minimum_required(VERSION 3.10)
 project(UI_editor VERSION 1.0)
 
 # protobuf setup
-set(PROTOBUF_SRC ${CMAKE_CURRENT_LIST_DIR}/../protobuf/src)
-set(PROTOBUF_LIB ${CMAKE_CURRENT_LIST_DIR}/../protobuf/build)
+set(PROTOBUF_SRC $ENV{PROTOBUF_HOME}/src)
+set(PROTOBUF_LIB $ENV{PROTOBUF_HOME}/build)
 
 message(STATUS "CMAKE_HOST_SYSTEM_NAME: ${CMAKE_HOST_SYSTEM_NAME}")
 
 if (${CMAKE_HOST_SYSTEM_NAME} MATCHES Windows)
-    set(PROTOBUF_LIB ${CMAKE_CURRENT_LIST_DIR}/../protobuf/build/Win)
+    set(PROTOBUF_LIB ${PROTOBUF_LIB}/Debug)
     set(CMAKE_CXX_FLAGS_DEBUG " /std:c++17 /DEBUG /Zi /Od")
 else()
     set(PROTOBUF_LIBS ${CMAKE_CURRENT_LIST_DIR}/../protobuf/build/Darwin/libprotobuf.a ${CMAKE_CURRENT_LIST_DIR}/../protobuf/build/Darwin/libprotobuf-lite.a ${CMAKE_CURRENT_LIST_DIR}/../protobuf/build/Darwin/libprotoc.a)
@@ -45,7 +45,7 @@ else()
     add_subdirectory($ENV{GLFW_PATH} $ENV{GLFW_PATH}/build)
 endif()
 
-set(RENDERER_INCLUDES src . .. ../os ${PROTOBUF_SRC})
+set(RENDERER_INCLUDES src . .. $ENV{OS_HOME} $ENV{DEPS_HOME} ${PROTOBUF_SRC})
 
 if (DEFINED BACKEND)
     message("BACKEND: ${BACKEND}")
@@ -72,7 +72,7 @@ add_executable(
     src/helper_drawing.cpp
     src/skinning.cpp
     src/Shader.cpp
-    src/glad.cpp
+    $ENV{OS_HOME}/glad/glad.cpp
     ../IndieGoUI.cpp
     ../IndieGoUI.pb.cc
     editor_data.pb.cc
@@ -117,7 +117,8 @@ if (${CMAKE_HOST_SYSTEM_NAME} MATCHES Darwin)
 else()
     target_link_libraries(
         UI_editor
-        PUBLIC "../lib/glfw3"
+        
+        PUBLIC $ENV{DEPS_HOME}/glfw/glfw3.lib
 
         # serialization
         PUBLIC ${PROTOBUF_LIB}/libprotobufd.lib

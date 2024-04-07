@@ -211,6 +211,7 @@ TexData Manager::load_image(std::string path, bool useProjectDir) {
     std::replace(path.begin(), path.end(), '\\', '/');
 #endif
     std::string project_dir = "";
+
 #ifdef RELEASE_BUILD
     project_dir = global_home;
 #else
@@ -220,8 +221,11 @@ TexData Manager::load_image(std::string path, bool useProjectDir) {
     else
         project_dir = "";
 #endif
-    if (fs::path(path).is_absolute() && project_dir != "") {
-        path = fs::relative(fs::path(path), fs::path(project_dir)).string();
+    fs::path pd_path = project_dir;
+    fs::path load_path = path;
+
+    if (load_path.is_absolute() && project_dir.length() > 0) {
+        load_path = fs::relative(load_path, pd_path);
     }
 
     if (loaded_textures.find(path) != loaded_textures.end()) {
@@ -229,9 +233,11 @@ TexData Manager::load_image(std::string path, bool useProjectDir) {
     }
     // unsigned int tex;
     TexData& td = loaded_textures[path];
+    load_path = pd_path.append(path);
+
     td.path = path;
     unsigned char *data = stbi_load(
-        (project_dir + "/" + path).c_str(),
+        load_path.string().c_str(),
         &td.w, 
         &td.h, 
         &td.n, 
@@ -239,8 +245,7 @@ TexData Manager::load_image(std::string path, bool useProjectDir) {
     );
 
     if (!data) {
-        std::cout << "[ERROR] failed to load image " << path << std::endl;
-        std::cout << "PROJECT_DIR: " << project_dir << std::endl;
+        std::cout << "[UI::ERROR] failed to load image " << load_path << std::endl;
         td.texID = UINT_MAX;
         return td;
     }
@@ -407,7 +412,7 @@ void Manager::serialize(const std::string & winID, const std::string & path, con
     }
 
     unsigned int i = 0;
-    for (auto image : loaded_textures) {
+    for (auto image : loaded_textures) {  
         serialized_ui.add_images(image.first);
         if (image.first == skinning_image) {
             serialized_ui.set_skinning_image_idx(i);
@@ -425,10 +430,10 @@ void Manager::deserialize(const std::string & winID, const std::string & path) {
     ui_serialization::SerializedUI serialized_ui;
     std::ifstream file(path, std::ios::binary);
     if (!serialized_ui.ParseFromIstream(&file)) {
-        std::cout << "[WORLD::ERROR] Failed to parse ui from: " << path << std::endl;
+        std::cout << "[UI::ERROR] Failed to parse ui from: " << path << std::endl;
         return;
     } else {
-        std::cout << "[WORLD::INFO] Loading ui from: " + path << std::endl;
+        std::cout << "[UI::INFO] Loading ui from: " + path << std::endl;
     }
     unsigned int idx = 0;
     UI_elements_map & UIMap = GUI.UIMaps[winID];

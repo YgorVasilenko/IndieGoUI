@@ -23,8 +23,8 @@
 
 #include "backends/Nuklear/nuklear.h"
 
-#include <os/glad/glad.h>
-#include <os/GLFW/glfw3.h>
+#include <glad/glad.h>
+#include <GLFW/glfw3.h>
 
 #include <IndieGoUI.h>
 #include <string>
@@ -534,6 +534,30 @@ void UI_element::callUIfunction(float x, float y, float space_w, float space_h) 
     float dbgVal;
     if (type == UI_BOOL) {
         ctx->current->buffer.curr_cmd_idx = Manager::draw_idx;
+        if (skinned_style.props[checkbox_normal].first != -1) {
+            ctx->style.checkbox.normal = nk_style_item_image(
+                images[skinned_style.props[checkbox_normal].first][skinned_style.props[checkbox_normal].second].first
+            );
+        }
+        if (skinned_style.props[checkbox_hover].first != -1) {
+            ctx->style.checkbox.hover = nk_style_item_image(
+                images[skinned_style.props[checkbox_hover].first][skinned_style.props[checkbox_hover].second].first
+            );
+        }
+        if (skinned_style.props[checkbox_active].first != -1) {
+            ctx->style.checkbox.active = nk_style_item_image(
+                images[skinned_style.props[checkbox_active].first][skinned_style.props[checkbox_active].second].first
+            );
+        }
+        if (skinned_style.props[checkbox_cursor].first != -1) {
+            ctx->style.checkbox.cursor_normal = nk_style_item_image(
+                images[skinned_style.props[checkbox_cursor].first][skinned_style.props[checkbox_cursor].second].first
+            );
+            ctx->style.checkbox.cursor_hover = nk_style_item_image(
+                images[skinned_style.props[checkbox_cursor].first][skinned_style.props[checkbox_cursor].second].first
+            );
+        }
+
         nk_val = _data.b;
         nk_checkbox_label(ctx, label.c_str(), &nk_val);
         if (nk_val != _data.b) {
@@ -610,12 +634,22 @@ void UI_element::callUIfunction(float x, float y, float space_w, float space_h) 
     if (type == UI_STRING_INPUT) {
         ctx->current->buffer.curr_cmd_idx = Manager::draw_idx;
         // TODO : add skinning
+        std::string curr_str = *_data.strPtr;
         std::string& stringRef = *_data.strPtr;
         stringToText(stringRef);
 
         nk_draw_set_color_inline(ctx, NK_COLOR_INLINE_NONE);
         nk_edit_string(ctx, NK_EDIT_SIMPLE | NK_EDIT_SELECTABLE, text, &text_len, 512, nk_filter_default);
         textToString(stringRef);
+        
+        if (curr_str != *_data.strPtr) {
+            // evoke callbacks
+            unsigned int cbIdx = 0;
+            for (auto callback : activeCallbacks) {
+                callback(activeDatas[cbIdx]);
+                cbIdx++;
+            }
+        }
     }
 
     if (type == UI_BUTTON) {
