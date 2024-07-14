@@ -449,6 +449,7 @@ namespace IndieGo {
 			row_cell & operator[](unsigned int idx) {
 				return cells[idx];
 			}
+
 		};
 
 		// All elements in "folding group" should be consecutive
@@ -895,6 +896,19 @@ namespace IndieGo {
 				// float cell_indent = 0.f; // get cell indent + for each drawn row top-to-bottom
 				for (auto row = layout_grid.begin(); row != layout_grid.end(); row++) {
 					if (row->cells.size() == 0) continue;
+
+					// Don't allocate space, if all elements are hidden
+					bool allElementsHidden = true;
+					for (auto cell : row->cells) {
+						for (auto elt : cell.elements) {
+							if (!UIMap.elements[elt].hidden) {
+								allElementsHidden = false;
+								break;
+							}
+						}
+					}
+					if (allElementsHidden) continue;
+
 					// make sure min_height 
 					row->allocated_height = allocateRow(row->cells.size(), row->min_height, row->in_pixels);
 					float row_indent = 0.f; // get row indent + for each drawn element left-to-right

@@ -681,14 +681,20 @@ void initWidgets() {
     UIMap.addElement("crop as img", UI_BOOL, &elt_props_widget);
     UIMap["crop as img"].label = "use crop as img";
 
+    UIMap.addElement("hidden elt", UI_BOOL, &elt_props_widget, to_new_col);
+    UIMap["hidden elt"].label = "hide elt";
+
     UIMap.addElement("crop to img", UI_BUTTON, &elt_props_widget);
     UIMap["crop to img"].label = "apply crop";
 
     UIMap.addElement("elt name label", UI_STRING_LABEL, &elt_props_widget);
-    UIMap["elt name label"].label = "name:";
+    UIMap["elt name label"].label = "string data (also used to rename):";
     UIMap["elt name label"].text_align = IndieGo::UI::TEXT_ALIGN::LEFT;
 
-    UIMap.addElement("elt name", UI_STRING_INPUT, &elt_props_widget);
+    UIMap.addElement("elt string", UI_STRING_INPUT, &elt_props_widget);
+    
+    UIMap.addElement("apply string data", UI_BUTTON, &elt_props_widget);
+    UIMap["apply string data"].label = "apply string data";
 
     UIMap.addElement("rename element", UI_BUTTON, &elt_props_widget);
     UIMap["rename element"].label = "rename element";
@@ -696,7 +702,7 @@ void initWidgets() {
     UIMap.addElement("element text align", UI_BUTTON, &elt_props_widget);
     UIMap["element text align"].label = "text align: left";
 
-    for (int i = 0; i < 15; i++) {
+    for (int i = 0; i < 16; i++) {
         elt_props_widget.updateRowHeight(i, 0.055f);
     }
 

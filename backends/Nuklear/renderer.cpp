@@ -628,7 +628,17 @@ void UI_element::callUIfunction(float x, float y, float space_w, float space_h) 
         ctx->current->buffer.curr_cmd_idx = Manager::draw_idx;
         // TODO : add skinning
         full_name = "#" + label + ":";
+        int currData = _data.i;
         nk_property_int(ctx, full_name.c_str(), 0, &_data.i, max, 1, 0.5f);
+
+        if (currData != _data.i) {
+            // evoke callbacks
+            unsigned int cbIdx = 0;
+            for (auto callback : activeCallbacks) {
+                callback(activeDatas[cbIdx]);
+                cbIdx++;
+            }
+        }
     }
 
     if (type == UI_STRING_INPUT) {

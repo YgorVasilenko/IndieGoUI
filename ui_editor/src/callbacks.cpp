@@ -497,7 +497,7 @@ void setCallbacks() {
     );
 
 
-    // Element's numeric properties
+    // Element's properties
     // -------------------------------------------
     UIMap["element width"].setActiveCallback(
         [] (void*) {
@@ -553,20 +553,43 @@ void setCallbacks() {
             e.rounding = UIMap["element rounding"]._data.f / UI_FLT_VAL_SCALE;
         }
     );
+    UIMap["hidden elt"].setActiveCallback(
+        [] (void*) {
+            if (editorGlobals.selectedElement == "None")
+                return;
+            UI_elements_map & UIMap = GUI.UIMaps[editorGlobals.winID];
+            UI_element & e = UIMap[editorGlobals.selectedElement];
+            e.hidden = UIMap["hidden elt"]._data.b;
+        }
+    );
     UIMap["rename element"].setActiveCallback(
         [] (void*) {
             if (editorGlobals.selectedElement == "None" || editorGlobals.selectedWidget == "None")
                 return;
             UI_elements_map & UIMap = GUI.UIMaps[editorGlobals.winID];
             UI_element & e = UIMap[editorGlobals.selectedElement];
-            std::string new_name = *UIMap["elt name"]._data.strPtr;
+            std::string new_name = *UIMap["elt string"]._data.strPtr;
             if (new_name.size() > 0 && UIMap.elements.find(new_name) == UIMap.elements.end()) {
                 UIMap.renameElement(
                     editorGlobals.selectedElement,
                     new_name,
                     & GUI.getWidget(editorGlobals.selectedWidget, winID)
                 );
+                updateUIFromWidget(nullptr);
             }
+        }
+    );
+    UIMap["apply string data"].setActiveCallback(
+        [] (void*) {
+            if (editorGlobals.selectedElement == "None" || editorGlobals.selectedWidget == "None")
+                return;
+            UI_elements_map & UIMap = GUI.UIMaps[editorGlobals.winID];
+            UI_element & e = UIMap[editorGlobals.selectedElement];
+            if (e.type != UI_STRING_INPUT)
+                return;
+
+            std::string new_string = *UIMap["elt string"]._data.strPtr;
+            *e._data.strPtr = *UIMap["elt string"]._data.strPtr;
         }
     );
     UIMap["element text align"].setActiveCallback(
@@ -583,6 +606,16 @@ void setCallbacks() {
                 e.text_align = IndieGo::UI::TEXT_ALIGN::CENTER;
             }
             UIMap["element text align"].label = getTextAlignLabel(e.text_align);
+        }
+    );
+
+    UIMap["elt label"].setActiveCallback(
+        [] (void*) {
+            if (editorGlobals.selectedElement == "None")
+                return;
+            UI_elements_map & UIMap = GUI.UIMaps[editorGlobals.winID];
+            UI_element & e = UIMap[editorGlobals.selectedElement];
+            e.label = *UIMap["elt label"]._data.strPtr;
         }
     );
 
@@ -875,7 +908,9 @@ void setCallbacks() {
         [] (void*) {
             UI_elements_map & UIMap = GUI.UIMaps[winID];
             ui_string_group & font_sizes_list = *UIMap["font sizes"]._data.usgPtr;
-            editorGlobals.fontSize = font_sizes_list.selected_element;
+            editorGlobals.fontSize = stoi(
+                font_sizes_list.getSelected()
+            );
         } 
     );
 }

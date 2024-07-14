@@ -79,6 +79,12 @@ void updateUIFromElement(void*) {
     UIMap["element height"]._data.f = e.height * UI_FLT_VAL_SCALE;
 
     *UIMap["elt label"]._data.strPtr = e.label;
+
+    UIMap["hidden elt"]._data.b = e.hidden;
+
+    if (e.type == UI_STRING_INPUT)
+        *UIMap["elt string"]._data.strPtr = *e._data.strPtr;
+
     UIMap["element text align"].label = getTextAlignLabel(e.text_align);
 
     // font
@@ -233,12 +239,11 @@ std::string addElement(UI_ELEMENT_TYPE et) {
     bool push_after_anchor = UIMap["push after anchor"]._data.b;
     
     std::string new_element_name = *UIMap["new element name"]._data.strPtr;
-    if (new_element_name.size() == 0) 
-        return "None";
-    
     std::string anchor_element = use_anchor ? editorGlobals.selectedElement : "None";
 
     if (et == UI_IMAGE) {
+        if (new_element_name.size() == 0) 
+            return "None";
         processAddImage(
             new_element_name,
             anchor_element,
@@ -250,8 +255,20 @@ std::string addElement(UI_ELEMENT_TYPE et) {
     if (UIMap["switch type"]._data.b) {
         if (editorGlobals.selectedElement == "None")
             return "None";
+
+        // TODO : create switchElementType function to handle string and image cases
+        if (UIMap[editorGlobals.selectedElement].type == UI_STRING_INPUT)
+            delete UIMap[editorGlobals.selectedElement]._data.strPtr;
+
         UIMap[editorGlobals.selectedElement].type = et;
+
+        if (et == UI_STRING_INPUT)
+            UIMap[editorGlobals.selectedElement]._data.strPtr = new std::string;
+
     } else {
+        if (new_element_name.size() == 0) 
+            return "None";
+
         addElement(
             editorGlobals.selectedWidget, 
             editorGlobals.winID, 

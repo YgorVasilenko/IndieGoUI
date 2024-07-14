@@ -39,7 +39,7 @@ struct EditorState {
 
     // if widget is selected and user is not on "elements" screen, font will be applied to widget
     // otherwise - to selected element, if any
-    bool updateWidgetFont = false;
+    bool updateWidgetFont = true;
     std::string selectedFont = "None";
     int fontSize = -1;
     std::string winID = "None";
