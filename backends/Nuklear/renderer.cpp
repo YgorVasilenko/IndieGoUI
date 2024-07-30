@@ -712,6 +712,14 @@ void UI_element::callUIfunction(float x, float y, float space_w, float space_h) 
                 cbIdx++;
             }
         } else {
+            if (isHovered) {
+                // evoke hover end callbacks
+                unsigned int cbIdx = 0;
+                for (auto callback : hoverEndCallbacks) {
+                    callback(hoverEndDatas[cbIdx]);
+                    cbIdx++;
+                }
+            }
             isHovered = false;
         }
 

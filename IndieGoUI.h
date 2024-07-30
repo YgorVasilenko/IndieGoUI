@@ -342,12 +342,19 @@ namespace IndieGo {
 			color_table tooltip_style;
 
 			// interaction callbacks
+			// Click started
 			std::vector<std::function<void(void*)>> activeCallbacks;
 			std::vector<void *> activeDatas;
 
+			// on-going hover
 			std::vector<std::function<void(void*)>> hoverCallbacks;
 			std::vector<void *> hoverDatas;
 
+			// Hover ended
+			std::vector<std::function<void(void*)>> hoverEndCallbacks;
+			std::vector<void *> hoverEndDatas;
+
+			// Click ended
 			std::vector<std::function<void(void*)>> clickCallbacks;
 			std::vector<void*> clickDatas;
 
@@ -357,6 +364,14 @@ namespace IndieGo {
 			) {
 				hoverCallbacks.emplace_back(std::move(callbackPtr));
 				hoverDatas.push_back(dataPtr);
+			};
+
+			void setHoverEndCallback(
+				std::function<void(void*)> callbackPtr,
+				void* dataPtr = NULL
+			) {
+				hoverEndCallbacks.emplace_back(std::move(callbackPtr));
+				hoverEndDatas.push_back(dataPtr);
 			};
 
 			void setActiveCallback(
