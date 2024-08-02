@@ -23808,7 +23808,8 @@ nk_widget_is_hovered(struct nk_context *ctx)
     struct nk_rect bounds;
     NK_ASSERT(ctx);
     NK_ASSERT(ctx->current);
-    if (!ctx || !ctx->current || ctx->active != ctx->current)
+    // if (!ctx || !ctx->current || ctx->active != ctx->current)
+    if (!ctx || !ctx->current)
         return 0;
 
     c = ctx->current->layout->clip;
