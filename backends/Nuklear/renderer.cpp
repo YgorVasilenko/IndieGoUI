@@ -781,6 +781,27 @@ void UI_element::callUIfunction(float x, float y, float space_w, float space_h) 
                 nk_style_from_table(ctx, (struct nk_color*)style.elements);
             }
         }
+
+        nk_bool button_hovered = nk_widget_is_hovered(ctx);
+        if (button_hovered) {
+            isHovered = true;
+            // evoke hovered callbacks
+            unsigned int cbIdx = 0;
+            for (auto callback : hoverCallbacks) {
+                callback(hoverDatas[cbIdx]);
+                cbIdx++;
+            }
+        } else {
+            if (isHovered) {
+                // evoke hover end callbacks
+                unsigned int cbIdx = 0;
+                for (auto callback : hoverEndCallbacks) {
+                    callback(hoverEndDatas[cbIdx]);
+                    cbIdx++;
+                }
+            }
+            isHovered = false;
+        }
     }
 
     if (type == UI_BUTTON_SWITCH) {

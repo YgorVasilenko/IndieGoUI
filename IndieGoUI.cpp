@@ -570,7 +570,13 @@ void Manager::deserialize(const std::string & winID, const std::string & path) {
         }
 
         // load layout sizes
+        int rows_num = w.widget().rows_size();
+        int added_rows = added_w.layout_grid.size();
         for (int j = 0; j < w.widget().rows_size(); j++) {
+            if (j >= added_rows) {
+                std::cout << "[WARNING] loaded elements fill " << added_rows << " rows, but loaded rows num is " << rows_num << std::endl;
+                break;
+            }
             const ui_serialization::LayoutRow & r = w.widget().rows(j);
             added_w.updateRowHeight(j, r.height());
             for (int k = 0; k < r.cols_widths_size(); k++) {
