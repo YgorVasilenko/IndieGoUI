@@ -1240,7 +1240,7 @@ void WIDGET::callImmediateBackend(UI_elements_map & UIMap){
     ctx->style.window.spacing = nk_vec2(spacing.h, spacing.w);
     ctx->style.window.padding = nk_vec2(padding.h, padding.w);
     ctx->style.window.border = border_size;
-    
+
     if (font != "None") {
         nk_style_set_font(
             ctx,
@@ -1264,6 +1264,7 @@ void WIDGET::callImmediateBackend(UI_elements_map & UIMap){
         last_apply_shading_idx++;
         apply_shading_indices[last_apply_shading_idx] = Manager::draw_idx;
     }
+         
     if (
         nk_begin(
             ctx,
