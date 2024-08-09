@@ -391,6 +391,8 @@ void prepareUIRenderer(GLFWwindow* window, std::string & winID) {
 
 using namespace IndieGo::UI;
 void (*Manager::buttonClickCallback)(void*) = NULL;
+void (*Manager::disabledButtonClickCallback)(void*) = NULL;
+void (*Manager::checkboxClickCallback)(void*) = NULL;
 
 void Manager::scroll(void * window, double xoff, double yoff) {
     std::string glfw_win = *reinterpret_cast<std::string*>(window);
@@ -568,6 +570,10 @@ void UI_element::callUIfunction(float x, float y, float space_w, float space_h) 
                 callback(activeDatas[cbIdx]);
                 cbIdx++;
             }
+
+            if (Manager::checkboxClickCallback) {
+                Manager::checkboxClickCallback(NULL);
+            }
         } else {
             _data.b = nk_val;
         }
@@ -681,21 +687,6 @@ void UI_element::callUIfunction(float x, float y, float space_w, float space_h) 
                 images[skinned_style.props[button_active].first][skinned_style.props[button_active].second].first
             );
         }
-        /*if (skinned_style.props[cursor_normal].first != -1) {
-            ctx->style.button. = nk_style_item_image(
-                images[skinned_style.props[cursor_normal].first][skinned_style.props[cursor_normal].second].first
-            );
-        }*/
-        /*if (skinned_style.props[cursor_hover].first != -1) {
-            ctx->style.button.c = nk_style_item_image(
-                images[skinned_style.props[cursor_hover].first][skinned_style.props[cursor_hover].second].first
-            );
-        }*/
-        /*if (skinned_style.props[cursor_active].first != -1) {
-            ctx->style.progress.cursor_active = nk_style_item_image(
-                images[skinned_style.props[cursor_active].first][skinned_style.props[cursor_active].second].first
-            );
-        }*/
         // struct nk_rect bounds = nk_widget_bounds(ctx);
         if (ui_button_image != -1) {
             _data.b = nk_button_image(ctx, images[ui_button_image][cropId].first);
@@ -737,6 +728,9 @@ void UI_element::callUIfunction(float x, float y, float space_w, float space_h) 
         }
 
         if (disabled) {
+            if (_data.b && Manager::disabledButtonClickCallback) {
+                Manager::disabledButtonClickCallback(NULL);
+            }
             rmb_click = false;
             _data.b = false;
         }

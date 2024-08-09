@@ -973,6 +973,8 @@ namespace IndieGo {
 		struct Manager {
 			
 			static void (*buttonClickCallback)(void*);
+			static void (*disabledButtonClickCallback)(void*);
+			static void (*checkboxClickCallback)(void*);
 			std::string project_dir = "";
 			region_size<unsigned int> screen_size;
 
