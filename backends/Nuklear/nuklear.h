@@ -5965,7 +5965,7 @@ NK_LIB int nk_string_float_limit(char *string, int prec);
 #ifndef NK_DTOA
 NK_LIB char *nk_dtoa(char *s, double n);
 #endif
-NK_LIB int nk_text_clamp(const struct nk_user_font *font, const char *text, int text_len, float space, int *glyphs, float *text_width, nk_rune *sep_list, int sep_count);
+NK_LIB int nk_text_clamp(const struct nk_user_font *font, const char *text, int text_len, float space, int *glyphs, float *text_width, nk_rune *sep_list, int sep_count, int & tags_len);
 NK_LIB struct nk_vec2 nk_text_calculate_text_bounds(const struct nk_user_font *font, const char *begin, int byte_len, float row_height, const char **remaining, struct nk_vec2 *out_offset, int *glyphs, int op);
 #ifdef NK_INCLUDE_STANDARD_VARARGS
 NK_LIB int nk_strfmt(char *buf, int buf_size, const char *fmt, va_list args);
@@ -7510,10 +7510,12 @@ nk_file_load(const char* path, nk_size* siz, struct nk_allocator *alloc)
     return buf;
 }
 #endif
+
+// #include <iostream>
 NK_LIB int
 nk_text_clamp(const struct nk_user_font *font, const char *text,
     int text_len, float space, int *glyphs, float *text_width,
-    nk_rune *sep_list, int sep_count)
+    nk_rune *sep_list, int sep_count, int & tags_length)
 {
     int i = 0;
     int glyph_len = 0;
@@ -7528,9 +7530,45 @@ nk_text_clamp(const struct nk_user_font *font, const char *text,
     int sep_g = 0;
     float sep_width = 0;
     sep_count = NK_MAX(sep_count,0);
+    int tags_len = 0;
 
     glyph_len = nk_utf_decode(text, &unicode, text_len);
-    while (glyph_len && (width < space) && (len < text_len)) {
+    while (glyph_len && (width < space) && (len + tags_len < text_len)) {
+        // std::cout << "Current glyph is " << text[g] << "\n";
+        // cg = text[g];
+        // skip lenfth addition for opening tag
+        if (text_len - g >= 14)
+            if (text[g] == '[')
+                if (text[g + 1] == 'c')
+                    if (text[g + 2] == 'o')
+                        if (text[g + 3] == 'l')
+                            if (text[g + 4] == 'o')
+                                if (text[g + 5] == 'r')
+                                    if (text[g + 6] == '=')
+                                        if (text[g + 7] == '#')
+                                            if (text[g + 14] == ']') {
+                                                g += 14;
+                                                tags_len += 14;
+                                                glyph_len = nk_utf_decode(&text[len + tags_len], &unicode, text_len - len - tags_len);
+                                                continue;
+                                            }
+        
+        if (text_len - g >= 7) 
+            if (text[g] == '[')
+                if (text[g + 1] == '/')
+                    if (text[g + 2] == 'c')
+                        if (text[g + 3] == 'o')
+                            if (text[g + 4] == 'l')
+                                if (text[g + 5] == 'o')
+                                    if (text[g + 6] == 'r')
+                                        if (text[g + 7] == ']') {
+                                                g += 7;
+                                                tags_len += 7;
+                                                glyph_len = nk_utf_decode(&text[len + tags_len], &unicode, text_len - len - tags_len);
+                                                continue;
+                                            }
+
+
         len += glyph_len;
         s = font->width(font->userdata, font->height, text, len);
         for (i = 0; i < sep_count; ++i) {
@@ -7545,10 +7583,11 @@ nk_text_clamp(const struct nk_user_font *font, const char *text,
             sep_g = g+1;
         }
         width = s;
-        glyph_len = nk_utf_decode(&text[len], &unicode, text_len - len);
+        glyph_len = nk_utf_decode(&text[len + tags_len], &unicode, text_len - len - tags_len);
         g++;
     }
-    if (len >= text_len) {
+    tags_length += tags_len;
+    if (len + tags_len >= text_len) {
         *glyphs = g;
         *text_width = last_width;
         return len;
@@ -9939,7 +9978,8 @@ nk_draw_raw_text(struct nk_command_buffer *b, struct nk_rect r,
     font_width = font->width(font->userdata, font->height, text, len);
     if (font_width > r.w){
         int glyphs = 0;
-        len = nk_text_clamp(font, text, len, r.w, &glyphs, &font_width, 0,0);
+        int _tg_len;
+        len = nk_text_clamp(font, text, len, r.w, &glyphs, &font_width, 0,0, _tg_len);
     }
     if (w)
         *w = font_width;
@@ -24049,13 +24089,16 @@ nk_widget_text_wrap(struct nk_command_buffer *o, struct nk_rect b,
     line.w = b.w - 2 * t->padding.x;
     line.h = 2 * t->padding.y + f->height;
 
-    fitting = nk_text_clamp(f, string, len, line.w, &glyphs, &width, seperator,NK_LEN(seperator));
-    while (done < len) {
+    int tags_len = 0;
+    fitting = nk_text_clamp(f, string, len, line.w, &glyphs, &width, seperator,NK_LEN(seperator), tags_len);
+    while (done + tags_len < len) {
         if (!fitting || line.y + line.h >= (b.y + b.h)) break;
-        nk_widget_text(o, line, &string[done], fitting, &text, NK_TEXT_LEFT, f);
+
+        // TODO : fitting + tags_len
+        nk_widget_text(o, line, &string[done], fitting + tags_len, &text, NK_TEXT_LEFT, f);
         done += fitting;
         line.y += f->height + 2 * t->padding.y;
-        fitting = nk_text_clamp(f, &string[done], len - done, line.w, &glyphs, &width, seperator,NK_LEN(seperator));
+        fitting = nk_text_clamp(f, &string[done + tags_len], len - done, line.w, &glyphs, &width, seperator,NK_LEN(seperator), tags_len);
     }
 }
 NK_API void
