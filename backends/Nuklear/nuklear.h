@@ -7534,7 +7534,17 @@ nk_text_clamp(const struct nk_user_font *font, const char *text,
     int sep_tags_len = 0;
     bool open_color_tag = false;
 
+    int open_tags_count = 0;
+    const char * open_tag = "[color=#000000]";
+    float open_tag_space = font->width(font->userdata, font->height, open_tag, 15);
+
+    int close_tags_count = 0;
+    const char * close_tag = "[/color]";
+    float close_tag_space = font->width(font->userdata, font->height, close_tag, 8);
+
     glyph_len = nk_utf_decode(text, &unicode, text_len);
+    bool do_heuristics = glyph_len != 1;
+
     while (glyph_len && (width < space) && (len + tags_len < text_len)) {
         if (text_len - g >= 14)
             if (text[g] == '[')
@@ -7548,8 +7558,9 @@ nk_text_clamp(const struct nk_user_font *font, const char *text,
                                             if (text[g + 14] == ']') {
                                                 g += 15;
                                                 tags_len += 15;
-                                                glyph_len = nk_utf_decode(&text[len + tags_len], &unicode, text_len - len - tags_len);
+                                                // glyph_len = nk_utf_decode(&text[len + tags_len], &unicode, text_len - len - tags_len);
                                                 open_color_tag = true;
+                                                open_tags_count++;
                                                 continue;
                                             }
         
@@ -7564,14 +7575,24 @@ nk_text_clamp(const struct nk_user_font *font, const char *text,
                                         if (text[g + 7] == ']') {
                                                 g += 8;
                                                 tags_len += 8;
-                                                glyph_len = nk_utf_decode(&text[len + tags_len], &unicode, text_len - len - tags_len);
+                                                // glyph_len = nk_utf_decode(&text[len + tags_len], &unicode, text_len - len - tags_len);
                                                 open_color_tag = false;
+                                                close_tags_count++;
                                                 continue;
                                             }
 
+        glyph_len = nk_utf_decode(&text[len + tags_len], &unicode, text_len - len - tags_len);
+        if (!do_heuristics) {
+            do_heuristics = glyph_len != 1;
+        }
 
         len += glyph_len;
-        s = font->width(font->userdata, font->height, text, len);
+
+        if (do_heuristics)
+            s = font->width(font->userdata, font->height, text, len) - open_tag_space * open_tags_count - close_tag_space * close_tags_count;
+        else
+            s = font->width(font->userdata, font->height, text, len);
+
         for (i = 0; i < sep_count; ++i) {
             if (unicode != sep_list[i] || open_color_tag) continue;
             sep_width = last_width = width;
@@ -17720,6 +17741,35 @@ nk_font_text_width(nk_handle handle, float height, const char *text, int len)
     while (text_len <= (int)len && glyph_len) {
         const struct nk_font_glyph *g;
         if (unicode == NK_UTF_INVALID) break;
+
+        // if (len - text_len >= 14)
+        //     if (text[text_len] == '[')
+        //         if (text[text_len + 1] == 'c')
+        //             if (text[text_len + 2] == 'o')
+        //                 if (text[text_len + 3] == 'l')
+        //                     if (text[text_len + 4] == 'o')
+        //                         if (text[text_len + 5] == 'r')
+        //                             if (text[text_len + 6] == '=')
+        //                                 if (text[text_len + 7] == '#')
+        //                                     if (text[text_len + 14] == ']') {
+        //                                         text_len += 15;
+        //                                         glyph_len = nk_utf_decode(text + text_len, &unicode, (int)len - text_len);
+        //                                         continue;
+        //                                     }
+        
+        // if (len - text_len >= 7) 
+        //     if (text[text_len] == '[')
+        //         if (text[text_len + 1] == '/')
+        //             if (text[text_len + 2] == 'c')
+        //                 if (text[text_len + 3] == 'o')
+        //                     if (text[text_len + 4] == 'l')
+        //                         if (text[text_len + 5] == 'o')
+        //                             if (text[text_len + 6] == 'r')
+        //                                 if (text[text_len + 7] == ']') {
+        //                                         text_len += 8;
+        //                                         glyph_len = nk_utf_decode(text + text_len, &unicode, (int)len - text_len);
+        //                                         continue;
+        //                                     }
 
         /* query currently drawn glyph information */
         g = nk_font_find_glyph(font, unicode);

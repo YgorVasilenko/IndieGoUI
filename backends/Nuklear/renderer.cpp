@@ -746,7 +746,7 @@ void UI_element::callUIfunction(float x, float y, float space_w, float space_h) 
         rmb_click = nk_widget_is_mouse_clicked(ctx, NK_BUTTON_RIGHT);
 
         // evoke callbacks
-        if(lmb_click) {
+        if(lmb_click && !disabled) {
             unsigned int cbIdx = 0;
             for(auto&& callback : clickCallbacks)
                 callback(clickDatas[cbIdx++]);

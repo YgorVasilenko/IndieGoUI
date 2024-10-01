@@ -231,6 +231,7 @@ TexData Manager::load_image(std::string path, bool useProjectDir) {
     if (loaded_textures.find(path) != loaded_textures.end()) {
         return loaded_textures[path];
     }
+
     // unsigned int tex;
     TexData& td = loaded_textures[path];
     load_path = pd_path.append(path);
@@ -523,7 +524,7 @@ void Manager::deserialize(const std::string & winID, const std::string & path) {
                 false,
                 (UI_ELEMENT_TYPE)e.type()
             );
-            
+
             UIMap[e.name()].border = e.border();
             UIMap[e.name()].rounding = e.rounding();
             UIMap[e.name()].padding.h = e.padding().y();
