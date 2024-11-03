@@ -226,6 +226,7 @@ TexData Manager::load_image(std::string path, bool useProjectDir) {
 
     if (load_path.is_absolute() && project_dir.length() > 0) {
         load_path = fs::relative(load_path, pd_path);
+        path = load_path.string();
     }
 
     if (loaded_textures.find(path) != loaded_textures.end()) {

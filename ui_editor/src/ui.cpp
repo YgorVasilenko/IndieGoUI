@@ -423,6 +423,12 @@ void loadUIInternal(std::vector<std::string> paths) {
             skin_img_rect.height = (float)skin_tex.h / (float)skin_tex.w;
         }
     }
+
+    // Food for [color=#00aabb]Dining Room[/color]. Produced from [color=#00aabb]Berries[/color] in a [color=#00aabb]Jam Brewery
+    // game_ui_res_descr_widget_place
+    // if (UIMap.elements.find("game_ui_res_descr_widget_place") != UIMap.elements.end()) {
+    //     UIMap["game_ui_res_descr_widget_place"].label = "Производится из [color=#00aabb]Пшеницы[/color] в [color=#00aabb]Пшеничной Молотилке[/color]. Используется в [color=#00aabb]Пекарне[/color]";
+    // }
 }
 void loadUI(void*) {
     auto paths = getPaths(false, false, GUI.project_dir);
