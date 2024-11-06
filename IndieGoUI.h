@@ -765,10 +765,10 @@ namespace IndieGo {
 				} else if (element.type == UI_BUTTON || element.type == UI_BOOL) {
 					// default all boolean switches to false
 					element._data.b = false;
-				} else if (element.type == UI_FLOAT){
+				} else if (element.type == UI_FLOAT) {
 					// all default float values are 0.f
 					element._data.f = 0.f;
-				} else if (element.type == UI_UINT){
+				} else if (element.type == UI_UINT) {
 					// all default uint values are 1
 					element._data.ui = 1;
 				} else if (element.type == UI_IMAGE) {
@@ -776,7 +776,12 @@ namespace IndieGo {
 				}
 			
 				elements[elt_name] = element;
-				elements[elt_name].push_opt = push_opt;
+				if (anchor != "None" && !push_after && elements[anchor].push_opt == to_new_row)	{
+					elements[elt_name].push_opt = to_new_row;
+					elements[anchor].push_opt = to_new_col;
+				} else {
+					elements[elt_name].push_opt = push_opt;
+				}
 				
 				if (autowidth) {
 					// for (auto cell = layout_grid.back().cells.begin(); cell != layout_grid.back().cells.end(); cell++) {
