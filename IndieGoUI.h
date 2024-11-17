@@ -416,6 +416,7 @@ namespace IndieGo {
 			float font_height = 0.023f;
 			std::string font = "None";
 			float font_size = 16.f;
+			float original_font_size = 16.f;
 
 			bool hidden = false;
 			bool takeSpaceIfHidden = true;
@@ -494,7 +495,8 @@ namespace IndieGo {
 			float font_height = 0.023f;
 			std::string font = "None";
 			float font_size = 16.f;
-
+			float original_font_size = 16.f;
+			
 			float border_size = 1.f; 
 			region_size<float> padding = { 0.01f, 0.01f };
 			region_size<float> spacing = { 1.f, 1.f };
@@ -776,7 +778,7 @@ namespace IndieGo {
 				}
 			
 				elements[elt_name] = element;
-				if (anchor != "None" && !push_after && elements[anchor].push_opt == to_new_row)	{
+				if (push_opt == to_new_col && anchor != "None" && !push_after && elements[anchor].push_opt == to_new_row)	{
 					elements[elt_name].push_opt = to_new_row;
 					elements[anchor].push_opt = to_new_col;
 				} else {

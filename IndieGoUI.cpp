@@ -80,6 +80,7 @@ void WIDGET::copyWidget(const std::string & add_name, WIDGET * other) {
     skinned_style = other->skinned_style;
     font = other->font;
     font_size = other->font_size;
+    original_font_size = other->original_font_size;
 
     UI_elements_map & UIMap = *uiMapPtr;
     for (auto row : other->layout_grid) {
@@ -99,6 +100,7 @@ void WIDGET::copyWidget(const std::string & add_name, WIDGET * other) {
                 UIMap[add_name + elt].label = UIMap[elt].label;
                 UIMap[add_name + elt].hidden = UIMap[elt].hidden;
                 UIMap[add_name + elt].font_size = UIMap[elt].font_size;
+                UIMap[add_name + elt].original_font_size = UIMap[elt].original_font_size;
                 UIMap[add_name + elt].font = UIMap[elt].font;
 
                 e++;
@@ -479,6 +481,7 @@ void Manager::deserialize(const std::string & winID, const std::string & path) {
         // font
         added_w.font = w.widget().font().name();
         added_w.font_size = w.widget().font().size();
+        added_w.original_font_size = added_w.font_size;
 
         // special props
         added_w.border_size = w.widget().border_size();
@@ -534,7 +537,8 @@ void Manager::deserialize(const std::string & winID, const std::string & path) {
             // individual component's font
             UIMap[e.name()].font = e.font().name();
             UIMap[e.name()].font_size = e.font().size();
-            
+            UIMap[e.name()].original_font_size = e.font().size();
+
             UIMap[e.name()].label = e.label();
             UIMap[e.name()].text_align = (TEXT_ALIGN)e.text_align();
 
@@ -599,5 +603,12 @@ void Manager::deserialize(const std::string & winID, const std::string & path) {
         const ui_serialization::Font & f = serialized_ui.fonts(i);
         loadFont(f.name(), winID, f.size(), true, false);
     }
+#ifdef RELEASE_BUILD
+    loadFont("ProggyClean.ttf", winID, 12, true, false);
+    loadFont("MercutioNbpBasic.ttf", winID, 12, true, false);
+    loadFont("ProggyClean.ttf", winID, 14, true, false);
+    loadFont("MercutioNbpBasic.ttf", winID, 14, true, false);
+#endif
+
 #endif
 }
