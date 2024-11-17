@@ -1176,6 +1176,50 @@ IndieGo::UI::region<float> UI_element::getImgCrop(IndieGo::UI::IMAGE_SKIN_ELEMEN
 
 extern Manager GUI;
 
+region_size<unsigned int> Manager::screen_size = {};
+bool Manager::show_main_tooltip = false;
+std::string Manager::main_tooltip = "None";
+
+std::string Manager::main_font = "None";
+float Manager::main_font_size = 16.f;
+
+void Manager::showMainTooltip() {
+    color_table style;
+    style.elements[UI_COLOR_WINDOW].a = 0;
+    nk_style_from_table(ctx, (struct nk_color*)style.elements);
+    // if (main_font != "None") {
+        nk_style_set_font(
+            ctx,
+            &backend_loaded_fonts["MercutioNbpBasic"][24.f]->handle
+        );
+    // }
+
+    nk_begin(
+        ctx,
+        "Tooltip region",
+        nk_rect(
+            0,
+            0,
+            screen_size.w,
+            screen_size.h
+        ),
+        NK_WINDOW_NO_INPUT | NK_WINDOW_BACKGROUND
+    );
+    color_table tooltip_style;
+    tooltip_style.elements[UI_COLOR_TEXT].r = 255;
+    tooltip_style.elements[UI_COLOR_TEXT].g = 255;
+    tooltip_style.elements[UI_COLOR_TEXT].b = 255;
+
+    tooltip_style.elements[UI_COLOR_WINDOW].r = 8;
+    tooltip_style.elements[UI_COLOR_WINDOW].g = 31;
+    tooltip_style.elements[UI_COLOR_WINDOW].b = 45;
+    tooltip_style.elements[UI_COLOR_WINDOW].a = 140;
+
+    nk_style_from_table(ctx, (struct nk_color*)tooltip_style.elements);
+    nk_tooltip(ctx, main_tooltip.c_str());
+    nk_end(ctx);
+}
+
 //--------------------------------------------------------
 //
 //            Widget display function. May use

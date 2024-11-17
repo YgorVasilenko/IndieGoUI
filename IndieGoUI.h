@@ -982,8 +982,12 @@ namespace IndieGo {
 			static void (*buttonClickCallback)(void*);
 			static void (*disabledButtonClickCallback)(void*);
 			static void (*checkboxClickCallback)(void*);
+			static bool show_main_tooltip;
+			static std::string main_tooltip;
+			static void showMainTooltip();
+
 			std::string project_dir = "";
-			region_size<unsigned int> screen_size;
+			static region_size<unsigned int> screen_size;
 
 			static void (*custom_ui_uniforms)(void*);
 			static void * uniforms_data_ptr;
@@ -999,8 +1003,8 @@ namespace IndieGo {
 			region_size<unsigned int> skin_img_size;
 
 			// paths of fonts, used by widgets and vector of available sizes
-			std::string main_font = "None";
-			float main_font_size = 16.f;
+			static std::string main_font;
+			static float main_font_size;
 			std::map<std::string, font_data> loaded_fonts;
 
 			// widgets contain elements from specified maps
@@ -1113,6 +1117,9 @@ namespace IndieGo {
 						widget->second.focused = false;
 						widget->second.hasCursor = false;
 					}
+				}
+				if (show_main_tooltip) {
+					showMainTooltip();
 				}
 			};
 
