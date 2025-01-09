@@ -856,6 +856,12 @@ void UI_element::callUIfunction(float x, float y, float space_w, float space_h) 
                 callback(activeDatas[cbIdx]);
                 cbIdx++;
             }
+
+            cbIdx = 0;
+            for (auto callback : clickCallbacks) {
+                callback(clickDatas[cbIdx]);
+                cbIdx++;
+            }
         }
     }
 
