@@ -417,6 +417,7 @@ void setCallbacks() {
                 UIMap["add input"].label = "to input";
                 UIMap["add int"].label = "to int";
                 UIMap["add float"].label = "to float";
+                UIMap["add items group"].label = "to items";
             } else {
                 UIMap["add image"].label = "add image";
                 UIMap["add text"].label = "add text";
@@ -428,6 +429,7 @@ void setCallbacks() {
                 UIMap["add input"].label = "add input";
                 UIMap["add int"].label = "add int";
                 UIMap["add float"].label = "add float";
+                UIMap["add items group"].label = "add items";
             }
         }
     );
@@ -485,6 +487,11 @@ void setCallbacks() {
     UIMap["add input"].setActiveCallback(
         [] (void*) {
             addElement(UI_STRING_INPUT);
+        }
+    );
+    UIMap["add items group"].setActiveCallback(
+        [] (void*) {
+            addElement(UI_DROPDOWN);
         }
     );
 

@@ -295,8 +295,8 @@ void initWidgets() {
     UIMap.addElement("back to widgets", UI_BUTTON, &e_widget, to_new_subrow);
     UIMap["back to widgets"].label = "back to widgets";
 
-    UIMap.addElement("empty_0", UI_EMPTY, &e_widget, to_new_subrow);
-    // UIMap["add input"].label = "add input";
+    UIMap.addElement("add items group", UI_BUTTON, &e_widget, to_new_subrow);
+    UIMap["add items group"].label = "add items";
 
     // UIMap.addElement("empty_1", UI_EMPTY, &e_widget, to_new_subrow);
     // UIMap.addElement("empty_2", UI_EMPTY, &e_widget, to_new_subrow);

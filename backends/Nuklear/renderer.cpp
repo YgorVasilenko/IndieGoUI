@@ -867,9 +867,52 @@ void UI_element::callUIfunction(float x, float y, float space_w, float space_h) 
 
     if (type == UI_DROPDOWN) {
         // allocate memory for items from uiStringGroup
-        // const char **lst = reinterpret_cast<const char **>( _data.usgPtr->getCharArrays() );
-        // _data.usgPtr->selected_element = nk_combo(ctx, lst, NK_LEN(lst), _data.usgPtr->selected_element, 25, nk_vec2(200, 200));
-        // _data.usgPtr->disposeCharsArray();
+        ui_string_group& uiGroupRef = *_data.usgPtr;
+        uiGroupRef.selection_switch = false;
+        float h_mul = 5 <= uiGroupRef.elements.size() ? 3 : uiGroupRef.elements.size();
+        float height = nk_widget_height(ctx);
+        float width = nk_widget_width(ctx);
+        // ctx->style.combo.normal = nk_style_item_color(nk_rgb(175, 0, 0));
+        // ctx->style.combo.hover = nk_style_item_color(nk_rgb(255, 0, 0));
+        // if (images.size() > 0) {
+        //     ctx->style.combo.sym_normal = nk_style_item_image();
+        // }
+
+        // if (skinned_style.props[background].first != -1) {
+        //     ctx->style.contextual_button.normal = nk_style_item_image(
+        //         images[skinned_style.props[background].first][skinned_style.props[background].second].first
+        //     );
+        // }
+    
+        nk_style_from_table(ctx, (struct nk_color*)style.elements);
+        // ctx->style.contextual_button.normal = nk_style_item_color(nk_rgb(175, 0, 0));
+        // ctx->style.contextual_button.hover = nk_style_item_color(nk_rgb(255, 0, 0));
+        if (nk_combo_begin_label(ctx, uiGroupRef.elements[uiGroupRef.selected_element].c_str(), nk_vec2(width, height * h_mul))) {
+            nk_layout_row_dynamic(ctx, height, 1);
+            for (int i = 0; i < uiGroupRef.elements.size(); i++) {
+                if (nk_combo_item_label(ctx, uiGroupRef.elements[i].c_str(), NK_TEXT_LEFT)) {
+                    if (uiGroupRef.selected_element != i)
+                        uiGroupRef.selection_switch = true;
+
+                    uiGroupRef.selected_element = i;
+                }
+            }
+            nk_combo_end(ctx);
+        }
+        if (uiGroupRef.selection_switch) {
+            // button was switched, evoke callbacks
+            unsigned int cbIdx = 0;
+            for (auto callback : activeCallbacks) {
+                callback(activeDatas[cbIdx]);
+                cbIdx++;
+            }
+
+            cbIdx = 0;
+            for (auto callback : clickCallbacks) {
+                callback(clickDatas[cbIdx]);
+                cbIdx++;
+            }
+        }
     }
 
     if (type == UI_COLOR_PICKER) {
@@ -1614,7 +1657,7 @@ void Manager::loadFont(std::string path, const std::string & winID, float font_s
     loaded_fonts[ font_name ].sizes.push_back(font_size);
     std::string pdir = project_dir;
     if (fs::exists(fs::path(project_dir)))
-        pdir = project_dir;
+        pdir = fs::weakly_canonical(project_dir).string();
     else
         pdir = "";
 

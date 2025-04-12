@@ -259,11 +259,23 @@ std::string addElement(UI_ELEMENT_TYPE et) {
         // TODO : create switchElementType function to handle string and image cases
         if (UIMap[editorGlobals.selectedElement].type == UI_STRING_INPUT)
             delete UIMap[editorGlobals.selectedElement]._data.strPtr;
+        
+        if (
+            UIMap[editorGlobals.selectedElement].type == UI_ITEMS_LIST 
+            || UIMap[editorGlobals.selectedElement].type == UI_DROPDOWN
+        )
+            delete UIMap[editorGlobals.selectedElement]._data.usgPtr;
 
         UIMap[editorGlobals.selectedElement].type = et;
 
         if (et == UI_STRING_INPUT)
             UIMap[editorGlobals.selectedElement]._data.strPtr = new std::string;
+        
+        if (et == UI_DROPDOWN) {
+            UIMap[editorGlobals.selectedElement]._data.usgPtr = new ui_string_group;
+            UIMap[editorGlobals.selectedElement]._data.usgPtr->elements.push_back("Stub");
+            UIMap[editorGlobals.selectedElement]._data.usgPtr->selected_element = 0;
+        }
 
     } else {
         if (new_element_name.size() == 0) 

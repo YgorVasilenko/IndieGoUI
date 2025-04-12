@@ -80,17 +80,48 @@ void key_callback(GLFWwindow* window, int key, int scancode, int action, int mod
     GUI.key_input( &winID, key, glfwGetKey(window, key) == GLFW_PRESS);
 
     if (glfwGetKey(window, key) == GLFW_PRESS) {
-        if (key == GLFW_KEY_LEFT_CONTROL)
+        if (key == GLFW_KEY_LEFT_CONTROL) {
             ctrl_press = true;
+            std::cout << "Text contains following characters:" << std::endl;
+            for (char c : GUI.UIMaps[winID]["Text"].label) {
+                std::cout << (int)c << std::endl;
+            }
+            std::cout << "------------------------------------" << std::endl;
+        }
 
-        if (key == GLFW_KEY_H)
+        if (key == GLFW_KEY_H) {
             h_press = true;
-    } else {
-        if (key == GLFW_KEY_LEFT_CONTROL)
-            ctrl_press = false;
+        } else {
+            if (key == GLFW_KEY_LEFT_CONTROL)
+                ctrl_press = false;
 
-        if (key == GLFW_KEY_H)
-            h_press = false;
+            if (key == GLFW_KEY_H)
+                h_press = false;
+        }
+
+        // if (key == GLFW_KEY_J) {
+        //     for (
+        //         auto widget = GUI.widgets[winID].begin(); 
+        //         widget != GUI.widgets[winID].end();
+        //         widget++
+        //     ) {
+        //         if (widget->first == "Text_holder")
+        //             continue;
+        //         widget->second.hidden = true;
+        //     }
+        // }
+
+        // if (key == GLFW_KEY_K) {
+        //     for (
+        //         auto widget = GUI.widgets[winID].begin(); 
+        //         widget != GUI.widgets[winID].end();
+        //         widget++
+        //     ) {
+        //         if (widget->first == "Text_holder")
+        //             continue;
+        //         widget->second.hidden = false;
+        //     }
+        // }
     }
 }
 
@@ -166,7 +197,7 @@ void useSkin(T & item, std::string winID) {
 }
 
 std::vector<float> font_load_sizes = {
-    16., 18., 20., 24., 30., 36., 42., 48., 60., 72.
+    12., 16., 18., 20., 24., 30., 36., 42., 48., 60., 72.
 };
 
 // load_items.first -> resources path
@@ -276,6 +307,9 @@ int main(int argc, char** argv) {
     crop_img_rect.blue = 1.f;
     crop_img_rect.alpha = 0.f;
     // -------------------------------
+
+    // Manager::main_tooltip = "This is UI editor";
+    // Manager::show_main_tooltip = true;
 
     while (!glfwWindowShouldClose(screen)) {
         glClearColor(0.2f, 0.3f, 0.3f, 1.0f);
