@@ -19,7 +19,7 @@
 #include <GLFW/glfw3.h>
 
 #include <editor_structs.h>
-#include <Shader.h>
+// #include <Shader.h>
 #include <vector>
 #include <list>
 #include <filesystem>
@@ -31,7 +31,7 @@
 #include <glfw/glfw3native.h>
 #endif
 
-#include "backends/Nuklear/nuklear.h"
+#include "nuklear.h"
 
 namespace fs = std::filesystem;
 
@@ -59,7 +59,7 @@ std::string getTextAlignLabel(IndieGo::UI::TEXT_ALIGN align) {
 
 
 void updateUIFromElement(void*) {
-    UI_elements_map & UIMap = GUI.UIMaps[editorGlobals.winID];
+    UI_elements_map & UIMap = GUI.UIMap;
     ui_string_group & elements_list = *UIMap["elements list"]._data.usgPtr;
     if (elements_list.selected_element == -1)
         editorGlobals.selectedElement = "None";
@@ -96,7 +96,7 @@ void updateUIFromElement(void*) {
 }
 
 void updateUIFromWidget(void*) {
-    UI_elements_map & UIMap = GUI.UIMaps[editorGlobals.winID];
+    UI_elements_map & UIMap = GUI.UIMap;
     ui_string_group & widgets_list = *UIMap["widgets list"]._data.usgPtr;
 
     if (widgets_list.selected_element == -1) {
@@ -105,7 +105,7 @@ void updateUIFromWidget(void*) {
     }
 
     editorGlobals.selectedWidget = widgets_list.getSelected();
-    WIDGET & w = GUI.getWidget(editorGlobals.selectedWidget, editorGlobals.winID);
+    WIDGET & w = GUI.getWidget(editorGlobals.selectedWidget);
 
     // location
     UIMap["location x"]._data.f = w.screen_region.x * 100.f;
@@ -169,7 +169,6 @@ void updateUIFromWidget(void*) {
 
 extern void addElement(
     std::string widID, 
-    std::string winID, 
     std::string elt_name, 
     std::string anchor,
     bool push_after, 
@@ -187,7 +186,7 @@ void processAddImage(
     const std::string & anchor_element,
     bool push_after_anchor
 ) {
-    UI_elements_map & UIMap = GUI.UIMaps[editorGlobals.winID];
+    UI_elements_map & UIMap = GUI.UIMap;
     UI_ELEMENT_TYPE t = UI_IMAGE;
     if (UIMap["crop as img"]._data.b) {
 
@@ -199,7 +198,6 @@ void processAddImage(
         } else {
             addElement(
                 editorGlobals.selectedWidget, 
-                editorGlobals.winID, 
                 new_element_name, 
                 anchor_element,
                 push_after_anchor,
@@ -218,7 +216,6 @@ void processAddImage(
             } else {
                 addElement(
                     editorGlobals.selectedWidget, 
-                    editorGlobals.winID,
                     new_element_name,
                     anchor_element,
                     push_after_anchor,
@@ -234,7 +231,7 @@ void processAddImage(
 }
 
 std::string addElement(UI_ELEMENT_TYPE et) {
-    UI_elements_map & UIMap = GUI.UIMaps[editorGlobals.winID];
+    UI_elements_map & UIMap = GUI.UIMap;
     bool use_anchor = UIMap["selected anchor"]._data.b;
     bool push_after_anchor = UIMap["push after anchor"]._data.b;
     
@@ -259,31 +256,18 @@ std::string addElement(UI_ELEMENT_TYPE et) {
         // TODO : create switchElementType function to handle string and image cases
         if (UIMap[editorGlobals.selectedElement].type == UI_STRING_INPUT)
             delete UIMap[editorGlobals.selectedElement]._data.strPtr;
-        
-        if (
-            UIMap[editorGlobals.selectedElement].type == UI_ITEMS_LIST 
-            || UIMap[editorGlobals.selectedElement].type == UI_DROPDOWN
-        )
-            delete UIMap[editorGlobals.selectedElement]._data.usgPtr;
 
         UIMap[editorGlobals.selectedElement].type = et;
 
         if (et == UI_STRING_INPUT)
             UIMap[editorGlobals.selectedElement]._data.strPtr = new std::string;
-        
-        if (et == UI_DROPDOWN) {
-            UIMap[editorGlobals.selectedElement]._data.usgPtr = new ui_string_group;
-            UIMap[editorGlobals.selectedElement]._data.usgPtr->elements.push_back("Stub");
-            UIMap[editorGlobals.selectedElement]._data.usgPtr->selected_element = 0;
-        }
 
     } else {
         if (new_element_name.size() == 0) 
             return "None";
 
         addElement(
-            editorGlobals.selectedWidget, 
-            editorGlobals.winID, 
+            editorGlobals.selectedWidget,  
             new_element_name, 
             anchor_element,
             push_after_anchor,
@@ -302,8 +286,8 @@ void deleteElement() {
     if (editorGlobals.selectedWidget == "None")
         return;
     
-    WIDGET & w = GUI.getWidget(editorGlobals.selectedWidget, editorGlobals.winID);
-    UI_elements_map & UIMap = GUI.UIMaps[editorGlobals.winID];
+    WIDGET & w = GUI.getWidget(editorGlobals.selectedWidget);
+    UI_elements_map & UIMap = GUI.UIMap;
     UIMap.deleteElement(editorGlobals.selectedElement, &w);
     // ui_string_group & elements_list = *UIMap["elements list"]._data.usgPtr;
     // elements_list.elements.erase(
@@ -332,7 +316,6 @@ void saveUI(void*) {
     std::vector<std::string> paths = getPaths(true, false, GUI.project_dir);
     if (paths.size() > 0) {
         GUI.serialize(
-            editorGlobals.winID,
             paths.front(),
             skip_save_widgets
         );
@@ -343,24 +326,23 @@ void saveUI(void*) {
 }
 
 extern LayoutRect skin_img_rect;
-extern Shader skinningShader;
 extern std::map<std::string, std::pair<TexData, region<float>>> skin_crops;
-extern std::unordered_map<unsigned int, std::vector<std::pair<struct nk_image, IndieGo::UI::region<float>>>> images;
+extern std::unordered_map<void *, std::vector<std::pair<struct nk_image, IndieGo::UI::region<float>>>> images;
 extern std::map<std::string, TexData> loaded_textures;
-extern GLFWwindow* screen;
+GLFWwindow* screen = nullptr;
 extern void initWidgets();
 extern void initProjectDir();
 
 void closeUI() {
-    auto& UIMap = GUI.UIMaps[editorGlobals.winID];
+    auto& UIMap = GUI.UIMap;
     auto& widgets_list = *UIMap["widgets list"]._data.usgPtr;
 
     for (const auto& widgetName : widgets_list.elements)
-        GUI.deleteWidget(widgetName, editorGlobals.winID);
+        GUI.deleteWidget(widgetName);
 
     widgets_list.elements.clear();
     widgets_list.selected_element = -1;
-    skinningShader.skin_tex_id = 0;
+    // skinningShader.skin_tex_id = 0;
     skin_crops.clear();
     
     EditorState es;
@@ -369,15 +351,17 @@ void closeUI() {
 
     images.clear();
 
-    for(const auto& [path, texData] : loaded_textures)
-        glDeleteTextures(1, &texData.texID);
+    // for(const auto& [path, texData] : loaded_textures)
+    //     glDeleteTextures(1, &texData.texID);
 
-    loaded_textures.clear();
+    // loaded_textures.clear();
     delayedFunctions.emplace(
         []() {
             GUI = Manager{};
+            GUI.UIMap = UI_elements_map{};
+            GUI.widgets = std::map<std::string, WIDGET> {};
 
-            GUI.init(editorGlobals.winID, screen);
+            // GUI.init(editorGlobals.winID, screen);
             GUI.screen_size.w = WIDTH;
             GUI.screen_size.h = HEIGHT;
 
@@ -396,19 +380,19 @@ void closeUICallback(void*) {
 }
 
 void loadUIInternal(std::vector<std::string> paths) {
-    UI_elements_map& UIMap = GUI.UIMaps[editorGlobals.winID];
+    UI_elements_map& UIMap = GUI.UIMap;
     ui_string_group& widgets_list = *UIMap["widgets list"]._data.usgPtr;
     ui_string_group& fonts_list = *UIMap["loaded fonts"]._data.usgPtr;
 
     for (const auto& path : paths) {
-        GUI.deserialize(editorGlobals.winID, path);
+        GUI.deserialize(path);
         std::string editor_file_name = fs::path(paths.front()).stem().string();
         std::string editor_file = fs::path(paths.front()).parent_path().append(editor_file_name + "_editor.ui").string();
         if (fs::exists(editor_file)) {
             deserializeCropsData(editor_file);
         }
 
-        for (auto widget = GUI.widgets[editorGlobals.winID].begin(); widget != GUI.widgets[editorGlobals.winID].end(); widget++) {
+        for (auto widget = GUI.widgets.begin(); widget != GUI.widgets.end(); widget++) {
             if (std::find(skip_save_widgets.begin(), skip_save_widgets.end(), widget->first) != skip_save_widgets.end())
                 continue;
 
@@ -430,7 +414,7 @@ void loadUIInternal(std::vector<std::string> paths) {
         // set skinning image texID if loaded, populate crops list 
         if (GUI.skinning_image != "None") {
             TexData skin_tex = Manager::load_image(GUI.skinning_image);
-            skinningShader.skin_tex_id = skin_tex.texID;
+            // skinningShader.skin_tex_id = skin_tex.texID;
             skin_img_rect.width = 1.f;
             skin_img_rect.height = (float)skin_tex.h / (float)skin_tex.w;
         }
@@ -453,7 +437,7 @@ void loadUI(void*) {
 
 extern std::vector<float> font_load_sizes;
 void loadFont(void*) {
-    UI_elements_map & UIMap = GUI.UIMaps[editorGlobals.winID];
+    UI_elements_map & UIMap = GUI.UIMap;
     ui_string_group & fonts_list = *UIMap["loaded fonts"]._data.usgPtr;
     std::vector<std::string> paths = getPaths(false, false, GUI.project_dir);
     if (paths.size() > 0) {
@@ -461,7 +445,6 @@ void loadFont(void*) {
         for (auto size : font_load_sizes) {
             GUI.loadFont(
                 paths[0],
-                editorGlobals.winID, 
                 size,
                 true
             );
@@ -469,7 +452,6 @@ void loadFont(void*) {
         // additionally load specified font
         GUI.loadFont(
             paths[0],
-            editorGlobals.winID, 
             UIMap["load size"]._data.f,
             true
         );
@@ -484,14 +466,14 @@ void loadFont(void*) {
 }
 
 void loadSkinImage(void*) {
-    UI_elements_map & UIMap = GUI.UIMaps[editorGlobals.winID];
+    UI_elements_map & UIMap = GUI.UIMap;
     std::vector<std::string> paths = getPaths(false, false, GUI.project_dir);
     if (paths.size() > 0) {
         std::string skinning_img_path = *paths.begin();
         TexData skin_tex = Manager::load_image(skinning_img_path.c_str());
         UIMap["w skin image path"].label = skinning_img_path;
         UIMap["e skin image path"].label = skinning_img_path;
-        skinningShader.skin_tex_id = skin_tex.texID;
+        // skinningShader.skin_tex_id = skin_tex.texID;
         skin_img_rect.height = (float)skin_tex.h / (float)skin_tex.w;
         GUI.skinning_image = skin_tex.path;
         GUI.skin_img_size.w = skin_tex.w;

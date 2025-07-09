@@ -1,7 +1,7 @@
 // data structures for skinning
 #include <map>
 #include <IndieGoUI.h>
-#include <Shader.h>
+// #include <Shader.h>
 #include <editor_structs.h>
 #include <editor_data.pb.h>
 #include <fstream>
@@ -17,7 +17,7 @@ extern std::vector<std::string> getPaths(
     bool select_folders = false,
     std::string start_folder = "None"
 );
-extern Shader skinningShader;
+// extern Shader skinningShader;
 
 // Global skinning image draw data
 // ---------------------------------------
@@ -25,18 +25,18 @@ LayoutRect skin_img_rect;
 LayoutRect crop_img_rect;
 // ---------------------------------------
 
-void drawLayout(LayoutRect element);
-void drawSkinImage(LayoutRect element);
+// void drawLayout(LayoutRect element);
+// void drawSkinImage(LayoutRect element);
 
 void displaySkinImage() {
-    UI_elements_map & UIMap = GUI.UIMaps[winID];
+    UI_elements_map & UIMap = GUI.UIMap;
 
     // SKINNING IMAGE DRAWING
     // ------------------------------------------------------------
-    skinningShader.scale = UIMap["w skin image scale"]._data.f / 1000.f;
+    // skinningShader.scale = UIMap["w skin image scale"]._data.f / 1000.f;
     skin_img_rect.x = UIMap["w skin image x"]._data.f / 1000.f;
     skin_img_rect.y = UIMap["w skin image y"]._data.f / 1000.f;
-    drawSkinImage(skin_img_rect);
+    // drawSkinImage(skin_img_rect);
 
     crop_img_rect.x = UIMap["w crop x"]._data.f / UI_FLT_VAL_SCALE;
     crop_img_rect.y = UIMap["w crop y"]._data.f / UI_FLT_VAL_SCALE;
@@ -48,22 +48,22 @@ void displaySkinImage() {
     draw_rect.width = skin_img_rect.width * crop_img_rect.width;
     draw_rect.height = skin_img_rect.height * crop_img_rect.height;
 
-    draw_rect.x = skin_img_rect.x 
-        - ((skin_img_rect.width * skinningShader.scale) / 2.f) 
-        + (skin_img_rect.width * skinningShader.scale) * crop_img_rect.x;
+    // draw_rect.x = skin_img_rect.x 
+    //     - ((skin_img_rect.width * skinningShader.scale) / 2.f) 
+    //     + (skin_img_rect.width * skinningShader.scale) * crop_img_rect.x;
 
-    draw_rect.x += (draw_rect.width * skinningShader.scale) / 2.f;
+    // draw_rect.x += (draw_rect.width * skinningShader.scale) / 2.f;
 
-    draw_rect.y = skin_img_rect.y 
-        + ((skin_img_rect.height * skinningShader.scale) / 2.f) 
-        - (skin_img_rect.height * skinningShader.scale) * crop_img_rect.y;
+    // draw_rect.y = skin_img_rect.y 
+    //     + ((skin_img_rect.height * skinningShader.scale) / 2.f) 
+    //     - (skin_img_rect.height * skinningShader.scale) * crop_img_rect.y;
 
-    draw_rect.y -= (draw_rect.height * skinningShader.scale) / 2.f;
+    // draw_rect.y -= (draw_rect.height * skinningShader.scale) / 2.f;
 
-    draw_rect.width *= skinningShader.scale;
-    draw_rect.height *= skinningShader.scale;
+    // draw_rect.width *= skinningShader.scale;
+    // draw_rect.height *= skinningShader.scale;
     draw_rect.alpha = 0.f;
-    drawLayout(draw_rect);
+    // drawLayout(draw_rect);
 }
 
 void serializeCropsData(const std::string & path) {
@@ -100,7 +100,7 @@ void deserializeCropsData(const std::string & path) {
     }
 
     skin_crops.clear();
-    UI_elements_map & UIMap = GUI.UIMaps[winID];
+    UI_elements_map & UIMap = GUI.UIMap;
     ui_string_group & skin_crops_list = *UIMap["w skin crops list"]._data.usgPtr;
     UIMap["w skin image path"].label = "skin image path: " + GUI.skinning_image;
 

@@ -17,113 +17,57 @@
 cmake_minimum_required(VERSION 3.10)
 
 project(UI_editor VERSION 1.0)
+set(CMAKE_MODULE_PATH $ENV{VK_RENDERER_HOME})
+include(system)
 
-# protobuf setup
-set(PROTOBUF_SRC $ENV{PROTOBUF_HOME}/src)
-set(PROTOBUF_LIB $ENV{PROTOBUF_HOME}/build)
-
-message(STATUS "CMAKE_HOST_SYSTEM_NAME: ${CMAKE_HOST_SYSTEM_NAME}")
-
-if (${CMAKE_HOST_SYSTEM_NAME} MATCHES Windows)
-    set(PROTOBUF_LIB ${PROTOBUF_LIB}/Debug)
-    set(CMAKE_CXX_FLAGS_DEBUG " /std:c++17 /DEBUG /Zi /Od")
-else()
-    set(PROTOBUF_LIBS ${CMAKE_CURRENT_LIST_DIR}/../protobuf/build/Darwin/libprotobuf.a ${CMAKE_CURRENT_LIST_DIR}/../protobuf/build/Darwin/libprotobuf-lite.a ${CMAKE_CURRENT_LIST_DIR}/../protobuf/build/Darwin/libprotoc.a)
-
-    # Mac OS custom static glfw lib
-    set(GLFW_LIB_NAME libglfw3.a)
-    set(GLFW_VERSION_MAJOR 3) 
-    set(GLFW_VERSION_MINOR 4)
-    set(GLFW_VERSION 3.4)
-    set(GLFW_SOURCE_DIR $ENV{GLFW_PATH})
-    set(GLAD_GL "${GLFW_SOURCE_DIR}/deps")
-
-    # glfw requirements
-    find_package(Threads REQUIRED)
-    find_package(OpenGL REQUIRED)
-
-    add_subdirectory($ENV{GLFW_PATH} $ENV{GLFW_PATH}/build)
-endif()
-
-set(RENDERER_INCLUDES src . .. $ENV{OS_HOME} $ENV{DEPS_HOME} ${PROTOBUF_SRC})
-
-if (DEFINED BACKEND)
-    message("BACKEND: ${BACKEND}")
-    set(RENDERER_SRC ../../backends/${BACKEND}/renderer.cpp)
-    if ("${BACKEND}" MATCHES "imgui")
-        file(GLOB IMGUI_SRC_FILES "../../backends/imgui/imgui*.cpp")
-        set(RENDERER_SRC ${RENDERER_SRC} ../../backends/imgui/backends/imgui_impl_glfw.cpp ../../backends/imgui/backends/imgui_impl_opengl3.cpp ${IMGUI_SRC_FILES})
-        set(RENDERER_INCLUDES ${RENDERER_INCLUDES} ../../backends/imgui)
-    endif()
-else()
-    # Nuklear backend is default
-    set(RENDERER_SRC ../../backends/Nuklear/renderer.cpp)
-endif()
+file(GLOB RENDERER_SRC ${VK_RENDERER_HOME}/renderer/*.cpp)
+file(GLOB EDITOR_SRC ${CMAKE_CURRENT_LIST_DIR}/src/*.cpp)
+set(
+    INCLUDES 
+    ${OS_HOME}
+    ${DEPS_HOME}
+    ${SHADERS_HOME}
+    ${VK_RENDERER_HOME}/renderer/
+    ${CMAKE_CURRENT_LIST_DIR}/
+    ${CMAKE_CURRENT_LIST_DIR}/../
+    ${CMAKE_CURRENT_LIST_DIR}/src/
+    ${CMAKE_CURRENT_LIST_DIR}/../backend/
+    ${PROTOBUF_HOME}/src
+    ${VULKAN_INCLUDES}
+    ${STB_HOME}
+    ${NUKLEAR_HOME}
+)
 
 message("RENDERER_SRC: ${RENDERER_SRC}")
 message("RENDERER_INCLUDES: ${RENDERER_INCLUDES}")
 
 add_executable(
     UI_editor MACOSX_BUNDLE
-    src/app.cpp
-    src/ui.cpp
-    src/init.cpp
-    src/callbacks.cpp
-    src/helper_drawing.cpp
-    src/skinning.cpp
-    src/Shader.cpp
-    $ENV{OS_HOME}/glad/glad.cpp
+    ${EDITOR_SRC}
+    ${OS_HOME}/glad/glad.cpp
     ../IndieGoUI.cpp
     ../IndieGoUI.pb.cc
     editor_data.pb.cc
+    helper_drawing.cpp
     ${RENDERER_SRC}
+    ${CMAKE_CURRENT_LIST_DIR}/../backend/renderer.cpp
+    ${SHADERS_HOME}/Shader.cpp
 )
 
 target_include_directories(
     UI_editor
     PUBLIC 
-    ${RENDERER_INCLUDES}
+    ${INCLUDES}
 )
 
-if (${CMAKE_HOST_SYSTEM_NAME} MATCHES Darwin)
-    set_source_files_properties(
-        src/glfw.icns PROPERTIES
-            MACOSX_PACKAGE_LOCATION "Resources"
-    )
 
-    set_target_properties(
-        UI_editor PROPERTIES
-            MACOSX_BUNDLE_BUNDLE_NAME "UI_editor"
-            MACOSX_BUNDLE_SHORT_VERSION_STRING ${GLFW_VERSION}
-            MACOSX_BUNDLE_LONG_VERSION_STRING ${GLFW_VERSION}
-            MACOSX_BUNDLE_ICON_FILE src/glfw.icns
-            MACOSX_BUNDLE_INFO_PLIST "${GLFW_SOURCE_DIR}/CMake/Info.plist.in"
-    )
-
-    target_compile_options(
-        UI_editor PUBLIC 
-            -framework OpenGL -std=c++17 -O0 -g
-    )
-
-    target_link_libraries(
-        UI_editor
-
-        PUBLIC glfw
-        PUBLIC OpenGL::GL
-        
-        # serialization
-        PUBLIC ${PROTOBUF_LIBS}
-    )
-else()
-    target_link_libraries(
-        UI_editor
-        
-        PUBLIC $ENV{DEPS_HOME}/glfw/glfw3.lib
-
-        # serialization
-        PUBLIC ${PROTOBUF_LIB}/libprotobufd.lib
-    )    
-endif()
+# link glfw and opencv libraries
+target_link_libraries(
+    UI_editor
+    PUBLIC
+        ${VULKAN_LIBS}
+        ${PROTOBUF_LIB}
+)
 
 target_compile_definitions(
     UI_editor PUBLIC
@@ -131,4 +75,11 @@ target_compile_definitions(
     HEIGHT=1080
     UI_FLT_VAL_SCALE=100
     NDEBUG=1
+    TEST_IMAGE_PATH="${VK_RENDERER_HOME}/examples/images/textures/texture.jpg"
+    SHADERS_PREFIX="${CMAKE_CURRENT_LIST_DIR}/"
+)
+
+target_compile_options(
+    UI_editor PUBLIC 
+        ${COMPILE_FLAGS}
 )

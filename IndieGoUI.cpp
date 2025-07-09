@@ -18,12 +18,15 @@
 #include <IndieGoUI.h>
 
 #include <glad/glad.h>
-#include <GLFW/glfw3.h>
+// #include <GLFW/glfw3.h>
+#include <editor_renderers.h>
+#include <memory>
+
+extern std::unique_ptr<SkinningRenderer> skinning_renderer;
 
 #include <filesystem>
 namespace fs = std::filesystem;
 
-#define STB_IMAGE_IMPLEMENTATION
 #include "stb_image.h"
 
 #if !defined NO_SERIALIZATION && !defined NO_UI_SERIALIZATION
@@ -32,41 +35,30 @@ namespace fs = std::filesystem;
 
 
 using namespace IndieGo::UI;
+using namespace std;
 
-extern Manager GUI;
+Manager GUI;
 
 // [path] = texData
-std::map<std::string, TexData> loaded_textures;
+map<string, TexData> loaded_textures;
 
 void WIDGET_BASE::updateRowHeight(unsigned int row, float newHeight) {
-    if (!uiMapPtr) 
-        // TODO : print warning
-        return;
-	
     layout_grid[row].min_height = newHeight;
 	for (auto cell : layout_grid[row].cells) {
 		for (auto elt : cell.elements) {
-			(*uiMapPtr).elements[elt].height = newHeight / cell.elements.size();
+			Manager::UIMap.elements[elt].height = newHeight / cell.elements.size();
 		}
 	}
 }
 
 void WIDGET_BASE::updateColWidth(unsigned int row, unsigned int col, float newWidth) {
-    if (!uiMapPtr) 
-        // TODO : print warning
-        return;
-        
     layout_grid[row].cells[col].min_width = newWidth;
 	for (auto elt : layout_grid[row].cells[col].elements) {
-		(*uiMapPtr).elements[elt].width = newWidth;
+		Manager::UIMap.elements[elt].width = newWidth;
 	}
 }
 
-void WIDGET::copyWidget(const std::string & add_name, WIDGET * other) {
-    if (!uiMapPtr) 
-        // TODO : print warning
-        return;
-
+void WIDGET::copyWidget(const string & add_name, WIDGET * other) {
     movable = other->movable;
 	minimizable = other->minimizable;
 	scalable = other->scalable;
@@ -82,7 +74,7 @@ void WIDGET::copyWidget(const std::string & add_name, WIDGET * other) {
     font_size = other->font_size;
     original_font_size = other->original_font_size;
 
-    UI_elements_map & UIMap = *uiMapPtr;
+    UI_elements_map & UIMap = Manager::UIMap;
     for (auto row : other->layout_grid) {
         int c = 0;
         for (auto cell : row.cells) {
@@ -120,10 +112,6 @@ void WIDGET::copyWidget(const std::string & add_name, WIDGET * other) {
 }
 
 void WIDGET_BASE::copyLayout(WIDGET_BASE * other) {
-    if (!uiMapPtr) 
-        // TODO : print warning
-        return;
-    
     int r = 0;
     for (auto row : other->layout_grid) {
         if (r < layout_grid.size()) {
@@ -135,9 +123,9 @@ void WIDGET_BASE::copyLayout(WIDGET_BASE * other) {
                     int e = 0;
                     for (auto elt : cell.elements) {
                         if (e < layout_grid[r].cells[c].elements.size()) {
-                            (*uiMapPtr)[ layout_grid[r].cells[c].elements[e] ].height = (*uiMapPtr)[elt].height;
-                            (*uiMapPtr)[ layout_grid[r].cells[c].elements[e] ].width = (*uiMapPtr)[elt].width;
-                            (*uiMapPtr)[ layout_grid[r].cells[c].elements[e] ].padding = (*uiMapPtr)[elt].padding;
+                            Manager::UIMap[ layout_grid[r].cells[c].elements[e] ].height = Manager::UIMap[elt].height;
+                            Manager::UIMap[ layout_grid[r].cells[c].elements[e] ].width = Manager::UIMap[elt].width;
+                            Manager::UIMap[ layout_grid[r].cells[c].elements[e] ].padding = Manager::UIMap[elt].padding;
                         }
                         e++;
                     }
@@ -150,15 +138,14 @@ void WIDGET_BASE::copyLayout(WIDGET_BASE * other) {
 }
 
 void createNewWidget(
-    std::string newWidName, 
+    string newWidName, 
     region<float> screen_region,
     bool bordered,
     bool titled,
     bool minimizable,
     bool scalable,
     bool movable,
-    bool has_scrollbar,
-    const std::string & winID
+    bool has_scrollbar
 ) {
     WIDGET newWidget;
 
@@ -173,15 +160,14 @@ void createNewWidget(
     newWidget.movable = movable;
     newWidget.has_scrollbar = has_scrollbar;
 
-    WIDGET & widget = GUI.addWidget(newWidget, winID);
+    WIDGET & widget = GUI.addWidget(newWidget);
 }
 
 ELT_PUSH_OPT push_opt = to_new_row;
 void addElement(
-    std::string widID, 
-    std::string winID, 
-    std::string elt_name, 
-    std::string anchor, 
+    string widID, 
+    string elt_name, 
+    string anchor, 
     bool push_after,
     UI_ELEMENT_TYPE type
 ) {
@@ -189,30 +175,39 @@ void addElement(
         return;
 
     // get widget
-    WIDGET& w = GUI.getWidget( widID, winID );
+    WIDGET& w = GUI.getWidget( widID );
 
     // check if such element already exists, in which case don't add it
-    if (std::find(w.widget_elements.begin(), w.widget_elements.end(), elt_name) != w.widget_elements.end())
+    if (find(w.widget_elements.begin(), w.widget_elements.end(), elt_name) != w.widget_elements.end())
         // TODO : add error message
         return;
     
     // get UIMap
-    UI_elements_map & UIMap = GUI.UIMaps[winID];
+    UI_elements_map & UIMap = GUI.UIMap;
     // add element to widget
     UIMap.addElement(elt_name, type, &w, push_opt, anchor, push_after);
 }
 
 #ifdef RELEASE_BUILD
-    extern std::string global_home;
+    extern string global_home;
 #endif
 
 // helper function lo load image through stbi
 // in other engine parts ImageLoader will do that
-TexData Manager::load_image(std::string path, bool useProjectDir) {
+TexData Manager::load_image(string path, bool useProjectDir) {
+    TexData& td = loaded_textures[path];
+    td.w = skinning_renderer->texWidth;
+    td.h = skinning_renderer->texHeight;
+    td.path = path;
+    td.n = 4;
+    td.texID = skinning_renderer->textureImageViews.back();
+
+    return td;
+
 #ifdef __APPLE__
-    std::replace(path.begin(), path.end(), '\\', '/');
+    replace(path.begin(), path.end(), '\\', '/');
 #endif
-    std::string project_dir = "";
+    string project_dir = "";
 
 #ifdef RELEASE_BUILD
     project_dir = global_home;
@@ -236,7 +231,7 @@ TexData Manager::load_image(std::string path, bool useProjectDir) {
     }
 
     // unsigned int tex;
-    TexData& td = loaded_textures[path];
+    td = loaded_textures[path];
     load_path = pd_path.append(path);
 
     td.path = path;
@@ -249,43 +244,43 @@ TexData Manager::load_image(std::string path, bool useProjectDir) {
     );
 
     if (!data) {
-        std::cout << "[UI::ERROR] failed to load image " << load_path << std::endl;
-        td.texID = UINT_MAX;
+        cout << "[UI::ERROR] failed to load image " << load_path << endl;
+        td.texID = nullptr;
         return td;
     }
 
-    glGenTextures(1, &td.texID);
-    glBindTexture(GL_TEXTURE_2D, td.texID);
+    // glGenTextures(1, &td.texID);
+    // glBindTexture(GL_TEXTURE_2D, td.texID);
     
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
-    // set texture wrapping to GL_REPEAT (default wrapping method)
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
-    // set texture filtering parameters
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+    // glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
+    // // set texture wrapping to GL_REPEAT (default wrapping method)
+    // glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
+    // // set texture filtering parameters
+    // glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+    // glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
 
-    /*glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_NEAREST);
-    glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR_MIPMAP_NEAREST);*/
+    // /*glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_NEAREST);
+    // glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR_MIPMAP_NEAREST);*/
 
-    //glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-    //glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-    //
-    //glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
-    //glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+    // //glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+    // //glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+    // //
+    // //glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+    // //glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
 
-    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA8, td.w, td.h, 0, GL_RGBA, GL_UNSIGNED_BYTE, data);
-    glGenerateMipmap(GL_TEXTURE_2D);
-    stbi_image_free(data);
+    // glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA8, td.w, td.h, 0, GL_RGBA, GL_UNSIGNED_BYTE, data);
+    // glGenerateMipmap(GL_TEXTURE_2D);
+    // stbi_image_free(data);
     
     return td;
 }
 
-void Manager::serialize(const std::string & winID, const std::string & path, const std::vector<std::string> & skipWidgets) {
+void Manager::serialize(const string & path, const vector<string> & skipWidgets) {
 #if !defined NO_SERIALIZATION && !defined NO_UI_SERIALIZATION
-    UI_elements_map & UIMap = GUI.UIMaps[winID];
+    UI_elements_map & UIMap = GUI.UIMap;
     ui_serialization::SerializedUI serialized_ui;
-    for (auto widget : GUI.widgets[winID]) {
-        if (std::find(skipWidgets.begin(), skipWidgets.end(), widget.first) != skipWidgets.end())
+    for (auto widget : GUI.widgets) {
+        if (find(skipWidgets.begin(), skipWidgets.end(), widget.first) != skipWidgets.end())
             continue;
 
         ui_serialization::Widget * w = serialized_ui.add_widgets();
@@ -328,7 +323,7 @@ void Manager::serialize(const std::string & winID, const std::string & path, con
 
         // skinned props
         for (auto prop : widget.second.skinned_style.props) {
-            if (prop.second.first != -1) {
+            if (prop.second.first != nullptr) {
                 ui_serialization::SkinnedProperty * sp = w->mutable_widget()->add_skinned_props();
                 sp->set_prop_type((unsigned int)prop.first);
 
@@ -382,7 +377,7 @@ void Manager::serialize(const std::string & winID, const std::string & path, con
 
             // skinned props
             for (auto prop : UIMap[elt_name].skinned_style.props) {
-                if (prop.second.first != -1) {
+                if (prop.second.first != nullptr) {
                     ui_serialization::SkinnedProperty * sp = e->add_skinned_props();
                     sp->set_prop_type((unsigned int)prop.first);
 
@@ -423,24 +418,24 @@ void Manager::serialize(const std::string & winID, const std::string & path, con
         }
         i++;
     }
-    std::ofstream file(path, std::ios::binary);
+    ofstream file(path, ios::binary);
     serialized_ui.SerializeToOstream(&file);
     file.close();
 #endif
 }
 
-void Manager::deserialize(const std::string & winID, const std::string & path) {
+void Manager::deserialize(const string & path) {
 #if !defined NO_SERIALIZATION && !defined NO_UI_SERIALIZATION
     ui_serialization::SerializedUI serialized_ui;
-    std::ifstream file(path, std::ios::binary);
+    ifstream file(path, ios::binary);
     if (!serialized_ui.ParseFromIstream(&file)) {
-        std::cout << "[UI::ERROR] Failed to parse ui from: " << path << std::endl;
+        cout << "[UI::ERROR] Failed to parse ui from: " << path << endl;
         return;
     } else {
-        std::cout << "[UI::INFO] Loading ui from: " + path << std::endl;
+        cout << "[UI::INFO] Loading ui from: " + path << endl;
     }
     unsigned int idx = 0;
-    UI_elements_map & UIMap = GUI.UIMaps[winID];
+    UI_elements_map & UIMap = GUI.UIMap;
     
     // load images first, because ui uses them
     for (unsigned int i = 0; i < serialized_ui.images_size(); i++) {
@@ -471,12 +466,11 @@ void Manager::deserialize(const std::string & winID, const std::string & path) {
             w.widget().minimizable(),
             w.widget().scalable(),
             w.widget().movable(),
-            w.widget().has_scrollbar(),
-            winID
+            w.widget().has_scrollbar()
         );
 
         // styling
-        WIDGET & added_w = GUI.getWidget(w.widget().name(), winID);
+        WIDGET & added_w = GUI.getWidget(w.widget().name());
 
         // font
         added_w.font = w.widget().font().name();
@@ -522,7 +516,6 @@ void Manager::deserialize(const std::string & winID, const std::string & path) {
             push_opt = (ELT_PUSH_OPT)e.elt_push_opt();
             addElement(
                 w.widget().name(),
-                winID,
                 e.name(),
                 "None", // push after here always None
                 false,
@@ -580,7 +573,7 @@ void Manager::deserialize(const std::string & winID, const std::string & path) {
         int added_rows = added_w.layout_grid.size();
         for (int j = 0; j < w.widget().rows_size(); j++) {
             if (j >= added_rows) {
-                std::cout << "[WARNING] loaded elements fill " << added_rows << " rows, but loaded rows num is " << rows_num << std::endl;
+                cout << "[WARNING] loaded elements fill " << added_rows << " rows, but loaded rows num is " << rows_num << endl;
                 break;
             }
             const ui_serialization::LayoutRow & r = w.widget().rows(j);
@@ -601,7 +594,7 @@ void Manager::deserialize(const std::string & winID, const std::string & path) {
     // load used fonts
     for (int i = 0; i < serialized_ui.fonts_size(); i++) {
         const ui_serialization::Font & f = serialized_ui.fonts(i);
-        loadFont(f.name(), winID, f.size(), true, false);
+        loadFont(f.name(), f.size(), true, false);
     }
 #ifdef RELEASE_BUILD
     loadFont("ProggyClean.ttf", winID, 12, true, false);
@@ -612,3 +605,9 @@ void Manager::deserialize(const std::string & winID, const std::string & path) {
 
 #endif
 }
+
+UI_elements_map Manager::UIMap = {};
+std::map<std::string, WIDGET> Manager::widgets = {};
+WIDGET* Manager::hoveredWidget = {};
+region_size<unsigned int> Manager::screen_size = {};
+int Manager::currFrame = 0;

@@ -13,9 +13,11 @@
 
     You should have received a copy of the GNU General Public License
     along with this program.  If not, see <https://www.gnu.org/licenses/>.*/
-
+#pragma once
 #include <string>
 #include <map>
+#include <array>
+#include <glm/glm.hpp>
 
 struct LayoutRect {
     // position and size
@@ -26,6 +28,19 @@ struct LayoutRect {
         green = 1.f, 
         blue = 1.f, 
         alpha = 1.f;
+};
+
+struct LayoutRectUBO {
+    glm::mat4 proj;
+    glm::mat4 transform;
+    glm::vec4 color;
+};
+
+struct EditorWidgetsUBO {
+    glm::vec4 main_square;
+    glm::vec4 elements_square;
+    glm::vec4 skinning_square;
+    glm::vec4 fonts_square;
 };
 
 struct EditorState {
@@ -48,4 +63,9 @@ struct EditorState {
 
     // [widID] = current_line
     std::map<std::string, unsigned int> widgets_fill;
+    void * skinImgID = nullptr;
 };
+
+#ifndef MAX_WIDGET_ELEMENTS
+#define MAX_WIDGET_ELEMENTS 16
+#endif

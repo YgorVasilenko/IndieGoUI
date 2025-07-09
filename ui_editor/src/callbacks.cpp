@@ -17,7 +17,7 @@
 #include <IndieGoUI.h>
 #include <filesystem>
 #include <editor_structs.h>
-#include <Shader.h>
+// #include <Shader.h>
 #include <queue>
 #include <functional>
 
@@ -27,7 +27,6 @@ using namespace IndieGo::UI;
 extern std::queue<std::function<void()>> delayedFunctions;
 
 extern Manager GUI;
-extern std::string winID;
 extern EditorState editorGlobals;
 
 extern void updateUIFromWidget(void*);
@@ -53,8 +52,7 @@ extern void createNewWidget(
     bool minimizable,
     bool scalable,
     bool movable,
-    bool has_scrollbar,
-    const std::string & winID
+    bool has_scrollbar
 );
 
 extern std::vector<std::string> getPaths(
@@ -64,10 +62,10 @@ extern std::vector<std::string> getPaths(
 );
 
 extern std::string getSkinPropName(IMAGE_SKIN_ELEMENT prop);
-extern Shader skinningShader;
+// extern Shader skinningShader;
 
 void setCallbacks() {
-    UI_elements_map & UIMap = GUI.UIMaps[winID];
+    UI_elements_map & UIMap = GUI.UIMap;
     
     // switch selected widget
     // -------------------------------------------
@@ -79,7 +77,7 @@ void setCallbacks() {
     // -------------------------------------------
     UIMap["add new widget"].setActiveCallback(
         [] (void*) {
-            auto& UIMap = GUI.UIMaps[editorGlobals.winID];
+            auto& UIMap = GUI.UIMap;
             ui_string_group& widgets_list = *UIMap["widgets list"]._data.usgPtr;
 
             std::string new_widget_name = *UIMap["new widget name"]._data.strPtr;
@@ -99,8 +97,7 @@ void setCallbacks() {
                 UIMap["minimizable"]._data.b,
                 UIMap["scalable"]._data.b,
                 UIMap["movable"]._data.b,
-                UIMap["has scrollbar"]._data.b,
-                winID
+                UIMap["has scrollbar"]._data.b
             );
             // add new widget to list
             widgets_list.elements.push_back(new_widget_name);
@@ -112,19 +109,19 @@ void setCallbacks() {
         [] (void*) {
             if (editorGlobals.selectedWidget == "None")
                 return;
-            WIDGET & w = GUI.getWidget(editorGlobals.selectedWidget, editorGlobals.winID);
-            UI_elements_map & UIMap = GUI.UIMaps[editorGlobals.winID];
+            WIDGET & w = GUI.getWidget(editorGlobals.selectedWidget);
+            UI_elements_map & UIMap = GUI.UIMap;
             ui_string_group& widgets_list = *UIMap["widgets list"]._data.usgPtr;
             std::string new_name = *UIMap["new widget name"]._data.strPtr;
             if (new_name.size() > 0 && std::count(widgets_list.elements.begin(), widgets_list.elements.end(), new_name) <= 1) {
                 // can't use new name if there aleady is such widget
-                WIDGET & w = GUI.getWidget(editorGlobals.selectedWidget, editorGlobals.winID);
+                WIDGET & w = GUI.getWidget(editorGlobals.selectedWidget);
                 auto element = std::find(widgets_list.elements.begin(), widgets_list.elements.end(), w.name);
                 
                 *element = new_name;
-                GUI.widgets[editorGlobals.winID][new_name] = w;
-                GUI.widgets[editorGlobals.winID][new_name].name = new_name;
-                GUI.widgets[editorGlobals.winID].erase(editorGlobals.selectedWidget);        
+                GUI.widgets[new_name] = w;
+                GUI.widgets[new_name].name = new_name;
+                GUI.widgets.erase(editorGlobals.selectedWidget);        
             }
         }
     );
@@ -132,8 +129,8 @@ void setCallbacks() {
         [] (void*) {
             if (editorGlobals.selectedWidget == "None")
                 return;
-            UI_elements_map & UIMap = GUI.UIMaps[editorGlobals.winID];
-            GUI.deleteWidget(editorGlobals.selectedWidget, editorGlobals.winID);
+            UI_elements_map & UIMap = GUI.UIMap;
+            GUI.deleteWidget(editorGlobals.selectedWidget);
             ui_string_group& widgets_list = *UIMap["widgets list"]._data.usgPtr;
             widgets_list.elements.erase(
                 std::find(
@@ -152,8 +149,8 @@ void setCallbacks() {
         [] (void*) {
             if (editorGlobals.selectedWidget == "None")
                 return;
-            WIDGET & w = GUI.getWidget(editorGlobals.selectedWidget, editorGlobals.winID);
-            UI_elements_map & UIMap = GUI.UIMaps[editorGlobals.winID];
+            WIDGET & w = GUI.getWidget(editorGlobals.selectedWidget);
+            UI_elements_map & UIMap = GUI.UIMap;
             w.border = UIMap["bordered"]._data.b;
         }
     );
@@ -161,8 +158,8 @@ void setCallbacks() {
         [] (void*) {
             if (editorGlobals.selectedWidget == "None")
                 return;
-            WIDGET & w = GUI.getWidget(editorGlobals.selectedWidget, editorGlobals.winID);
-            UI_elements_map & UIMap = GUI.UIMaps[editorGlobals.winID];
+            WIDGET & w = GUI.getWidget(editorGlobals.selectedWidget);
+            UI_elements_map & UIMap = GUI.UIMap;
             w.title = UIMap["titled"]._data.b;
         }
     );
@@ -170,8 +167,8 @@ void setCallbacks() {
         [] (void*) {
             if (editorGlobals.selectedWidget == "None")
                 return;
-            WIDGET & w = GUI.getWidget(editorGlobals.selectedWidget, editorGlobals.winID);
-            UI_elements_map & UIMap = GUI.UIMaps[editorGlobals.winID];
+            WIDGET & w = GUI.getWidget(editorGlobals.selectedWidget);
+            UI_elements_map & UIMap = GUI.UIMap;
             w.minimizable = UIMap["minimizable"]._data.b;
         }
     );
@@ -179,8 +176,8 @@ void setCallbacks() {
         [] (void*) {
             if (editorGlobals.selectedWidget == "None")
                 return;
-            WIDGET & w = GUI.getWidget(editorGlobals.selectedWidget, editorGlobals.winID);
-            UI_elements_map & UIMap = GUI.UIMaps[editorGlobals.winID];
+            WIDGET & w = GUI.getWidget(editorGlobals.selectedWidget);
+            UI_elements_map & UIMap = GUI.UIMap;
             w.scalable = UIMap["scalable"]._data.b;
         }
     );
@@ -188,8 +185,8 @@ void setCallbacks() {
         [] (void*) {
             if (editorGlobals.selectedWidget == "None")
                 return;
-            WIDGET & w = GUI.getWidget(editorGlobals.selectedWidget, editorGlobals.winID);
-            UI_elements_map & UIMap = GUI.UIMaps[editorGlobals.winID];
+            WIDGET & w = GUI.getWidget(editorGlobals.selectedWidget);
+            UI_elements_map & UIMap = GUI.UIMap;
             w.movable = UIMap["movable"]._data.b;
         }
     );
@@ -197,8 +194,8 @@ void setCallbacks() {
         [] (void*) {
             if (editorGlobals.selectedWidget == "None")
                 return;
-            WIDGET & w = GUI.getWidget(editorGlobals.selectedWidget, editorGlobals.winID);
-            UI_elements_map & UIMap = GUI.UIMaps[editorGlobals.winID];
+            WIDGET & w = GUI.getWidget(editorGlobals.selectedWidget);
+            UI_elements_map & UIMap = GUI.UIMap;
             w.has_scrollbar = UIMap["has scrollbar"]._data.b;
         }
     );
@@ -206,8 +203,8 @@ void setCallbacks() {
         [] (void*) {
             if (editorGlobals.selectedWidget == "None")
                 return;
-            WIDGET & w = GUI.getWidget(editorGlobals.selectedWidget, editorGlobals.winID);
-            UI_elements_map & UIMap = GUI.UIMaps[editorGlobals.winID];
+            WIDGET & w = GUI.getWidget(editorGlobals.selectedWidget);
+            UI_elements_map & UIMap = GUI.UIMap;
             w.hidden = !UIMap["visible"]._data.b;
         }
     );
@@ -219,8 +216,8 @@ void setCallbacks() {
         [] (void*) {
             if (editorGlobals.selectedWidget == "None")
                 return;
-            WIDGET & w = GUI.getWidget(editorGlobals.selectedWidget, editorGlobals.winID);
-            UI_elements_map & UIMap = GUI.UIMaps[editorGlobals.winID];
+            WIDGET & w = GUI.getWidget(editorGlobals.selectedWidget);
+            UI_elements_map & UIMap = GUI.UIMap;
             w.screen_region.x = UIMap["location x"]._data.f / 100.f;
         }
     );
@@ -228,22 +225,22 @@ void setCallbacks() {
         [] (void*) {
             if (editorGlobals.selectedWidget == "None")
                 return;
-            WIDGET & w = GUI.getWidget(editorGlobals.selectedWidget, editorGlobals.winID);
-            UI_elements_map & UIMap = GUI.UIMaps[editorGlobals.winID];
+            WIDGET & w = GUI.getWidget(editorGlobals.selectedWidget);
+            UI_elements_map & UIMap = GUI.UIMap;
             w.screen_region.y = UIMap["location y"]._data.f / 100.f;
         }
     );
     UIMap["size x"].setActiveCallback(
         [] (void*) {
-            WIDGET & w = GUI.getWidget(editorGlobals.selectedWidget, editorGlobals.winID);
-            UI_elements_map & UIMap = GUI.UIMaps[editorGlobals.winID];
+            WIDGET & w = GUI.getWidget(editorGlobals.selectedWidget);
+            UI_elements_map & UIMap = GUI.UIMap;
             w.screen_region.w = UIMap["size x"]._data.f / 100.f;
         }
     );
     UIMap["size y"].setActiveCallback(
         [] (void*) {
-            WIDGET & w = GUI.getWidget(editorGlobals.selectedWidget, editorGlobals.winID);
-            UI_elements_map & UIMap = GUI.UIMaps[editorGlobals.winID];
+            WIDGET & w = GUI.getWidget(editorGlobals.selectedWidget);
+            UI_elements_map & UIMap = GUI.UIMap;
             w.screen_region.h = UIMap["size y"]._data.f / 100.f;
         }
     );
@@ -252,8 +249,8 @@ void setCallbacks() {
             if (editorGlobals.selectedWidget == "None")
                 return;
 
-            WIDGET & w = GUI.getWidget(editorGlobals.selectedWidget, editorGlobals.winID);
-            UI_elements_map & UIMap = GUI.UIMaps[editorGlobals.winID];
+            WIDGET & w = GUI.getWidget(editorGlobals.selectedWidget);
+            UI_elements_map & UIMap = GUI.UIMap;
             w.border_size = UIMap["widget border"]._data.f;
         }
     );
@@ -266,8 +263,8 @@ void setCallbacks() {
             if (editorGlobals.selectedWidget == "None")
                 return;
 
-            WIDGET & widgets = GUI.getWidget("UI creator", winID);
-            WIDGET & elements = GUI.getWidget("Edit elements", winID);
+            WIDGET & widgets = GUI.getWidget("UI creator");
+            WIDGET & elements = GUI.getWidget("Edit elements");
             widgets.hidden = true;
             elements.hidden = false;
             elements.screen_region = widgets.screen_region;
@@ -279,19 +276,19 @@ void setCallbacks() {
             if (editorGlobals.selectedWidget == "None")
                 return;
 
-            WIDGET & widgets = GUI.getWidget("UI creator", winID);
-            WIDGET & widgets_style = GUI.getWidget("Widgets style", winID);
+            WIDGET & widgets = GUI.getWidget("UI creator");
+            WIDGET & widgets_style = GUI.getWidget("Widgets style");
             widgets.hidden = true;
             widgets_style.hidden = false;
             widgets_style.screen_region = widgets.screen_region;
-            UI_elements_map & UIMap = GUI.UIMaps[winID];
+            UI_elements_map & UIMap = GUI.UIMap;
             UIMap["style selected widget"].label = "selected widget: " + editorGlobals.selectedWidget;
         }
     );
     UIMap["back to widgets"].setClickCallback(
         [] (void*) {
-            WIDGET & widgets = GUI.getWidget("UI creator", winID);
-            WIDGET & elements = GUI.getWidget("Edit elements", winID);
+            WIDGET & widgets = GUI.getWidget("UI creator");
+            WIDGET & elements = GUI.getWidget("Edit elements");
             widgets.hidden = false;
             elements.hidden = true;
             widgets.screen_region = elements.screen_region;
@@ -302,8 +299,8 @@ void setCallbacks() {
         [] (void*) {
             if (editorGlobals.selectedWidget == "None")
                 return;
-            WIDGET & widgets = GUI.getWidget("UI creator", winID);
-            WIDGET & widgets_style = GUI.getWidget("Widgets style", winID);
+            WIDGET & widgets = GUI.getWidget("UI creator");
+            WIDGET & widgets_style = GUI.getWidget("Widgets style");
             widgets.hidden = false;
             widgets_style.hidden = true;
             widgets.screen_region = widgets_style.screen_region;
@@ -320,8 +317,8 @@ void setCallbacks() {
             if (editorGlobals.selectedWidget == "None")
                 return;
 
-            WIDGET & w = GUI.getWidget(editorGlobals.selectedWidget, editorGlobals.winID);
-            UI_elements_map & UIMap = GUI.UIMaps[editorGlobals.winID];
+            WIDGET & w = GUI.getWidget(editorGlobals.selectedWidget);
+            UI_elements_map & UIMap = GUI.UIMap;
             ui_string_group & rows_list = *UIMap["rows list"]._data.usgPtr;
             ui_string_group & cols_list = *UIMap["cols list"]._data.usgPtr;
             cols_list.selected_element = -1;
@@ -339,8 +336,8 @@ void setCallbacks() {
         [] (void*) {
             if (editorGlobals.selectedWidget == "None")
                 return;
-            WIDGET & w = GUI.getWidget(editorGlobals.selectedWidget, editorGlobals.winID);
-            UI_elements_map & UIMap = GUI.UIMaps[editorGlobals.winID];
+            WIDGET & w = GUI.getWidget(editorGlobals.selectedWidget);
+            UI_elements_map & UIMap = GUI.UIMap;
             ui_string_group & rows_list = *UIMap["rows list"]._data.usgPtr;
             if (rows_list.selected_element == -1)
                 return;
@@ -358,8 +355,8 @@ void setCallbacks() {
         [] (void*) {
             if (editorGlobals.selectedWidget == "None")
                 return;
-            WIDGET & w = GUI.getWidget(editorGlobals.selectedWidget, editorGlobals.winID);
-            UI_elements_map & UIMap = GUI.UIMaps[editorGlobals.winID];
+            WIDGET & w = GUI.getWidget(editorGlobals.selectedWidget);
+            UI_elements_map & UIMap = GUI.UIMap;
             ui_string_group & rows_list = *UIMap["rows list"]._data.usgPtr;
             if (rows_list.selected_element == -1)
                 return;
@@ -370,8 +367,8 @@ void setCallbacks() {
         [] (void*) {
             if (editorGlobals.selectedWidget == "None")
                 return;
-            WIDGET & w = GUI.getWidget(editorGlobals.selectedWidget, editorGlobals.winID);
-            UI_elements_map & UIMap = GUI.UIMaps[editorGlobals.winID];
+            WIDGET & w = GUI.getWidget(editorGlobals.selectedWidget);
+            UI_elements_map & UIMap = GUI.UIMap;
             ui_string_group & rows_list = *UIMap["rows list"]._data.usgPtr;
             if (rows_list.selected_element == -1)
                 return;
@@ -387,7 +384,7 @@ void setCallbacks() {
     // -------------------------------------------
     UIMap["push opt"].setActiveCallback(
         [] (void*) {
-            UI_elements_map & UIMap = GUI.UIMaps[editorGlobals.winID];
+            UI_elements_map & UIMap = GUI.UIMap;
             if (push_opt == to_new_row) {
                 push_opt = to_new_col;
                 UIMap["push opt"].label = "push: to new col";
@@ -402,7 +399,7 @@ void setCallbacks() {
     );
     UIMap["switch type"].setActiveCallback(
         [] (void*) {
-            UI_elements_map & UIMap = GUI.UIMaps[editorGlobals.winID];
+            UI_elements_map & UIMap = GUI.UIMap;
             if (editorGlobals.selectedElement == "None")
                 UIMap["switch type"]._data.b = false;
 
@@ -417,7 +414,6 @@ void setCallbacks() {
                 UIMap["add input"].label = "to input";
                 UIMap["add int"].label = "to int";
                 UIMap["add float"].label = "to float";
-                UIMap["add items group"].label = "to items";
             } else {
                 UIMap["add image"].label = "add image";
                 UIMap["add text"].label = "add text";
@@ -429,7 +425,6 @@ void setCallbacks() {
                 UIMap["add input"].label = "add input";
                 UIMap["add int"].label = "add int";
                 UIMap["add float"].label = "add float";
-                UIMap["add items group"].label = "add items";
             }
         }
     );
@@ -470,7 +465,7 @@ void setCallbacks() {
     UIMap["add progress"].setActiveCallback(
         [] (void*) {
             std::string addedElement = addElement(UI_PROGRESS);
-            UI_elements_map & UIMap = GUI.UIMaps[editorGlobals.winID];
+            UI_elements_map & UIMap = GUI.UIMap;
             UIMap[addedElement].modifyable_progress_bar = true;
         }
     );
@@ -489,11 +484,6 @@ void setCallbacks() {
             addElement(UI_STRING_INPUT);
         }
     );
-    UIMap["add items group"].setActiveCallback(
-        [] (void*) {
-            addElement(UI_DROPDOWN);
-        }
-    );
 
     // Delete element
     // -------------------------------------------
@@ -510,7 +500,7 @@ void setCallbacks() {
         [] (void*) {
             if (editorGlobals.selectedElement == "None")
                 return;
-            UI_elements_map & UIMap = GUI.UIMaps[editorGlobals.winID];
+            UI_elements_map & UIMap = GUI.UIMap;
             UI_element & e = UIMap[editorGlobals.selectedElement];
             e.width = UIMap["element width"]._data.f / UI_FLT_VAL_SCALE;
         }
@@ -519,7 +509,7 @@ void setCallbacks() {
         [] (void*) {
             if (editorGlobals.selectedElement == "None")
                 return;
-            UI_elements_map & UIMap = GUI.UIMaps[editorGlobals.winID];
+            UI_elements_map & UIMap = GUI.UIMap;
             UI_element & e = UIMap[editorGlobals.selectedElement];
             e.height = UIMap["element height"]._data.f / UI_FLT_VAL_SCALE;
         }
@@ -528,7 +518,7 @@ void setCallbacks() {
         [] (void*) {
             if (editorGlobals.selectedElement == "None")
                 return;
-            UI_elements_map & UIMap = GUI.UIMaps[editorGlobals.winID];
+            UI_elements_map & UIMap = GUI.UIMap;
             UI_element & e = UIMap[editorGlobals.selectedElement];
             e.padding.w = UIMap["element pad x"]._data.f / UI_FLT_VAL_SCALE;
         }
@@ -537,7 +527,7 @@ void setCallbacks() {
         [] (void*) {
             if (editorGlobals.selectedElement == "None")
                 return;
-            UI_elements_map & UIMap = GUI.UIMaps[editorGlobals.winID];
+            UI_elements_map & UIMap = GUI.UIMap;
             UI_element & e = UIMap[editorGlobals.selectedElement];
             e.padding.h = UIMap["element pad y"]._data.f / UI_FLT_VAL_SCALE;
         }
@@ -546,7 +536,7 @@ void setCallbacks() {
         [] (void*) {
             if (editorGlobals.selectedElement == "None")
                 return;
-            UI_elements_map & UIMap = GUI.UIMaps[editorGlobals.winID];
+            UI_elements_map & UIMap = GUI.UIMap;
             UI_element & e = UIMap[editorGlobals.selectedElement];
             e.border = UIMap["element border"]._data.f / UI_FLT_VAL_SCALE;
         }
@@ -555,7 +545,7 @@ void setCallbacks() {
         [] (void*) {
             if (editorGlobals.selectedElement == "None")
                 return;
-            UI_elements_map & UIMap = GUI.UIMaps[editorGlobals.winID];
+            UI_elements_map & UIMap = GUI.UIMap;
             UI_element & e = UIMap[editorGlobals.selectedElement];
             e.rounding = UIMap["element rounding"]._data.f / UI_FLT_VAL_SCALE;
         }
@@ -564,7 +554,7 @@ void setCallbacks() {
         [] (void*) {
             if (editorGlobals.selectedElement == "None")
                 return;
-            UI_elements_map & UIMap = GUI.UIMaps[editorGlobals.winID];
+            UI_elements_map & UIMap = GUI.UIMap;
             UI_element & e = UIMap[editorGlobals.selectedElement];
             e.hidden = UIMap["hidden elt"]._data.b;
         }
@@ -573,14 +563,14 @@ void setCallbacks() {
         [] (void*) {
             if (editorGlobals.selectedElement == "None" || editorGlobals.selectedWidget == "None")
                 return;
-            UI_elements_map & UIMap = GUI.UIMaps[editorGlobals.winID];
+            UI_elements_map & UIMap = GUI.UIMap;
             UI_element & e = UIMap[editorGlobals.selectedElement];
             std::string new_name = *UIMap["elt string"]._data.strPtr;
             if (new_name.size() > 0 && UIMap.elements.find(new_name) == UIMap.elements.end()) {
                 UIMap.renameElement(
                     editorGlobals.selectedElement,
                     new_name,
-                    & GUI.getWidget(editorGlobals.selectedWidget, winID)
+                    & GUI.getWidget(editorGlobals.selectedWidget)
                 );
                 updateUIFromWidget(nullptr);
             }
@@ -590,7 +580,7 @@ void setCallbacks() {
         [] (void*) {
             if (editorGlobals.selectedElement == "None" || editorGlobals.selectedWidget == "None")
                 return;
-            UI_elements_map & UIMap = GUI.UIMaps[editorGlobals.winID];
+            UI_elements_map & UIMap = GUI.UIMap;
             UI_element & e = UIMap[editorGlobals.selectedElement];
             if (e.type != UI_STRING_INPUT)
                 return;
@@ -603,7 +593,7 @@ void setCallbacks() {
         [] (void*) {
             if (editorGlobals.selectedElement == "None")
                 return;
-            UI_elements_map & UIMap = GUI.UIMaps[editorGlobals.winID];
+            UI_elements_map & UIMap = GUI.UIMap;
             UI_element & e = UIMap[editorGlobals.selectedElement];
             if (e.text_align == IndieGo::UI::TEXT_ALIGN::CENTER) {
                 e.text_align = IndieGo::UI::TEXT_ALIGN::RIGHT;
@@ -620,7 +610,7 @@ void setCallbacks() {
         [] (void*) {
             if (editorGlobals.selectedElement == "None")
                 return;
-            UI_elements_map & UIMap = GUI.UIMaps[editorGlobals.winID];
+            UI_elements_map & UIMap = GUI.UIMap;
             UI_element & e = UIMap[editorGlobals.selectedElement];
             e.label = *UIMap["elt label"]._data.strPtr;
         }
@@ -631,7 +621,7 @@ void setCallbacks() {
     // -------------------------------------------
     UIMap["styling elements"].setActiveCallback(
         [] (void*) {
-            UI_elements_map & UIMap = GUI.UIMaps[editorGlobals.winID];
+            UI_elements_map & UIMap = GUI.UIMap;
             ui_string_group & style_elements_list = *UIMap["styling elements"]._data.usgPtr;
             editorGlobals.styling_element = style_elements_list.selected_element;
         }
@@ -640,8 +630,8 @@ void setCallbacks() {
         [] (void*) {
             if (editorGlobals.selectedWidget == "None" || editorGlobals.styling_element == -1)
                 return;
-            WIDGET & w = GUI.getWidget(editorGlobals.selectedWidget, editorGlobals.winID);
-            UI_elements_map & UIMap = GUI.UIMaps[editorGlobals.winID];
+            WIDGET & w = GUI.getWidget(editorGlobals.selectedWidget);
+            UI_elements_map & UIMap = GUI.UIMap;
             w.style.elements[editorGlobals.styling_element].r = UIMap["red"]._data.ui;
         }
     );
@@ -649,8 +639,8 @@ void setCallbacks() {
         [] (void*) {
             if (editorGlobals.selectedWidget == "None" || editorGlobals.styling_element == -1)
                 return;
-            WIDGET & w = GUI.getWidget(editorGlobals.selectedWidget, editorGlobals.winID);
-            UI_elements_map & UIMap = GUI.UIMaps[editorGlobals.winID];
+            WIDGET & w = GUI.getWidget(editorGlobals.selectedWidget);
+            UI_elements_map & UIMap = GUI.UIMap;
             w.style.elements[editorGlobals.styling_element].g = UIMap["green"]._data.ui;
         }
     );
@@ -658,8 +648,8 @@ void setCallbacks() {
         [] (void*) {
             if (editorGlobals.selectedWidget == "None" || editorGlobals.styling_element == -1)
                 return;
-            WIDGET & w = GUI.getWidget(editorGlobals.selectedWidget, editorGlobals.winID);
-            UI_elements_map & UIMap = GUI.UIMaps[editorGlobals.winID];
+            WIDGET & w = GUI.getWidget(editorGlobals.selectedWidget);
+            UI_elements_map & UIMap = GUI.UIMap;
             w.style.elements[editorGlobals.styling_element].b = UIMap["blue"]._data.ui;
         }
     );
@@ -667,8 +657,8 @@ void setCallbacks() {
         [] (void*) {
             if (editorGlobals.selectedWidget == "None" || editorGlobals.styling_element == -1)
                 return;
-            WIDGET & w = GUI.getWidget(editorGlobals.selectedWidget, editorGlobals.winID);
-            UI_elements_map & UIMap = GUI.UIMaps[editorGlobals.winID];
+            WIDGET & w = GUI.getWidget(editorGlobals.selectedWidget);
+            UI_elements_map & UIMap = GUI.UIMap;
             w.style.elements[editorGlobals.styling_element].a = UIMap["alpha"]._data.ui;
         }
     );
@@ -683,7 +673,7 @@ void setCallbacks() {
             if (editorGlobals.selectedElement == "None")
                 return;
             
-            UI_elements_map & UIMap = GUI.UIMaps[editorGlobals.winID];
+            UI_elements_map & UIMap = GUI.UIMap;
             TexData td = Manager::load_image(UIMap["e skin image path"].label);
             GUI.skinning_image = UIMap["e skin image path"].label;
             UI_element& e = UIMap[editorGlobals.selectedElement];
@@ -703,14 +693,14 @@ void setCallbacks() {
     );
     UIMap["e skinning properties"].setActiveCallback(
         [] (void*) {
-            UI_elements_map & UIMap = GUI.UIMaps[editorGlobals.winID];
+            UI_elements_map & UIMap = GUI.UIMap;
             ui_string_group & e_skinning_props_list = *UIMap["e skinning properties"]._data.usgPtr;
             editorGlobals.selectedSkinningElement = e_skinning_props_list.selected_element;
         }
     );
     UIMap["w skin crops list"].setActiveCallback(
         [] (void*) {
-            UI_elements_map & UIMap = GUI.UIMaps[editorGlobals.winID];
+            UI_elements_map & UIMap = GUI.UIMap;
             ui_string_group & skin_crops_list = *UIMap["w skin crops list"]._data.usgPtr;
             if (skin_crops_list.selected_element == -1)
                 return;
@@ -725,7 +715,7 @@ void setCallbacks() {
     );
     UIMap["w skinning properties"].setActiveCallback(
         [] (void*) {
-            UI_elements_map & UIMap = GUI.UIMaps[editorGlobals.winID];
+            UI_elements_map & UIMap = GUI.UIMap;
             ui_string_group & w_skinning_props_list = *UIMap["w skinning properties"]._data.usgPtr;
             if (w_skinning_props_list.selected_element == -1)
                 return;
@@ -740,7 +730,7 @@ void setCallbacks() {
     // -------------------------------------------
     UIMap["w new crop"].setActiveCallback(
         [] (void*) {
-            UI_elements_map & UIMap = GUI.UIMaps[editorGlobals.winID];
+            UI_elements_map & UIMap = GUI.UIMap;
             std::string new_crop_name = *UIMap["w new crop name"]._data.strPtr;
             ui_string_group & skin_crops_list = *UIMap["w skin crops list"]._data.usgPtr;
             if (new_crop_name.size() > 0 && skin_crops.find(new_crop_name) == skin_crops.end()) {
@@ -773,10 +763,11 @@ void setCallbacks() {
             if (editorGlobals.selectedSkinningWidget == -1)
                 return;
 
-            WIDGET & w = GUI.getWidget(editorGlobals.selectedWidget, winID);
+            WIDGET & w = GUI.getWidget(editorGlobals.selectedWidget);
             TexData td =  skin_crops[editorGlobals.selectedSkinCrop].first;
             region<float> crop = skin_crops[editorGlobals.selectedSkinCrop].second;
-            td.texID = skinningShader.skin_tex_id;
+            // td.texID = skinningShader.skin_tex_id;
+            td.texID = editorGlobals.skinImgID;
             td.w = GUI.skin_img_size.w;
             td.h = GUI.skin_img_size.h;
             w.useSkinImage(
@@ -796,8 +787,8 @@ void setCallbacks() {
             if (editorGlobals.selectedSkinningWidget == -1)
                 return;
 
-            WIDGET & w = GUI.getWidget(editorGlobals.selectedWidget, winID);
-            w.skinned_style.props[(IMAGE_SKIN_ELEMENT)editorGlobals.selectedSkinningWidget] = { -1, -1 };
+            WIDGET & w = GUI.getWidget(editorGlobals.selectedWidget);
+            w.skinned_style.props[(IMAGE_SKIN_ELEMENT)editorGlobals.selectedSkinningWidget] = { nullptr, -1 };
         }
     );
     UIMap["init button img"].setActiveCallback(
@@ -808,7 +799,7 @@ void setCallbacks() {
             if (editorGlobals.selectedElement == "None")
                 return;
 
-            UI_elements_map & UIMap = GUI.UIMaps[editorGlobals.winID];
+            UI_elements_map & UIMap = GUI.UIMap;
             TexData td =  skin_crops[editorGlobals.selectedSkinCrop].first;
             region<float> crop = skin_crops[editorGlobals.selectedSkinCrop].second;
             UIMap[editorGlobals.selectedElement].initImage(
@@ -827,7 +818,7 @@ void setCallbacks() {
             if (editorGlobals.selectedSkinCrop == "None")
                 return;
 
-            UI_elements_map & UIMap = GUI.UIMaps[editorGlobals.winID];
+            UI_elements_map & UIMap = GUI.UIMap;
             TexData td =  skin_crops[editorGlobals.selectedSkinCrop].first;
             region<float> crop = skin_crops[editorGlobals.selectedSkinCrop].second;
             UIMap[editorGlobals.selectedSkinCrop].initImage(
@@ -854,7 +845,7 @@ void setCallbacks() {
     );
     UIMap["select_project_dir"].setActiveCallback(
         [] (void*) {
-            UI_elements_map & UIMap = GUI.UIMaps[editorGlobals.winID];
+            UI_elements_map & UIMap = GUI.UIMap;
             std::vector<std::string> paths = getPaths(true, true);
             if (paths.size() > 0) {
                 GUI.project_dir = paths[0];
@@ -878,13 +869,13 @@ void setCallbacks() {
             if (editorGlobals.updateWidgetFont) {
                 if (editorGlobals.selectedWidget == "None")
                     return;
-                WIDGET& w = GUI.getWidget(editorGlobals.selectedWidget, winID);
+                WIDGET& w = GUI.getWidget(editorGlobals.selectedWidget);
                 w.font = editorGlobals.selectedFont;
                 w.font_size = editorGlobals.fontSize;
             } else {
                 if (editorGlobals.selectedElement == "None")
                     return;
-                UI_elements_map & UIMap = GUI.UIMaps[editorGlobals.winID];
+                UI_elements_map & UIMap = GUI.UIMap;
                 UI_element& e = UIMap[editorGlobals.selectedElement];
                 e.font = editorGlobals.selectedFont;
                 e.font_size = editorGlobals.fontSize;
@@ -893,7 +884,7 @@ void setCallbacks() {
     );
     UIMap["loaded fonts"].setActiveCallback(
         [] (void*) {
-            UI_elements_map & UIMap = GUI.UIMaps[winID];
+            UI_elements_map & UIMap = GUI.UIMap;
             ui_string_group & fonts_list = *UIMap["loaded fonts"]._data.usgPtr;
             ui_string_group & font_sizes_list = *UIMap["font sizes"]._data.usgPtr;
             font_sizes_list.elements.clear();
@@ -913,7 +904,7 @@ void setCallbacks() {
     );
     UIMap["font sizes"].setActiveCallback(
         [] (void*) {
-            UI_elements_map & UIMap = GUI.UIMaps[winID];
+            UI_elements_map & UIMap = GUI.UIMap;
             ui_string_group & font_sizes_list = *UIMap["font sizes"]._data.usgPtr;
             editorGlobals.fontSize = stoi(
                 font_sizes_list.getSelected()

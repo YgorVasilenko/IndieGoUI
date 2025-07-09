@@ -50,9 +50,8 @@ void initProjectDir() {
         std::cout << "PROJECT_DIR initialized with current home folder: " << GUI.project_dir << std::endl;
         std::cout << "All paths to resources will be saved relative to " << GUI.project_dir << std::endl;
     }
-    *GUI.UIMaps[winID]["project_dir_path"]._data.strPtr = GUI.project_dir;
+    *GUI.UIMap["project_dir_path"]._data.strPtr = GUI.project_dir;
 }
-
 void initWidgets() {
     // initialize creator widget
     creator_widget.screen_region.x = (float)(WIDTH / 4) / ((float)WIDTH);
@@ -63,10 +62,10 @@ void initWidgets() {
     editorWidgets.push_back(creator_widget.name);
     creator_widget.has_scrollbar = false;
 
-    WIDGET & c_widget = GUI.addWidget(creator_widget, winID);
+    WIDGET & c_widget = GUI.addWidget(creator_widget);
     
     // control elements to create ui
-    UI_elements_map & UIMap = GUI.UIMaps[winID];
+    UI_elements_map & UIMap = GUI.UIMap;
 
     UIMap.addElement("widgets list", UI_ITEMS_LIST, &c_widget);
     UIMap["widgets list"].label = "widgets list";
@@ -221,7 +220,7 @@ void initWidgets() {
     elements_edit.name = "Edit elements";
     editorWidgets.push_back(elements_edit.name);
 
-    WIDGET & e_widget = GUI.addWidget(elements_edit, winID);
+    WIDGET & e_widget = GUI.addWidget(elements_edit);
     e_widget.hidden = true;
     e_widget.has_scrollbar = false;
 
@@ -295,8 +294,8 @@ void initWidgets() {
     UIMap.addElement("back to widgets", UI_BUTTON, &e_widget, to_new_subrow);
     UIMap["back to widgets"].label = "back to widgets";
 
-    UIMap.addElement("add items group", UI_BUTTON, &e_widget, to_new_subrow);
-    UIMap["add items group"].label = "add items";
+    UIMap.addElement("empty_0", UI_EMPTY, &e_widget, to_new_subrow);
+    // UIMap["add input"].label = "add input";
 
     // UIMap.addElement("empty_1", UI_EMPTY, &e_widget, to_new_subrow);
     // UIMap.addElement("empty_2", UI_EMPTY, &e_widget, to_new_subrow);
@@ -366,7 +365,7 @@ void initWidgets() {
     widgets_style.name = "Widgets style";
     editorWidgets.push_back(widgets_style.name);
 
-    WIDGET & ws_widget = GUI.addWidget(widgets_style, winID);
+    WIDGET & ws_widget = GUI.addWidget(widgets_style);
     ws_widget.hidden = true;
     ws_widget.has_scrollbar = false;
 
@@ -425,7 +424,7 @@ void initWidgets() {
     elements_style.name = "Elements style";
     editorWidgets.push_back(elements_style.name);
 
-    WIDGET & es_widget = GUI.addWidget(elements_style, winID);
+    WIDGET & es_widget = GUI.addWidget(elements_style);
     es_widget.hidden = true;
     es_widget.has_scrollbar = false;
 
@@ -494,7 +493,7 @@ void initWidgets() {
     fonts.name = "Fonts";
     editorWidgets.push_back(fonts.name);
 
-    WIDGET & fonts_widget = GUI.addWidget(fonts, winID);
+    WIDGET & fonts_widget = GUI.addWidget(fonts);
     fonts_widget.has_scrollbar = false;
 
     // Fonts:
@@ -542,7 +541,7 @@ void initWidgets() {
     skinning.name = "Skinning";
     editorWidgets.push_back(skinning.name);
 
-    WIDGET & skinning_widget = GUI.addWidget(skinning, winID);
+    WIDGET & skinning_widget = GUI.addWidget(skinning);
     skinning_widget.has_scrollbar = false;
 
     UIMap.addElement("w load skin image", UI_BUTTON, &skinning_widget);
@@ -651,7 +650,7 @@ void initWidgets() {
     element_props.name = "Element properties";
     editorWidgets.push_back(element_props.name);
 
-    WIDGET & elt_props_widget = GUI.addWidget(element_props, winID);
+    WIDGET & elt_props_widget = GUI.addWidget(element_props);
     elt_props_widget.has_scrollbar = false;
 
     // width and height of specific element
@@ -713,12 +712,12 @@ void initWidgets() {
         return;
     }
 
-    std::string font_path = home_dir.substr(
-        0, home_dir.find("ui_editor")
-    ) + "ui_editor/editor_font/Roboto-Regular_main.ttf";
+    // std::string font_path = home_dir.substr(
+    //     0, home_dir.find("ui_editor")
+    // ) + "ui_editor/editor_font/Roboto-Regular_main.ttf";
 
     // Comment out this line to use default backend's font
-    GUI.loadFont(font_path, winID, DEFAULF_FONT_SIZE);
+    // GUI.loadFont(font_path, winID, DEFAULF_FONT_SIZE);
 
     setCallbacks();
 }

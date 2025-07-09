@@ -29,7 +29,7 @@
 
 #ifndef DEFAULT_WINDOW_NAME
 // If app will maintain sinlge window, designer may define it's defautl name
-#define DEFAULT_WINDOW_NAME ""
+#define DEFAULT_WINDOW_NAME "Vulkan_Nuklear UI"
 #endif
 
 namespace IndieGo {
@@ -142,28 +142,28 @@ namespace IndieGo {
 		};
 		struct image_props {
 			// IMAGE_SKIN_ELEMENT : <idx in vector of global images, loaded by backend> : <index of crop from that image>
-			std::map<IMAGE_SKIN_ELEMENT, std::pair<int, int>> props = {
-				{ background, { -1, -1 } },
-				{ button_normal, { -1, -1 } },
-				{ button_hover, { -1, -1 } },
-				{ button_active, { -1, -1 } },
-				{ progress_normal, { -1, -1 } },
-				{ progress_hover, { -1, -1 } },
-				{ progress_active, { -1, -1 } },
-				{ cursor_normal, { -1, -1 } },
-				{ cursor_hover, { -1, -1 } },
-				{ cursor_active, { -1, -1 } },
-				{ pressed, { -1, -1 } },
-				{ pressed_active, { -1, -1 } },
-				{ normal_active, { -1, -1 } },
-				{ hover_active , { -1, -1 } },
-				{ prop_active, { -1, -1 } },
-				{ prop_normal, { -1, -1 } },
-				{ prop_hover, { -1, -1 } },
-				{ checkbox_active, { -1, -1 } },
-				{ checkbox_normal, { -1, -1 } },
-				{ checkbox_hover, { -1, -1 } },
-				{ checkbox_cursor, { -1, -1 } }
+			std::map<IMAGE_SKIN_ELEMENT, std::pair<void *, int>> props = {
+				{ background, { nullptr, -1 } },
+				{ button_normal, { nullptr, -1 } },
+				{ button_hover, { nullptr, -1 } },
+				{ button_active, { nullptr, -1 } },
+				{ progress_normal, { nullptr, -1 } },
+				{ progress_hover, { nullptr, -1 } },
+				{ progress_active, { nullptr, -1 } },
+				{ cursor_normal, { nullptr, -1 } },
+				{ cursor_hover, { nullptr, -1 } },
+				{ cursor_active, { nullptr, -1 } },
+				{ pressed, { nullptr, -1 } },
+				{ pressed_active, { nullptr, -1 } },
+				{ normal_active, { nullptr, -1 } },
+				{ hover_active , { nullptr, -1 } },
+				{ prop_active, { nullptr, -1 } },
+				{ prop_normal, { nullptr, -1 } },
+				{ prop_hover, { nullptr, -1 } },
+				{ checkbox_active, { nullptr, -1 } },
+				{ checkbox_normal, { nullptr, -1 } },
+				{ checkbox_hover, { nullptr, -1 } },
+				{ checkbox_cursor, { nullptr, -1 } }
 			};
 		};
 
@@ -312,7 +312,7 @@ namespace IndieGo {
 				std::string * strPtr;
 			} _data;
 			
-			
+			void * imgPtr = nullptr;
 			int min = -1024;
 			int max = 1024;
 			float minf = -300000.0f;
@@ -400,7 +400,7 @@ namespace IndieGo {
 
 			// in case of UI_IMAGE this is used as a path to loaded image
 			std::string label = "";
-			int ui_button_image = -1;
+			void * ui_button_image = nullptr;
 			float flt_px_incr = 0.5f;
 			bool color_picker_unwrapped = false;
 
@@ -431,13 +431,13 @@ namespace IndieGo {
 			virtual void callUIfunction(float x, float y, float widget_w, float widget_h);
 
 			// this is for image elements
-			virtual void initImage(unsigned int texID, unsigned int w, unsigned int h, region<float> crop);
+			virtual void initImage(void * texID, unsigned int w, unsigned int h, region<float> crop);
 			unsigned int cropId = 0;
 
 			// this is for various properties, that have option of 
 			// using image texture
 			virtual void useSkinImage(
-				unsigned int texID,
+				void *,
 				unsigned short w,
 				unsigned short h,
 				region<float> crop,
@@ -477,9 +477,6 @@ namespace IndieGo {
 			std::string end;
 		};
 
-		// defines memory items, that will be used by UI_elements_map
-		struct UI_elements_map;
-
 		struct WIDGET_BASE {
 			// widgets provide place on screen to display ui elements
 			std::vector<std::string> widget_elements;
@@ -511,8 +508,6 @@ namespace IndieGo {
 			//  2  |   |          |
 			std::vector<grid_row> layout_grid;
 			std::vector<elements_group> elements_groups;
-
-			UI_elements_map* uiMapPtr = NULL;
 			void updateRowHeight(unsigned int row, float newHeight);
 			void updateColWidth(unsigned int row, unsigned int col, float newWidth);
 			void copyLayout(WIDGET_BASE * other);
@@ -760,12 +755,8 @@ namespace IndieGo {
 				element.type = type;
 				if (element.type == UI_STRING_INPUT) {
 					element._data.strPtr = new std::string;
-				} else if (element.type == UI_ITEMS_LIST || element.type == UI_DROPDOWN) {
+				} else if (element.type == UI_ITEMS_LIST) {
 					element._data.usgPtr = new ui_string_group;
-					if (element.type == UI_DROPDOWN) {
-						(*element._data.usgPtr).elements.push_back("Stub");
-						(*element._data.usgPtr).selected_element = 0;
-					}
 				} else if (element.type == UI_COLOR_PICKER){
 					element.height = 0.185f;
 				} else if (element.type == UI_BUTTON || element.type == UI_BOOL) {
@@ -873,7 +864,7 @@ namespace IndieGo {
 			bool forceNoFocus = false;
 
 			// provide implementation with actual drawing calls
-			virtual void callImmediateBackend(UI_elements_map & UIMap);
+			virtual void callImmediateBackend();
 
 			// returns actually allocated space for row
 			virtual float allocateRow(unsigned int cols, float min_height, bool in_pixels);
@@ -883,7 +874,7 @@ namespace IndieGo {
 			void copyWidget(const std::string & add_name, WIDGET * other);
 
 			virtual void useSkinImage(
-				unsigned int texID,
+				void * texID,
 				unsigned short w,
 				unsigned short h,
 				region<float> crop,
@@ -943,8 +934,6 @@ namespace IndieGo {
 						for (auto elt : cell.elements){
 							if (UIMap.elements.find(elt) != UIMap.elements.end() && !UIMap.elements[elt].hidden) {
 								UIMap.elements[elt].skinned_style = skinned_style;
-								if (UIMap.elements[elt].type == UI_DROPDOWN)
-									UIMap.elements[elt].style = style;
 								UIMap.elements[elt].callUIfunction(
 									row_indent,
 									subcell_indent,//cell_indent + subcell_indent,
@@ -974,7 +963,9 @@ namespace IndieGo {
 		};
 
 		struct TexData {
-			unsigned int texID;
+			// unsigned int texID;
+			// pointer to vulkan ImageView handle
+			void * texID;
 			int w, h, n;
 
 			// used to identify image on loading
@@ -984,7 +975,7 @@ namespace IndieGo {
 		// Main UI's controlling memory struct - contains all possible memory maps and widgets,
 		// adds new ones and removes old, makes calls to Immediate-Mode backends
 		struct Manager {
-			
+			static int currFrame;
 			static void (*buttonClickCallback)(void*);
 			static void (*disabledButtonClickCallback)(void*);
 			static void (*checkboxClickCallback)(void*);
@@ -1000,9 +991,7 @@ namespace IndieGo {
 
 			// draw index gets updated with each call
 			static int draw_idx;
-
-			// [win_id] = ui_map
-			std::map<std::string, UI_elements_map> UIMaps;
+			static UI_elements_map UIMap;
 			
 			// required for serialization
 			std::string skinning_image = "None";
@@ -1016,46 +1005,40 @@ namespace IndieGo {
 			// widgets contain elements from specified maps
 			// [win_id] = set of widgets
 			// application may have several windows, each loading different UI
-			std::map<std::string, std::map<std::string, WIDGET>> widgets;
+			static std::map<std::string, WIDGET> widgets;
 
 			// idea : set of parameters for cosecutive calls of
 			// addWidget, addElements add useSkinImage
-			void serialize(const std::string & winID, const std::string & path, const std::vector<std::string> & skipWidgets = {});
-			void deserialize(const std::string & winID, const std::string & path);
+			void serialize(const std::string & path, const std::vector<std::string> & skipWidgets = {});
+			void deserialize(const std::string & path);
 
-			void loadFont(std::string path, const std::string & winID, float font_size = 16.f, bool useProjectDir = false, bool cutProjDirFromPath = true);
+			void loadFont(std::string path, float font_size = 16.f, bool useProjectDir = false, bool cutProjDirFromPath = true);
 
 			// provide init functions in backend renderer module
-			void init(
-				std::string winID, void * initData = NULL // different backends may require different init data, so keep this as void pointer
+			static void init(
+				void * initData = NULL // different backends may require different init data, so keep this as void pointer
 			);
 			void addWindow(
-				std::string winID, void * initData = NULL // different backends may require different init data, so keep this as void pointer
+				void * initData = NULL // different backends may require different init data, so keep this as void pointer
 			);
 			void removeWindow(
-				std::string winID, void * initData = NULL // different backends may require different init data, so keep this as void pointer
+				void * initData = NULL // different backends may require different init data, so keep this as void pointer
 			);
 
-			void drawFrameStart(std::string & winID);
-			void drawFrameEnd(std::string & winID);
+			static void drawFrameStart();
+			static void drawFrameEnd();
 
-			bool guiHasCursor(const std::string & curr_ui_map = ""){
-				if (hoveredWidgets.empty())
-					return false;
-				
-				if (hoveredWidgets.find(curr_ui_map) == hoveredWidgets.end())
-					return false;
-				
-				return hoveredWidgets[curr_ui_map] != NULL;
+			bool guiHasCursor() {
+				return hoveredWidget;
 			}
 			// If we want user to prevent focusing some widget, we need to switch back to previously focused
 			// std::map<std::string, WIDGET*> prevFocusedWidgets = {};
 
-			std::map<std::string, WIDGET*> hoveredWidgets = {};
+			static  WIDGET* hoveredWidget;
 
-			WIDGET & getWidget(const std::string & widget_name, const std::string & win_name = DEFAULT_WINDOW_NAME){
-				assert(widgets[win_name].find(widget_name) != widgets[win_name].end());
-				return widgets[win_name][widget_name];
+			static WIDGET & getWidget(const std::string & widget_name){
+				assert(widgets.find(widget_name) != widgets.end());
+				return widgets[widget_name];
 			};
 
 			// use this for window callbacks
@@ -1065,59 +1048,30 @@ namespace IndieGo {
 			void char_input(void * window, unsigned int codepoint);
 			void key_input(void * window, unsigned int codepoint, bool pressed = false);
 
-			void initNewMap(const std::string & win_name) {
-				UI_elements_map map;
-				if ( UIMaps.find(win_name) != UIMaps.end() ){
-					UIMaps.erase(
-						UIMaps.find(win_name)
-					);
-				}
-				UIMaps[win_name] = map;
-			};
-
 			// adds new image to global vector of images. Returns index or recently added image
-			static void addImage(unsigned int texID,unsigned short w, unsigned short h, region<float> crop);
+			static void addImage(void * texID, unsigned short w, unsigned short h, region<float> crop);
 			static TexData load_image(std::string path, bool useProjectDir = false);
 
-			WIDGET & addWidget(WIDGET & new_widget, const std::string & win_name = DEFAULT_WINDOW_NAME) {
-				// can't add widgets for window without map
-				if (UIMaps.find(win_name) == UIMaps.end()){
-					initNewMap(win_name);
-				}
-
-				if (widgets.find(win_name) == widgets.end()){
-					std::map<std::string, WIDGET> container;
-					widgets[win_name] = container;
-					// prevFocusedWidgets[win_name] = NULL;
-					hoveredWidgets[win_name] = NULL;
-				}
-
-				if (widgets[win_name].find(new_widget.name) != widgets[win_name].end()){
+			WIDGET & addWidget(WIDGET & new_widget) {
+				if (widgets.find(new_widget.name) != widgets.end()){
 					// rewrite widget, if it's already exist
-					widgets[win_name].erase(
-						widgets[win_name].find(new_widget.name)
+					widgets.erase(
+						widgets.find(new_widget.name)
 					);
 				}
-				widgets[win_name][new_widget.name] = new_widget;
-				widgets[win_name][new_widget.name].uiMapPtr = &UIMaps[win_name];
-				return widgets[win_name][new_widget.name];
+				widgets[new_widget.name] = new_widget;
+				return widgets[new_widget.name];
 			}
 
-			void displayWidgets(std::string curr_ui_map = DEFAULT_WINDOW_NAME) {
-				if (UIMaps.find(curr_ui_map) == UIMaps.end())
-					return;
-
-				if (widgets.find(curr_ui_map) == widgets.end())
-					return;
-
-				hoveredWidgets[curr_ui_map] = NULL;
+			static void displayWidgets() {
+				hoveredWidget = NULL;
 				draw_idx = 0;
-				for (auto widget = widgets[curr_ui_map].begin(); widget != widgets[curr_ui_map].end(); widget++) {
+				for (auto widget = widgets.begin(); widget != widgets.end(); widget++) {
 					if (!widget->second.hidden){
 						widget->second.screen_size = screen_size;
-						widget->second.callImmediateBackend(UIMaps[curr_ui_map]);
+						widget->second.callImmediateBackend();
 						if (widget->second.hasCursor)
-							hoveredWidgets[curr_ui_map] = & widget->second;
+							hoveredWidget = & widget->second;
 					} else {
 						// hidden widget loses focus
 						widget->second.focused = false;
@@ -1129,17 +1083,17 @@ namespace IndieGo {
 				}
 			};
 
-			void deleteWidget(const std::string & widget_name, const std::string & winID) {
+			void deleteWidget(const std::string & widget_name) {
 				// 1. Delete all elements from respective UI map
-				WIDGET * widRef = & widgets[winID][widget_name];
+				WIDGET * widRef = & widgets[widget_name];
 				std::vector<std::string> widgetElements = widRef->widget_elements;
 				for (auto elt : widgetElements) {
-					UIMaps[winID].deleteElement(elt, widRef);
+					UIMap.deleteElement(elt, widRef);
 				}
 
 				// 2. delete widget
-				widgets[winID].erase(
-					widgets[winID].find(widget_name)
+				widgets.erase(
+					widgets.find(widget_name)
 				);
 			}
 		};
