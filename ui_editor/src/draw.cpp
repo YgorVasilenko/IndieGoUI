@@ -20,7 +20,7 @@ unique_ptr<SkinningShader> skinning_shader;
 unique_ptr<SkinningRenderer> skinning_renderer;
 
 unique_ptr<ScreenQuadShader> screen_quad_shader;
-unique_ptr<ScreenQuadRenderer> screen_quad_renderer;
+shared_ptr<ScreenQuadRenderer> screen_quad_renderer;
 int maxFrames = 0;
 
 #ifndef SHADERS_PREFIX
@@ -54,9 +54,38 @@ void loadShader(const string & name) {
     }
 };
 
+void resizeUI() {
+    Manager::resize(
+        vkRenderer::swapChainExtent.width,
+        vkRenderer::swapChainExtent.height
+    );
+}
+
+static vector<VkImageView> pipeline_views = {};
+void ScreenQuadShader::setTextureImages() {
+    int i = 0;
+    for (auto imageView : layout_renderer->textureImageViews) {
+        pipeline_views[i] = imageView;
+        i++;    
+    }
+    
+    for (auto imageView : skinning_renderer->textureImageViews) {
+        pipeline_views[i] = imageView;
+        i++;    
+    }
+
+    // sceen quad renderer holds texture handlers for UI overlay
+    for (auto imageView : screen_quad_renderer->textureImageViews) {
+        pipeline_views[i] = imageView;
+        i++;
+    }
+}
+
 void initRenderers(GLFWwindow * w) {
-    screen_quad_renderer = make_unique<ScreenQuadRenderer>(w);
+    vkRenderer::resizeCallback = resizeUI;
+    screen_quad_renderer = make_shared<ScreenQuadRenderer>(w);
     screen_quad_renderer->init();
+    screen_quad_renderer->recreateNoFramebufferTexImages = true;
 
     skinning_renderer = make_unique<SkinningRenderer>(w, false);
     skinning_renderer->init();
@@ -74,7 +103,7 @@ void initRenderers(GLFWwindow * w) {
 
         // Here most imageViews are for framebuffers.
         // imageView for sampler was added as a last element in the array
-        skinning_renderer->textureImageViews,
+        &skinning_renderer->textureImageViews,
         skinning_renderer->textureSamplers
     );
     skinning_shader->descriptorsInitData[1].bufferIdx = maxFrames;
@@ -92,7 +121,7 @@ void initRenderers(GLFWwindow * w) {
     layout_shader->fillDescrInitData();
     loadShader("layout_shader");
 
-    vector<VkImageView> pipeline_views = layout_renderer->textureImageViews;
+    pipeline_views = layout_renderer->textureImageViews;
     for (auto imageView : skinning_renderer->textureImageViews) {
         pipeline_views.push_back(imageView);
     }
@@ -107,7 +136,7 @@ void initRenderers(GLFWwindow * w) {
         vkRenderer::swapChainImagesCount,
         screen_quad_renderer->renderPass,
         vector<VkBuffer>{},
-        pipeline_views,
+        &pipeline_views,
         screen_quad_renderer->textureSamplers
     );
     screen_quad_shader->descriptorsInitData[1].bufferIdx = maxFrames;
@@ -210,26 +239,29 @@ void drawFrame() {
 
     // Skin image rendering
     VkCommandBuffer frameCB = skinning_renderer->commandBuffers[vkRenderer::currFrame];
-    skinning_renderer->beginRecordCommandBuffer(frameCB, skinning_shader.get());
+    skinning_renderer->beginRecordCommandBuffer(frameCB);
+    skinning_renderer->beginRenderPass(frameCB, skinning_shader.get());
     skinning_renderer->drawCommands(frameCB);
-    skinning_renderer->endRecordCommandBuffer(frameCB);
-    skinning_renderer->submitQueue(frameCB);
+    vkCmdEndRenderPass(frameCB);
+    // skinning_renderer->endRecordCommandBuffer(frameCB);
+    // skinning_renderer->submitQueue(frameCB);
 
     // layout rendering
-    frameCB = layout_renderer->commandBuffers[vkRenderer::currFrame];
-    layout_renderer->beginRecordCommandBuffer(frameCB);
+    // frameCB = layout_renderer->commandBuffers[vkRenderer::currFrame];
+    layout_renderer->beginRenderPass(frameCB);
     for (int i = 0; i < layout_renderer->layout_rect_idx; i++) {
         uint32_t offset = layout_renderer->getDynamicOffset(i);
         layout_shader->dynamicOffsets = &offset;
         layout_shader->use(frameCB, vkRenderer::currFrame);
         layout_renderer->drawCommands(frameCB);
     }
-    layout_renderer->endRecordCommandBuffer(frameCB);
-    layout_renderer->submitQueue(frameCB);
+    vkCmdEndRenderPass(frameCB);
+    // layout_renderer->endRecordCommandBuffer(frameCB);
+    // layout_renderer->submitQueue(frameCB);
 
     // rendering of final image
-    frameCB = screen_quad_renderer->commandBuffers[vkRenderer::currFrame];
-    screen_quad_renderer->beginRecordCommandBuffer(frameCB, screen_quad_shader.get());
+    // frameCB = screen_quad_renderer->commandBuffers[vkRenderer::currFrame];
+    screen_quad_renderer->beginRenderPass(frameCB, screen_quad_shader.get());
     screen_quad_renderer->drawCommands(frameCB);
     screen_quad_renderer->endRecordCommandBuffer(frameCB);
     screen_quad_renderer->submitQueue(frameCB, true);

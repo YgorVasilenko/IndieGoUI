@@ -41,7 +41,7 @@ vector<float> font_load_sizes = {
 extern void initProjectDir();
 extern void initWidgets();
 
-extern unique_ptr<ScreenQuadRenderer> screen_quad_renderer;
+extern shared_ptr<ScreenQuadRenderer> screen_quad_renderer;
 extern unique_ptr<LayoutRenderer> layout_renderer;
 extern void renderLayout();
 
@@ -80,7 +80,7 @@ int main(int argc, char** argv) {
     // glfwSetFramebufferSizeCallback(GLwindow, GLFWaux::framebufferResizeCallback);
     initRenderers(IndieGo::vkI::window);
 
-    Manager::init(IndieGo::vkI::window);
+    Manager::init(IndieGo::vkI::window, screen_quad_renderer);
     Manager::screen_size.w = WIDTH;
     Manager::screen_size.h = HEIGHT;
 

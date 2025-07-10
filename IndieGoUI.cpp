@@ -18,11 +18,10 @@
 #include <IndieGoUI.h>
 
 #include <glad/glad.h>
-// #include <GLFW/glfw3.h>
-#include <editor_renderers.h>
+// #include <editor_renderers.h>
 #include <memory>
 
-extern std::unique_ptr<SkinningRenderer> skinning_renderer;
+// extern std::unique_ptr<SkinningRenderer> skinning_renderer;
 
 #include <filesystem>
 namespace fs = std::filesystem;
@@ -194,13 +193,14 @@ void addElement(
 
 // helper function lo load image through stbi
 // in other engine parts ImageLoader will do that
+//TODO : UI requires renderer pointer, which will store skin texture
 TexData Manager::load_image(string path, bool useProjectDir) {
     TexData& td = loaded_textures[path];
-    td.w = skinning_renderer->texWidth;
-    td.h = skinning_renderer->texHeight;
-    td.path = path;
-    td.n = 4;
-    td.texID = skinning_renderer->textureImageViews.back();
+    // td.w = skinning_renderer->texWidth;
+    // td.h = skinning_renderer->texHeight;
+    // td.path = path;
+    // td.n = 4;
+    // td.texID = skinning_renderer->textureImageViews.back();
 
     return td;
 
@@ -235,13 +235,14 @@ TexData Manager::load_image(string path, bool useProjectDir) {
     load_path = pd_path.append(path);
 
     td.path = path;
-    unsigned char *data = stbi_load(
-        load_path.string().c_str(),
-        &td.w, 
-        &td.h, 
-        &td.n, 
-        0
-    );
+    unsigned char *data = nullptr;
+    // unsigned char *data = stbi_load(
+    //     load_path.string().c_str(),
+    //     &td.w, 
+    //     &td.h, 
+    //     &td.n, 
+    //     0
+    // );
 
     if (!data) {
         cout << "[UI::ERROR] failed to load image " << load_path << endl;

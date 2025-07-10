@@ -35,12 +35,15 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.*/
 #include "nuklear.h"
 #include "nuklear_glfw_vulkan.h"
 
-#include <editor_renderers.h>
+#include <Renderer.h>
+
+using namespace IndieGo::vkI;
+using namespace IndieGo::vkI::aux;
 
 using namespace std;
 namespace fs = filesystem;
 
-extern unique_ptr<ScreenQuadRenderer> screen_quad_renderer;
+shared_ptr<vkRenderer> renderer;
 
 #define MAX_VERTEX_BUFFER 512 * 1024
 #define MAX_ELEMENT_BUFFER 128 * 1024
@@ -98,9 +101,9 @@ void prepareUIRenderer(GLFWwindow* window) {
         vkRenderer::device, 
         vkRenderer::physicalDevice,
         queueFamilyIndices[0],
-        screen_quad_renderer->textureImageViews.data(),
+        renderer->textureImageViews.data(),
         vkRenderer::swapChainImagesCount,
-        vkRenderer::swapChainImageFormat,
+        renderer->imageViewInitFormat,
         NK_GLFW3_INSTALL_CALLBACKS,
         MAX_VERTEX_BUFFER, MAX_ELEMENT_BUFFER
     );
@@ -1154,20 +1157,22 @@ void Manager::drawFrameEnd() {
     vkRenderer::setNextSemaphore(s);
 }
 
-void Manager::init(void * initData) {
-    prepareUIRenderer((GLFWwindow*)initData);
-}
-
-void Manager::addWindow(void * initData) {
-    prepareUIRenderer((GLFWwindow*)initData);
-}
-
-void Manager::removeWindow(void * winData) {
-
+void Manager::init(
+    GLFWwindow * w,
+    shared_ptr<vkI::vkRenderer> rendererPtr
+) {
+    renderer = rendererPtr;
+    prepareUIRenderer(w);
 }
 
 // string project_dir = "None";
 void * img_data = NULL;
+
+void Manager::resize(int new_width, int new_height) {
+    nk_glfw3_resize(new_width, new_height);
+    screen_size.w = new_width;
+    screen_size.h = new_height;
+};
 
 void Manager::loadFont(string path, float font_size, bool useProjectDir, bool cutProjDirFromPath) {
     string font_name = fs::path(path).stem().string();

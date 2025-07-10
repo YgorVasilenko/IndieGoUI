@@ -11,7 +11,7 @@ public:
         int sImgsCnt,
         VkRenderPass rp,
         std::vector<VkBuffer> ubos = {},
-        std::vector<VkImageView> tivs = {},
+        std::vector<VkImageView> * tivs = nullptr,
         std::vector<VkSampler> ts = {}
     ) : Shader(vkd, sImgsCnt, rp, ubos, tivs, ts) {};
 
@@ -52,7 +52,7 @@ public:
         int sImgsCnt,
         VkRenderPass rp,
         std::vector<VkBuffer> ubos = {},
-        std::vector<VkImageView> tivs = {},
+        std::vector<VkImageView> * tivs = nullptr,
         std::vector<VkSampler> ts = {}
     ) : Shader(vkd, sImgsCnt, rp, ubos, tivs, ts) {
         fillDescrInitData();
@@ -96,7 +96,7 @@ public:
         int sImgsCnt,
         VkRenderPass rp,
         std::vector<VkBuffer> ubos = {},
-        std::vector<VkImageView> tivs = {},
+        std::vector<VkImageView> * tivs = nullptr,
         std::vector<VkSampler> ts = {}
     ) : Shader(vkd, sImgsCnt, rp, ubos, tivs, ts) {
         fillDescrInitData();
@@ -113,6 +113,7 @@ public:
         return attributeDescriptions;
     };
 
+    void setTextureImages() override;
 
     void fillDescrInitData() override {
         descriptorsInitData = {

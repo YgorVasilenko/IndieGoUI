@@ -26,13 +26,17 @@
 #include <algorithm>
 #include <cassert>
 #include <unordered_map>
+#include <memory>
 
 #ifndef DEFAULT_WINDOW_NAME
 // If app will maintain sinlge window, designer may define it's defautl name
 #define DEFAULT_WINDOW_NAME "Vulkan_Nuklear UI"
 #endif
-
+struct GLFWwindow;
 namespace IndieGo {
+	namespace vkI {
+		class vkRenderer;
+	};
 	namespace UI {
 		enum select_method {
 			LIST_SELECT, RADIO_SELECT, BUTTON_SELECT
@@ -1014,15 +1018,10 @@ namespace IndieGo {
 
 			void loadFont(std::string path, float font_size = 16.f, bool useProjectDir = false, bool cutProjDirFromPath = true);
 
-			// provide init functions in backend renderer module
+			static void resize(int new_width, int new_height);
 			static void init(
-				void * initData = NULL // different backends may require different init data, so keep this as void pointer
-			);
-			void addWindow(
-				void * initData = NULL // different backends may require different init data, so keep this as void pointer
-			);
-			void removeWindow(
-				void * initData = NULL // different backends may require different init data, so keep this as void pointer
+				GLFWwindow * w,
+				std::shared_ptr<vkI::vkRenderer> renderer
 			);
 
 			static void drawFrameStart();
