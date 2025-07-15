@@ -133,10 +133,8 @@ void (*Manager::buttonClickCallback)(void*) = NULL;
 void (*Manager::disabledButtonClickCallback)(void*) = NULL;
 void (*Manager::checkboxClickCallback)(void*) = NULL;
 
-void Manager::scroll(void * window, double xoff, double yoff) {
-}
-
-void Manager::mouse_move(void * window, double x, double y) {
+void Manager::scroll(GLFWwindow * window, double xoff, double yoff) {
+    nk_gflw3_scroll_callback(window, xoff, yoff);
 }
 
 #ifndef NK_GLFW_DOUBLE_CLICK_LO
@@ -147,13 +145,16 @@ void Manager::mouse_move(void * window, double x, double y) {
 #endif
 
 
-void Manager::mouse_button(void * window, int button, int action, int mods){
+void Manager::mouse_button(GLFWwindow * window, int button, int action, int mods){
+    nk_glfw3_mouse_button_callback(window, button, action, mods);
 }
 
-void Manager::char_input(void * window, unsigned int codepoint) {
+void Manager::char_input(GLFWwindow * window, unsigned int codepoint) {
+    nk_glfw3_char_callback(window, codepoint);
 }
 
-void Manager::key_input(void * window, unsigned int codepoint, bool pressed) {
+void Manager::key_input(GLFWwindow *win, int key, int scancode, int action, int mods) {
+    nk_glfw3_key_callback(win, key, scancode, action, mods);
 }
 
 // Memory for string input storage

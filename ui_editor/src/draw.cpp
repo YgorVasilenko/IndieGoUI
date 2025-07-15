@@ -243,11 +243,8 @@ void drawFrame() {
     skinning_renderer->beginRenderPass(frameCB, skinning_shader.get());
     skinning_renderer->drawCommands(frameCB);
     vkCmdEndRenderPass(frameCB);
-    // skinning_renderer->endRecordCommandBuffer(frameCB);
-    // skinning_renderer->submitQueue(frameCB);
 
     // layout rendering
-    // frameCB = layout_renderer->commandBuffers[vkRenderer::currFrame];
     layout_renderer->beginRenderPass(frameCB);
     for (int i = 0; i < layout_renderer->layout_rect_idx; i++) {
         uint32_t offset = layout_renderer->getDynamicOffset(i);
@@ -256,11 +253,8 @@ void drawFrame() {
         layout_renderer->drawCommands(frameCB);
     }
     vkCmdEndRenderPass(frameCB);
-    // layout_renderer->endRecordCommandBuffer(frameCB);
-    // layout_renderer->submitQueue(frameCB);
 
     // rendering of final image
-    // frameCB = screen_quad_renderer->commandBuffers[vkRenderer::currFrame];
     screen_quad_renderer->beginRenderPass(frameCB, screen_quad_shader.get());
     screen_quad_renderer->drawCommands(frameCB);
     screen_quad_renderer->endRecordCommandBuffer(frameCB);

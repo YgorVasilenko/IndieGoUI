@@ -1000,7 +1000,10 @@ namespace IndieGo {
 			// required for serialization
 			std::string skinning_image = "None";
 			region_size<unsigned int> skin_img_size;
-
+			
+			Manager() {
+				std::cout << "Creating GUI...\n";
+			}
 			// paths of fonts, used by widgets and vector of available sizes
 			static std::string main_font;
 			static float main_font_size;
@@ -1041,11 +1044,10 @@ namespace IndieGo {
 			};
 
 			// use this for window callbacks
-			void scroll(void * window, double xoff, double yoff);
-			void mouse_move(void * window, double x, double y);
-			void mouse_button(void * window, int button, int action, int mods );
-			void char_input(void * window, unsigned int codepoint);
-			void key_input(void * window, unsigned int codepoint, bool pressed = false);
+			static void scroll(GLFWwindow * window, double xoff, double yoff);
+			static void mouse_button(GLFWwindow * window, int button, int action, int mods );
+			static void char_input(GLFWwindow * window, unsigned int codepoint);
+			static void key_input(GLFWwindow *win, int key, int scancode, int action, int mods);
 
 			// adds new image to global vector of images. Returns index or recently added image
 			static void addImage(void * texID, unsigned short w, unsigned short h, region<float> crop);
