@@ -240,12 +240,12 @@ void drawFrame() {
     // Skin image rendering
     VkCommandBuffer frameCB = skinning_renderer->commandBuffers[vkRenderer::currFrame];
     skinning_renderer->beginRecordCommandBuffer(frameCB);
-    skinning_renderer->beginRenderPass(frameCB, skinning_shader.get());
+    skinning_renderer->beginRenderPass(frameCB, vkRenderer::imageIndex, skinning_shader.get());
     skinning_renderer->drawCommands(frameCB);
     vkCmdEndRenderPass(frameCB);
 
     // layout rendering
-    layout_renderer->beginRenderPass(frameCB);
+    layout_renderer->beginRenderPass(frameCB, vkRenderer::imageIndex);
     for (int i = 0; i < layout_renderer->layout_rect_idx; i++) {
         uint32_t offset = layout_renderer->getDynamicOffset(i);
         layout_shader->dynamicOffsets = &offset;
@@ -255,8 +255,9 @@ void drawFrame() {
     vkCmdEndRenderPass(frameCB);
 
     // rendering of final image
-    screen_quad_renderer->beginRenderPass(frameCB, screen_quad_shader.get());
+    screen_quad_renderer->beginRenderPass(frameCB, vkRenderer::imageIndex, screen_quad_shader.get());
     screen_quad_renderer->drawCommands(frameCB);
+    vkCmdEndRenderPass(frameCB);
     screen_quad_renderer->endRecordCommandBuffer(frameCB);
     screen_quad_renderer->submitQueue(frameCB, true);
 

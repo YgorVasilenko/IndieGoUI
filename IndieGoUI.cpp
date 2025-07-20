@@ -612,3 +612,5 @@ std::map<std::string, WIDGET> Manager::widgets = {};
 WIDGET* Manager::hoveredWidget = {};
 region_size<unsigned int> Manager::screen_size = {};
 int Manager::currFrame = 0;
+
+std::set<std::string> Manager::ignoreWidgets = {};

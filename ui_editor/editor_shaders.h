@@ -118,20 +118,20 @@ public:
     void fillDescrInitData() override {
         descriptorsInitData = {
             {
-                descriptor_type::sampler,
+                descriptor_type::sampler, // layout
                 shader_stage::fragment,
                 true,
                 0
             }, {
-                descriptor_type::sampler,
+                descriptor_type::sampler, // skinning
                 shader_stage::fragment,
                 true,
                 0
             }, {
-                descriptor_type::sampler,
+                descriptor_type::sampler, // overlay
                 shader_stage::fragment,
-                true,
-                0
+                false,
+                (uint32_t)swapImagesCount * 2 + 1
             }
         };
     };

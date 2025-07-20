@@ -20,6 +20,7 @@
 #include <string>
 #include <vector>
 #include <map>
+#include <set>
 #include <functional>
 #include <iostream>
 #include <fstream>
@@ -1030,8 +1031,13 @@ namespace IndieGo {
 			static void drawFrameStart();
 			static void drawFrameEnd();
 
-			bool guiHasCursor() {
-				return hoveredWidget;
+			static std::set<std::string> ignoreWidgets;
+			static bool guiHasCursor() {
+				bool check = false;
+				if (hoveredWidget) {
+					check = ignoreWidgets.find(hoveredWidget->name) == ignoreWidgets.end();
+				} 
+				return check;
 			}
 			// If we want user to prevent focusing some widget, we need to switch back to previously focused
 			// std::map<std::string, WIDGET*> prevFocusedWidgets = {};

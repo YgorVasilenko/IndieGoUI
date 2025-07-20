@@ -140,7 +140,7 @@ class ScreenQuadRenderer : public vkRenderer {
 
             imageCreateFormat = swapChainImageFormat;
             imageViewInitFormat = swapChainImageFormat;
-            createTextureImages(swapChainImagesCount);
+            createTextureImages(1);
             createTextureImageViews(textureImages);
     
             frameSemaphores.resize(swapChainImagesCount * 2);

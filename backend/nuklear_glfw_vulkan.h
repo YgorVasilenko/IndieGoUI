@@ -574,8 +574,8 @@ NK_INTERN void nk_glfw3_create_framebuffers(struct nk_glfw_device *dev,
     uint32_t i;
     VkResult result;
 
-    dev->framebuffers =
-        (VkFramebuffer *)malloc(dev->image_views_len * sizeof(VkFramebuffer));
+    dev->framebuffers = (VkFramebuffer *)malloc(sizeof(VkFramebuffer));
+        //(VkFramebuffer *)malloc(dev->image_views_len * sizeof(VkFramebuffer));
 
     memset(&framebuffer_create_info, 0, sizeof(VkFramebufferCreateInfo));
     framebuffer_create_info.sType = VK_STRUCTURE_TYPE_FRAMEBUFFER_CREATE_INFO;
@@ -584,14 +584,15 @@ NK_INTERN void nk_glfw3_create_framebuffers(struct nk_glfw_device *dev,
     framebuffer_create_info.width = framebuffer_width;
     framebuffer_create_info.height = framebuffer_height;
     framebuffer_create_info.layers = 1;
-    for (i = 0; i < dev->image_views_len; i++) {
+    // for (i = 0; i < dev->image_views_len; i++) {
+    for (i = 0; i < 1; i++) {
         framebuffer_create_info.pAttachments = &dev->image_views[i];
         result =
             vkCreateFramebuffer(dev->logical_device, &framebuffer_create_info,
                                 NULL, &dev->framebuffers[i]);
         NK_ASSERT(result == VK_SUCCESS);
     }
-    dev->framebuffers_len = dev->image_views_len;
+    dev->framebuffers_len = 1;// dev->image_views_len;
 }
 
 NK_INTERN void nk_glfw3_create_descriptor_pool(struct nk_glfw_device *dev) {
@@ -1435,7 +1436,7 @@ VkSemaphore nk_glfw3_render(VkQueue graphics_queue, uint32_t buffer_index,
     render_pass_begin_nfo.renderArea.extent.height = (uint32_t)glfw.height;
     render_pass_begin_nfo.clearValueCount = 1;
     render_pass_begin_nfo.pClearValues = &clear_value;
-    render_pass_begin_nfo.framebuffer = dev->framebuffers[buffer_index];
+    render_pass_begin_nfo.framebuffer = dev->framebuffers[0];
 
     command_buffer = dev->command_buffers[buffer_index];
 
