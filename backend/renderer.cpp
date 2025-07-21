@@ -108,23 +108,35 @@ void prepareUIRenderer(GLFWwindow* window) {
         MAX_VERTEX_BUFFER, MAX_ELEMENT_BUFFER
     );
     ctx = &glfw_vulkan->ctx;
+    struct nk_font_config cfg = nk_font_config(0);
+    cfg.range = nk_font_cyrillic_glyph_ranges();
     font_image_view = glfw_vulkan->vulkan.font_image_view;
     tex_null_ptr = &glfw_vulkan->vulkan.tex_null;
 
     nk_glfw3_font_stash_begin(&atlas);
     // load MercutioNbp
     std::vector<float> sizes = { 16, 18, 20, 24, 30, 36, 42, 48, 60, 72 };
-    std::string path = "C:\\Users\\vasil\\IndieGo\\ElvenCitySimulator\\MercutioNbpBasic.ttf";
+    std::string path = "C:\\Users\\vasil\\IndieGo\\Grim\\FlipBook\\open-sans\\OpenSans-Regular.ttf";
 
     for (auto size : sizes) {
-       backend_loaded_fonts["MercutioNbpBasic"][size] = nk_font_atlas_add_from_file(
+       backend_loaded_fonts["OpenSans-Regular"][size] = nk_font_atlas_add_from_file(
             atlas,
-            path.c_str(), size, 0
+            path.c_str(), size, &cfg
         );
     }
 
+    path = "C:\\Users\\vasil\\IndieGo\\Grim\\FlipBook\\OpenSans-ru.ttf";
+
+    for (auto size : sizes) {
+       backend_loaded_fonts["OpenSans-ru"][size] = nk_font_atlas_add_from_file(
+            atlas,
+            path.c_str(), size, &cfg
+        );
+    }
+
+
     nk_glfw3_font_stash_end(vkRenderer::graphicsQueue);
-    nk_style_set_font(ctx, &backend_loaded_fonts["MercutioNbpBasic"][18.f]->handle);
+    nk_style_set_font(ctx, &backend_loaded_fonts["OpenSans-Regular"][16.f]->handle);
 }
 
 
