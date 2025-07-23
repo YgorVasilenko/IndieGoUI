@@ -116,8 +116,11 @@ void prepareUIRenderer(GLFWwindow* window) {
     nk_glfw3_font_stash_begin(&atlas);
     // load MercutioNbp
     std::vector<float> sizes = { 16, 18, 20, 24, 30, 36, 42, 48, 60, 72 };
+#ifdef _WIN32
     std::string path = "C:\\Users\\vasil\\IndieGo\\Grim\\FlipBook\\open-sans\\OpenSans-Regular.ttf";
-
+#else
+    std::string path = "/Users/thunderdum/IndieGo/Grim/FlipBook/open-sans/OpenSans-Regular.ttf";
+#endif
     for (auto size : sizes) {
        backend_loaded_fonts["OpenSans-Regular"][size] = nk_font_atlas_add_from_file(
             atlas,
@@ -125,8 +128,11 @@ void prepareUIRenderer(GLFWwindow* window) {
         );
     }
 
+#ifdef _WIN32
     path = "C:\\Users\\vasil\\IndieGo\\Grim\\FlipBook\\OpenSans-ru.ttf";
-
+#else
+    path = "/Users/thunderdum/IndieGo/Grim/FlipBook/OpenSans-ru.ttf";
+#endif
     for (auto size : sizes) {
        backend_loaded_fonts["OpenSans-ru"][size] = nk_font_atlas_add_from_file(
             atlas,
