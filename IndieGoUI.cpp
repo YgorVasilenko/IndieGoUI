@@ -614,3 +614,4 @@ region_size<unsigned int> Manager::screen_size = {};
 int Manager::currFrame = 0;
 
 std::set<std::string> Manager::ignoreWidgets = {};
+std::string Manager::project_dir = "";

@@ -988,7 +988,7 @@ namespace IndieGo {
 			static std::string main_tooltip;
 			static void showMainTooltip();
 
-			std::string project_dir = "";
+			static std::string project_dir;
 			static region_size<unsigned int> screen_size;
 
 			static void (*custom_ui_uniforms)(void*);
