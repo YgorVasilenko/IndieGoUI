@@ -116,33 +116,45 @@ void prepareUIRenderer(GLFWwindow* window) {
     nk_glfw3_font_stash_begin(&atlas);
     // load MercutioNbp
     std::vector<float> sizes = { 16, 18, 20, 24, 30, 36, 42, 48, 60, 72 };
-#ifdef _WIN32
-    std::string path = Manager::project_dir + "\\FlipBook\\open-sans\\OpenSans-Regular.ttf";
-#else
-    std::string path = Manager::project_dir + "/FlipBook/open-sans/OpenSans-Regular.ttf";
-#endif
-    for (auto size : sizes) {
-       backend_loaded_fonts["OpenSans-Regular"][size] = nk_font_atlas_add_from_file(
-            atlas,
-            path.c_str(), size, &cfg
-        );
+    std::vector<std::string> loadPaths = {
+        "MercutioNbpBasic", "ProggyClean"
+    };
+    for (auto load_path : loadPaths) {
+        std::string path = Manager::project_dir + "\\" + load_path + ".ttf";
+        for (auto size : sizes) {
+            backend_loaded_fonts[load_path][size] = nk_font_atlas_add_from_file(
+                atlas,
+                path.c_str(), size, &cfg
+            );
+        }
     }
+// #ifdef _WIN32
+//     std::string path = Manager::project_dir + "\\FlipBook\\open-sans\\OpenSans-Regular.ttf";
+// #else
+//     std::string path = Manager::project_dir + "/FlipBook/open-sans/OpenSans-Regular.ttf";
+// #endif
+//     for (auto size : sizes) {
+//        backend_loaded_fonts["OpenSans-Regular"][size] = nk_font_atlas_add_from_file(
+//             atlas,
+//             path.c_str(), size, &cfg
+//         );
+//     }
 
-#ifdef _WIN32
-    path = Manager::project_dir + "\\FlipBook\\OpenSans-ru.ttf";
-#else
-    path = Manager::project_dir + "/FlipBook/OpenSans-ru.ttf";
-#endif
-    for (auto size : sizes) {
-       backend_loaded_fonts["OpenSans-ru"][size] = nk_font_atlas_add_from_file(
-            atlas,
-            path.c_str(), size, &cfg
-        );
-    }
+// #ifdef _WIN32
+//     path = Manager::project_dir + "\\FlipBook\\OpenSans-ru.ttf";
+// #else
+//     path = Manager::project_dir + "/FlipBook/OpenSans-ru.ttf";
+// #endif
+    // for (auto size : sizes) {
+    //    backend_loaded_fonts["OpenSans-ru"][size] = nk_font_atlas_add_from_file(
+    //         atlas,
+    //         path.c_str(), size, &cfg
+    //     );
+    // }
 
-
+    // nk_font_atlas_add_default(atlas, 16, &cfg);
     nk_glfw3_font_stash_end(vkRenderer::graphicsQueue);
-    nk_style_set_font(ctx, &backend_loaded_fonts["OpenSans-Regular"][16.f]->handle);
+    nk_style_set_font(ctx, &backend_loaded_fonts["MercutioNbpBasic"][16.f]->handle);
 }
 
 
@@ -570,10 +582,53 @@ void UI_element::callUIfunction(float x, float y, float space_w, float space_h) 
     }
 
     if (type == UI_DROPDOWN) {
-        // allocate memory for items from uiStringGroup
-        // const char **lst = reinterpret_cast<const char **>( _data.usgPtr->getCharArrays() );
-        // _data.usgPtr->selected_element = nk_combo(ctx, lst, NK_LEN(lst), _data.usgPtr->selected_element, 25, nk_vec2(200, 200));
-        // _data.usgPtr->disposeCharsArray();
+         // allocate memory for items from uiStringGroup
+        ui_string_group& uiGroupRef = *_data.usgPtr;
+        uiGroupRef.selection_switch = false;
+        float h_mul = 5 <= uiGroupRef.elements.size() ? 3 : uiGroupRef.elements.size();
+        float height = nk_widget_height(ctx);
+        float width = nk_widget_width(ctx);
+        // ctx->style.combo.normal = nk_style_item_color(nk_rgb(175, 0, 0));
+        // ctx->style.combo.hover = nk_style_item_color(nk_rgb(255, 0, 0));
+        // if (images.size() > 0) {
+        //     ctx->style.combo.sym_normal = nk_style_item_image();
+        // }
+
+        // if (skinned_style.props[background].first != -1) {
+        //     ctx->style.contextual_button.normal = nk_style_item_image(
+        //         images[skinned_style.props[background].first][skinned_style.props[background].second].first
+        //     );
+        // }
+    
+        nk_style_from_table(ctx, (struct nk_color*)style.elements);
+        // ctx->style.contextual_button.normal = nk_style_item_color(nk_rgb(175, 0, 0));
+        // ctx->style.contextual_button.hover = nk_style_item_color(nk_rgb(255, 0, 0));
+        if (nk_combo_begin_label(ctx, uiGroupRef.elements[uiGroupRef.selected_element].c_str(), nk_vec2(width, height * h_mul))) {
+            nk_layout_row_dynamic(ctx, height, 1);
+            for (int i = 0; i < uiGroupRef.elements.size(); i++) {
+                if (nk_combo_item_label(ctx, uiGroupRef.elements[i].c_str(), NK_TEXT_LEFT)) {
+                    if (uiGroupRef.selected_element != i)
+                        uiGroupRef.selection_switch = true;
+
+                    uiGroupRef.selected_element = i;
+                }
+            }
+            nk_combo_end(ctx);
+        }
+        if (uiGroupRef.selection_switch) {
+            // button was switched, evoke callbacks
+            unsigned int cbIdx = 0;
+            for (auto callback : activeCallbacks) {
+                callback(activeDatas[cbIdx]);
+                cbIdx++;
+            }
+
+            cbIdx = 0;
+            for (auto callback : clickCallbacks) {
+                callback(clickDatas[cbIdx]);
+                cbIdx++;
+            }
+        }
     }
 
     if (type == UI_COLOR_PICKER) {

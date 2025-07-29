@@ -16,8 +16,11 @@
 
 // various functions for working with ui
 #include <IndieGoUI.h>
+#include <Renderer.h>
 
-#include <glad/glad.h>
+using namespace IndieGo::vkI;
+
+// #include <glad/glad.h>
 // #include <editor_renderers.h>
 #include <memory>
 
@@ -26,7 +29,8 @@
 #include <filesystem>
 namespace fs = std::filesystem;
 
-#include "stb_image.h"
+#define STB_IMAGE_IMPLEMENTATION
+#include <stb_image.h>
 
 #if !defined NO_SERIALIZATION && !defined NO_UI_SERIALIZATION
 #include <IndieGoUI.pb.h>
@@ -187,68 +191,150 @@ void addElement(
     UIMap.addElement(elt_name, type, &w, push_opt, anchor, push_after);
 }
 
-#ifdef RELEASE_BUILD
-    extern string global_home;
-#endif
+// #ifdef RELEASE_BUILD
+//     extern string global_home;
+// #endif
 
 // helper function lo load image through stbi
 // in other engine parts ImageLoader will do that
 //TODO : UI requires renderer pointer, which will store skin texture
 TexData Manager::load_image(string path, bool useProjectDir) {
-    TexData& td = loaded_textures[path];
-    // td.w = skinning_renderer->texWidth;
-    // td.h = skinning_renderer->texHeight;
-    // td.path = path;
-    // td.n = 4;
-    // td.texID = skinning_renderer->textureImageViews.back();
+    if (loaded_textures.find(path) != loaded_textures.end())
+        return loaded_textures[path];
 
+    // load skinning image for ECS
+    int mem_w, mem_h, texChannels;
+    stbi_uc* pixels = stbi_load(
+        (project_dir + "/Sprites/ui_map/ui_full.png").c_str(),
+        &mem_w, &mem_h, &texChannels, STBI_rgb_alpha
+    );
+    VkDeviceSize imageSize = mem_w * mem_h * 4;
+
+    if (!pixels) {
+        throw std::runtime_error("failed to load texture image!");
+    }
+    VkDeviceMemory imgMemory;
+    // createTextureImages(1);
+    VkImage hImg = aux::createImage(
+		mem_w, mem_h, 
+        VK_FORMAT_R8G8B8A8_SRGB,
+        VK_IMAGE_TILING_OPTIMAL, 
+		VK_IMAGE_USAGE_TRANSFER_DST_BIT | VK_IMAGE_USAGE_SAMPLED_BIT, VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT, 
+		imgMemory
+	);
+
+	aux::transitionImageLayout(
+        hImg, 
+        VK_FORMAT_R8G8B8A8_SRGB,
+        VK_IMAGE_LAYOUT_UNDEFINED, 
+		VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL
+	);
+
+    TexData& td = loaded_textures[path];
+	td.texID = aux::createImageView(hImg, VK_FORMAT_R8G8B8A8_SRGB);
+
+    // Create staging buffer
+	VkBuffer stagingBuffer;
+    VkDeviceMemory stagingBufferMemory;
+    aux::createBuffer(
+		imageSize, 
+		VK_BUFFER_USAGE_TRANSFER_SRC_BIT, 
+		VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT, 
+		stagingBuffer, 
+		stagingBufferMemory
+	);
+
+	// Copy image_data to staging buffer's mapped host memory
+	void* data;
+    vkMapMemory(vkRenderer::device, stagingBufferMemory, 0, imageSize, 0, &data);
+    memcpy(data, pixels, static_cast<size_t>(imageSize));
+	vkUnmapMemory(vkRenderer::device, stagingBufferMemory);
+	aux::transitionImageLayout(
+        hImg, 
+        VK_FORMAT_R8G8B8A8_SRGB,
+        VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL, 
+		VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL
+	);
+
+	// copy buffer to image
+	VkCommandBuffer commandBuffer = aux::beginSingleTimeCommands();
+
+    VkBufferImageCopy region{};
+    region.bufferOffset = 0;
+    region.bufferRowLength = 0;
+    region.bufferImageHeight = 0;
+    region.imageSubresource.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
+    region.imageSubresource.mipLevel = 0;
+    region.imageSubresource.baseArrayLayer = 0;
+    region.imageSubresource.layerCount = 1;
+    region.imageOffset = { 0, 0, 0 };
+    region.imageExtent = {
+        (uint32_t)mem_w,
+        (uint32_t)mem_h,
+        1
+    };
+
+    vkCmdCopyBufferToImage(commandBuffer, stagingBuffer, hImg, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, 1, &region);
+    aux::endSingleTimeCommands(commandBuffer);
+
+	aux::transitionImageLayout(
+        hImg, 
+        VK_FORMAT_R8G8B8A8_SRGB,
+        VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, 
+		VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL
+	);
+
+    td.w = mem_w;
+    td.h = mem_h;
+    td.path = path;
+    td.n = 4;
     return td;
 
-#ifdef __APPLE__
-    replace(path.begin(), path.end(), '\\', '/');
-#endif
-    string project_dir = "";
+// #ifdef __APPLE__
+//     replace(path.begin(), path.end(), '\\', '/');
+// #endif
+//     string project_dir = "";
 
-#ifdef RELEASE_BUILD
-    project_dir = global_home;
-#else
-    project_dir = GUI.project_dir;
-    if (fs::exists(fs::path(GUI.project_dir)))
-        project_dir = GUI.project_dir;
-    else
-        project_dir = "";
-#endif
-    fs::path pd_path = project_dir;
-    fs::path load_path = path;
+// // #ifdef RELEASE_BUILD
+// //     project_dir = global_home;
+// // #else
+//     project_dir = GUI.project_dir;
+//     if (fs::exists(fs::path(GUI.project_dir)))
+//         project_dir = GUI.project_dir;
+//     else
+//         project_dir = "";
+// #// endif
+//     fs::path pd_path = project_dir;
+//     fs::path load_path = path;
 
-    if (load_path.is_absolute() && project_dir.length() > 0) {
-        load_path = fs::relative(load_path, pd_path);
-        path = load_path.string();
-    }
+//     if (load_path.is_absolute() && project_dir.length() > 0) {
+//         load_path = fs::relative(load_path, pd_path);
+//         path = load_path.string();
+//     }
 
-    if (loaded_textures.find(path) != loaded_textures.end()) {
-        return loaded_textures[path];
-    }
+//     if (loaded_textures.find(path) != loaded_textures.end()) {
+//         return loaded_textures[path];
+//     }
 
-    // unsigned int tex;
-    td = loaded_textures[path];
-    load_path = pd_path.append(path);
+//     // unsigned int tex;
+//     td = loaded_textures[path];
+//     load_path = pd_path.append(path);
 
-    td.path = path;
-    unsigned char *data = nullptr;
-    // unsigned char *data = stbi_load(
-    //     load_path.string().c_str(),
-    //     &td.w, 
-    //     &td.h, 
-    //     &td.n, 
-    //     0
-    // );
+//     td.path = path;
+//     unsigned char *data = nullptr;
+//     // unsigned char *data = stbi_load(
+//     //     load_path.string().c_str(),
+//     //     &td.w, 
+//     //     &td.h, 
+//     //     &td.n, 
+//     //     0
+//     // );
 
-    if (!data) {
-        cout << "[UI::ERROR] failed to load image " << load_path << endl;
-        td.texID = nullptr;
-        return td;
-    }
+//     if (!data) {
+//         cout << "[UI::ERROR] failed to load image " << load_path << endl;
+//         td.texID = nullptr;
+//         return td;
+//     }
 
     // glGenTextures(1, &td.texID);
     // glBindTexture(GL_TEXTURE_2D, td.texID);
@@ -273,7 +359,7 @@ TexData Manager::load_image(string path, bool useProjectDir) {
     // glGenerateMipmap(GL_TEXTURE_2D);
     // stbi_image_free(data);
     
-    return td;
+    // return td;
 }
 
 void Manager::serialize(const string & path, const vector<string> & skipWidgets) {
@@ -544,7 +630,7 @@ void Manager::deserialize(const string & path) {
             }
 
             // skinned props
-            /*for (int k = 0; k < e.skinned_props_size(); k++) {
+            for (int k = 0; k < e.skinned_props_size(); k++) {
                 const ui_serialization::SkinnedProperty & sp = e.skinned_props(k);
                 region<float> crop_region;
                 crop_region.h = sp.crop().h();
@@ -558,7 +644,7 @@ void Manager::deserialize(const string & path) {
                     td.h,
                     crop_region
                 );
-            }*/
+            }
             // color styled props
             for (int k = 0; k < 28; k++) {
                 const ui_serialization::StyleColor & sc = e.styled_props(k);
@@ -597,12 +683,12 @@ void Manager::deserialize(const string & path) {
         const ui_serialization::Font & f = serialized_ui.fonts(i);
         loadFont(f.name(), f.size(), true, false);
     }
-#ifdef RELEASE_BUILD
-    loadFont("ProggyClean.ttf", winID, 12, true, false);
-    loadFont("MercutioNbpBasic.ttf", winID, 12, true, false);
-    loadFont("ProggyClean.ttf", winID, 14, true, false);
-    loadFont("MercutioNbpBasic.ttf", winID, 14, true, false);
-#endif
+// #ifdef RELEASE_BUILD
+//     loadFont("ProggyClean.ttf", winID, 12, true, false);
+//     loadFont("MercutioNbpBasic.ttf", winID, 12, true, false);
+//     loadFont("ProggyClean.ttf", winID, 14, true, false);
+//     loadFont("MercutioNbpBasic.ttf", winID, 14, true, false);
+// #endif
 
 #endif
 }

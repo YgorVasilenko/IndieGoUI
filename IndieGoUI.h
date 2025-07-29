@@ -760,8 +760,12 @@ namespace IndieGo {
 				element.type = type;
 				if (element.type == UI_STRING_INPUT) {
 					element._data.strPtr = new std::string;
-				} else if (element.type == UI_ITEMS_LIST) {
+				} else if (element.type == UI_ITEMS_LIST || element.type == UI_DROPDOWN) {
 					element._data.usgPtr = new ui_string_group;
+					if (element.type == UI_DROPDOWN) {
+						(*element._data.usgPtr).elements.push_back("Stub");
+						(*element._data.usgPtr).selected_element = 0;
+					}
 				} else if (element.type == UI_COLOR_PICKER){
 					element.height = 0.185f;
 				} else if (element.type == UI_BUTTON || element.type == UI_BOOL) {
