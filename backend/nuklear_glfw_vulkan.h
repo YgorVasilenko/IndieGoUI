@@ -1703,8 +1703,8 @@ nk_glfw3_init(GLFWwindow *win, VkDevice logical_device,
     glfw.width *= 2;
     glfw.height *= 2;
 
-    glfw.display_width *= 2;
-    glfw.display_height *= 2;
+    // glfw.display_width *= 2;
+    // glfw.display_height *= 2;
     // ------------------------------------------------------------------------
 #endif
 
