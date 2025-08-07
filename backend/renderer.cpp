@@ -117,44 +117,25 @@ void prepareUIRenderer(GLFWwindow* window) {
     // load MercutioNbp
     std::vector<float> sizes = { 16, 18, 20, 24, 30, 36, 42, 48, 60, 72 };
     std::vector<std::string> loadPaths = {
-        "MercutioNbpBasic", "ProggyClean"
+        // "MercutioNbpBasic", "ProggyClean"
+        "FlipBook/OpenSans-ru", "FlipBook/open-sans/OpenSans-Regular"
+    };
+    std::map<std::string, std::string> addPaths = {
+        {"FlipBook/OpenSans-ru", "OpenSans-ru"}, {"FlipBook/open-sans/OpenSans-Regular", "OpenSans-Regular"}
+        // {"MercutioNbpBasic.ttf", "MercutioNbpBasic"}, {"ProggyClean.ttf", "ProggyClean"}
     };
     for (auto load_path : loadPaths) {
-        std::string path = Manager::project_dir + "\\" + load_path + ".ttf";
+        std::string path = Manager::project_dir + "/" + load_path + ".ttf";
         for (auto size : sizes) {
-            backend_loaded_fonts[load_path][size] = nk_font_atlas_add_from_file(
+            backend_loaded_fonts[addPaths[load_path]][size] = nk_font_atlas_add_from_file(
                 atlas,
                 path.c_str(), size, &cfg
             );
         }
     }
-// #ifdef _WIN32
-//     std::string path = Manager::project_dir + "\\FlipBook\\open-sans\\OpenSans-Regular.ttf";
-// #else
-//     std::string path = Manager::project_dir + "/FlipBook/open-sans/OpenSans-Regular.ttf";
-// #endif
-//     for (auto size : sizes) {
-//        backend_loaded_fonts["OpenSans-Regular"][size] = nk_font_atlas_add_from_file(
-//             atlas,
-//             path.c_str(), size, &cfg
-//         );
-//     }
-
-// #ifdef _WIN32
-//     path = Manager::project_dir + "\\FlipBook\\OpenSans-ru.ttf";
-// #else
-//     path = Manager::project_dir + "/FlipBook/OpenSans-ru.ttf";
-// #endif
-    // for (auto size : sizes) {
-    //    backend_loaded_fonts["OpenSans-ru"][size] = nk_font_atlas_add_from_file(
-    //         atlas,
-    //         path.c_str(), size, &cfg
-    //     );
-    // }
-
     // nk_font_atlas_add_default(atlas, 16, &cfg);
     nk_glfw3_font_stash_end(vkRenderer::graphicsQueue);
-    nk_style_set_font(ctx, &backend_loaded_fonts["MercutioNbpBasic"][16.f]->handle);
+    nk_style_set_font(ctx, &backend_loaded_fonts[addPaths[loadPaths[0]]][16.f]->handle);
 }
 
 
